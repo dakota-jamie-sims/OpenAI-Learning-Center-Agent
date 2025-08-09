@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "generated_at": "2025-07-31T19:35:08.235862",
+    "format_version": "1.0",
+    "source_format": "markdown",
+    "word_count": 348,
+    "character_count": 2075,
+    "title": "The Characteristics of an Elite Salesperson",
+    "date": "5/25/23",
+    "author": "Gui Costin",
+    "url": "https://www.dakota.com/resources/blog/the-characteristics-of-an-elite-salesperson",
+    "source": "dakota_learning_center",
+    "index": 239
+  },
+  "content": {
+    "title": "The Characteristics of an Elite Salesperson",
+    "introduction": "If you're in the investment sales business, or you're thinking about becoming an investment salesperson, you probably already know how challenging it can be. You might be wondering if you have what it takes to be successful yourself. At Dakota, we've been in the investment sales field since 2006, and our team has raised over $35 billion in that time. We've honed our process over the years to ensure success, and we've made it our practice to share those tips with other new comers, emerging managers, and peers. In this article, we're sharing what we've found to be the characteristics of a truly elite investment salesperson. By the end of the article, you'll know how you measure up, and what you can do to elevate your skills as a salesperson. An elite investment salesperson... Knows that success is when an allocator invests in one of their funds. Nothing else matters except for the things below that lead to this result. Knows how to focus on the few things that matter most to get results. Holds personal accountability Can book meetings with qualified buyers Can book meetings with qualified buyers en masse Can tell an investment story extremely well through practice Can read the room, body language and buying signals Can ask the two hardest questions to end the meeting so the follow up is handled in the meeting, not after (bad salespeople email after for follow up, elite salespeople get the answers in the meeting) Enters all meetings scheduled in Salesforce Uses Salesforce opportunity pipeline reports to manage themselves and the business Knows how to work an opportunity through the pipeline to closed won Has the ability to “force the issue” to get a yes or no answer in a very timely manner Uses salesforce past activity (meetings) reports to trigger sales actions for follow up Uses the TAM functionality in Salesforce to trigger sales actions Can clearly and consistently communicate progress against an account to the team that does not require the team to have to asks too many questions",
+    "sections": [
+      {
+        "type": "section",
+        "level": 1,
+        "title": "The Characteristics of an Elite Salesperson",
+        "content": "If you're in the investment sales business, or you're thinking about becoming an investment salesperson, you probably already know how challenging it can be. You might be wondering if you have what it takes to be successful yourself. At Dakota, we've been in the investment sales field since 2006, and our team has raised over $35 billion in that time. We've honed our process over the years to ensure success, and we've made it our practice to share those tips with other new comers, emerging managers, and peers. In this article, we're sharing what we've found to be the characteristics of a truly elite investment salesperson. By the end of the article, you'll know how you measure up, and what you can do to elevate your skills as a salesperson. An elite investment salesperson... Knows that success is when an allocator invests in one of their funds. Nothing else matters except for the things below that lead to this result. Knows how to focus on the few things that matter most to get results. Holds personal accountability Can book meetings with qualified buyers Can book meetings with qualified buyers en masse Can tell an investment story extremely well through practice Can read the room, body language and buying signals Can ask the two hardest questions to end the meeting so the follow up is handled in the meeting, not after (bad salespeople email after for follow up, elite salespeople get the answers in the meeting) Enters all meetings scheduled in Salesforce Uses Salesforce opportunity pipeline reports to manage themselves and the business Knows how to work an opportunity through the pipeline to closed won Has the ability to “force the issue” to get a yes or no answer in a very timely manner Uses salesforce past activity (meetings) reports to trigger sales actions for follow up Uses the TAM functionality in Salesforce to trigger sales actions Can clearly and consistently communicate progress against an account to the team that does not require the team to have to asks too many questions",
+        "bullet_points": [],
+        "subsections": []
+      }
+    ],
+    "key_takeaways": [],
+    "faqs": []
+  },
+  "structure": {
+    "heading_count": 1,
+    "bullet_points": 0,
+    "paragraphs": 6,
+    "sections_count": 1
+  },
+  "source": {
+    "type": "dakota_learning_center_excel",
+    "excel_index": 239,
+    "original_url": "https://www.dakota.com/resources/blog/the-characteristics-of-an-elite-salesperson",
+    "extraction_date": "2025-07-31T19:35:08.235953"
+  },
+  "analysis": {
+    "word_count": 341,
+    "character_count": 2027,
+    "estimated_read_time": "1 minutes",
+    "dakota_indicators": [
+      "dakota",
+      "at dakota",
+      "we've found"
+    ],
+    "investment_terms": [
+      "investment",
+      "fund"
+    ],
+    "content_hash": "7e3e8b6137a907e8a9718e494107e1f3"
+  }
+}

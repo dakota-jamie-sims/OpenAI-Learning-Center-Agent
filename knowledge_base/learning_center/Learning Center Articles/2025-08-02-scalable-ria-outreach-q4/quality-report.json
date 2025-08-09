@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "topic_relevance": 0.95,
+    "grammar_quality": 0.98,
+    "content_uniqueness": 0.92,
+    "dakota_voice": 0.96,
+    "practical_value": 0.94,
+    "seo_effectiveness": 0.90,
+    "geo_compliance": 1.00,
+    "dakota_way_alignment": 0.95
+  },
+  "overall_score": 0.95,
+  "word_count": 1987,
+  "passes_threshold": true,
+  "strengths": [
+    "Excellent Dakota voice with conversational tone",
+    "Specific numbers and actionable steps throughout",
+    "Strong Q4 focus with timely relevance",
+    "Practical 5-step system with exact tactics",
+    "Real examples and email templates"
+  ],
+  "minor_improvements": [
+    "Could add more specific RIA firm examples",
+    "SEO keywords could be more naturally integrated",
+    "Additional Dakota success stories would strengthen credibility"
+  ]
+}

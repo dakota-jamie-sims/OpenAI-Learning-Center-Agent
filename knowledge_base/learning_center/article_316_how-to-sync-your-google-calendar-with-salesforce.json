@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "generated_at": "2025-07-31T19:35:08.299716",
+    "format_version": "1.0",
+    "source_format": "markdown",
+    "word_count": 586,
+    "character_count": 3511,
+    "title": "How to Sync Your Google Calendar With Salesforce",
+    "date": "3/23/22",
+    "author": "Gui Costin",
+    "url": "https://www.dakota.com/resources/blog/how-to-sync-google-calendar-with-salesforce",
+    "source": "dakota_learning_center",
+    "index": 316
+  },
+  "content": {
+    "title": "How to Sync Your Google Calendar With Salesforce",
+    "introduction": "When you’re setting up meetings and booking calls, the last thing you want to do is add the same meeting to five different platforms. But, you also don’t want to miss entering those meetings on your calendar or in Salesforce and lose track of them later. To eliminate the double entry of meetings, Salesforce allows its users to sync their Google Calendars with their Salesforce instance. This takes away some of the friction when it comes to entering meetings, and ensures that you’re not missing any crucial meetings on either platform. At Dakota, entering meetings and meeting notes in Salesforce is something that is part of our sales team’s DNA, and we believe it’s critical to enter accurate, reliable meeting information in order to do follow-up effectively. We’ve been using Salesforce as our CRM to do just this since 2006, and have raised over $40 billion in that time. In this article, we’re sharing how you can sync your Gmail calendar with Salesforce to increase your team’s efficiency and create a follow-up system. By the end of the article, you’ll have a clear idea of how to get started. First, we’ll dive into why syncing between your calendar and Salesforce matters. The cost of meeting double-entry We all know that there are so many hours in the day, and if you’re having your sales team spend their time entering meetings and meeting details across multiple platforms, chances are, they’re missing out on doing much more productive activities. Syncing meetings across platforms allows for three key things: 1. Salespeople can stay focused on selling. Did you know that salespeople spend over half of their day doing activities that aren’t selling? Things like data and meeting entry are some of the tasks that take them away from what they should be doing, which is setting and holding meetings. 2. Eliminate errors and bad data. Having people enter meetings again and again only increases the likelihood of a date being entered incorrectly, a name getting spelled wrong, or someone being left off the invitation list. Syncing meetings removes the human error factor and ensures nothing gets missed. 3. Increased CRM adoption. We’ve said it time and again, but the number one reason your sales team doesn’t want to use their CRM is because the data inside of it is bad, outdated, or incomplete. If they know that good, accurate data is getting put into the CRM (and even better — getting put in automatically), they’re far more likely to fully adopt the CRM in the end. Next we’ll outline the three simple steps to setting up the sync between your Google Calendar and Salesforce. How to sync your Google Calendar with Salesforce The sync between your inbox and your Salesforce instance can be done using Salesforce’s Einstein Activity Capture feature. Einstein Activity Capture allows both admins and users to enable a sync between both Google and Outlook Calendars and Salesforce in just three steps. 1. From your personal settings, enter Connected Accounts in the Quick Find box, and then select Email and Calendar Accounts. If your admin connected an account for you, it will be listed under Connected Accounts. If it’s not, try refreshing the page. 2. Click New Account. 3. Follow the steps to connect your account. After you connect an account, it takes up to 24 hours for Einstein Activity Capture to add your emails and events to related Salesforce records, but Inbox features are available right away.",
+    "sections": [
+      {
+        "type": "section",
+        "level": 1,
+        "title": "How to Sync Your Google Calendar With Salesforce",
+        "content": "When you’re setting up meetings and booking calls, the last thing you want to do is add the same meeting to five different platforms. But, you also don’t want to miss entering those meetings on your calendar or in Salesforce and lose track of them later. To eliminate the double entry of meetings, Salesforce allows its users to sync their Google Calendars with their Salesforce instance. This takes away some of the friction when it comes to entering meetings, and ensures that you’re not missing any crucial meetings on either platform. At Dakota, entering meetings and meeting notes in Salesforce is something that is part of our sales team’s DNA, and we believe it’s critical to enter accurate, reliable meeting information in order to do follow-up effectively. We’ve been using Salesforce as our CRM to do just this since 2006, and have raised over $40 billion in that time. In this article, we’re sharing how you can sync your Gmail calendar with Salesforce to increase your team’s efficiency and create a follow-up system. By the end of the article, you’ll have a clear idea of how to get started. First, we’ll dive into why syncing between your calendar and Salesforce matters. The cost of meeting double-entry We all know that there are so many hours in the day, and if you’re having your sales team spend their time entering meetings and meeting details across multiple platforms, chances are, they’re missing out on doing much more productive activities. Syncing meetings across platforms allows for three key things: 1. Salespeople can stay focused on selling. Did you know that salespeople spend over half of their day doing activities that aren’t selling? Things like data and meeting entry are some of the tasks that take them away from what they should be doing, which is setting and holding meetings. 2. Eliminate errors and bad data. Having people enter meetings again and again only increases the likelihood of a date being entered incorrectly, a name getting spelled wrong, or someone being left off the invitation list. Syncing meetings removes the human error factor and ensures nothing gets missed. 3. Increased CRM adoption. We’ve said it time and again, but the number one reason your sales team doesn’t want to use their CRM is because the data inside of it is bad, outdated, or incomplete. If they know that good, accurate data is getting put into the CRM (and even better — getting put in automatically), they’re far more likely to fully adopt the CRM in the end. Next we’ll outline the three simple steps to setting up the sync between your Google Calendar and Salesforce. How to sync your Google Calendar with Salesforce The sync between your inbox and your Salesforce instance can be done using Salesforce’s Einstein Activity Capture feature. Einstein Activity Capture allows both admins and users to enable a sync between both Google and Outlook Calendars and Salesforce in just three steps. 1. From your personal settings, enter Connected Accounts in the Quick Find box, and then select Email and Calendar Accounts. If your admin connected an account for you, it will be listed under Connected Accounts. If it’s not, try refreshing the page. 2. Click New Account. 3. Follow the steps to connect your account. After you connect an account, it takes up to 24 hours for Einstein Activity Capture to add your emails and events to related Salesforce records, but Inbox features are available right away.",
+        "bullet_points": [],
+        "subsections": []
+      }
+    ],
+    "key_takeaways": [],
+    "faqs": []
+  },
+  "structure": {
+    "heading_count": 1,
+    "bullet_points": 0,
+    "paragraphs": 16,
+    "sections_count": 1
+  },
+  "source": {
+    "type": "dakota_learning_center_excel",
+    "excel_index": 316,
+    "original_url": "https://www.dakota.com/resources/blog/how-to-sync-google-calendar-with-salesforce",
+    "extraction_date": "2025-07-31T19:35:08.299829"
+  },
+  "analysis": {
+    "word_count": 577,
+    "character_count": 3458,
+    "estimated_read_time": "2 minutes",
+    "dakota_indicators": [
+      "dakota",
+      "at dakota"
+    ],
+    "investment_terms": [],
+    "content_hash": "c5e487338fb520f8cca8a64f1a37c97c"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "generated_at": "2025-07-31T19:35:08.263481",
+    "format_version": "1.0",
+    "source_format": "markdown",
+    "word_count": 455,
+    "character_count": 2735,
+    "title": "Q3 13F ETF Product Trends",
+    "date": "11/28/22",
+    "author": "Gui Costin",
+    "url": "https://www.dakota.com/resources/blog/q3-13f-etf-product-trends",
+    "source": "dakota_learning_center",
+    "index": 273
+  },
+  "content": {
+    "title": "Q3 13F ETF Product Trends",
+    "introduction": "With the 3rd quarter 13F filing window now closed, Marketplace was tracking 3250 ETFs from 300 sponsors via the filings, which has grown from the close of Q2 when 3010 individual ETFs from 255 sponsors were being tracked.  For the quarter this amounts to over 33 thousand individual positions which are linked to an allocator inside of Marketplace. Some stats at the end of the quarter which caught our attention: The universe of actively managed strategies grew to 1,021 actively managed ETFs. Almost 30% of ETFs are now actively managed.  Continued conversions from ’40 act and active bond ETF launches continue to move the active needle.  For the year, 60% of launched strategies are active ETFs with a focus on fixed-income funds. 116 individual managers launched strategies with the most coming from Bond Bloxx launching 19 funds, followed by the largest issuer of leveraged strategies Direxion at 17 funds and BlackRock /Ishares with 13 funds. Single stock ETF filings were all the rage in Q2, however during Q3 over 130 of these launches were withdrawn as the SEC deemed these as carrying too much investor risk. For the year we have seen 319 new ETFs brought to market.  This pace is matching the 334 ETFs that rolled out in the first three quarters of 2021.  This data shows us that no matter what the market conditions, asset managers continue to bring solutions to market for allocators. Capital Group, Neuberger Berman and Alliance Bernstein, were all major investment managers that entered the ETF market for the first time with actively managed funds. Peeling back the onion a bit on the actively managed strategies, we did not see outsized momentum build for the ANT/active non-transparent structure.  Year to date, only 55 ETFs of the 1,021 active funds are using the active non-transparent wrapper, while the majority continue to go the active transparent route. Looking at ETF closures, this is higher than last year’s count with 115 ETFs liquidated so far in 2022 VS 79 last year. Many of these closed strategies were in small sub-asset/niche areas.  When ETFs are liquidated, characteristics such as AUM, trading activity, size of the peer group, rank in the group are all factors when ETFs are de-listed.  Unlike mutual funds, performance is not considered.  In the mutual fund/managed account world we tend to follow the performance, process and track records of specific PM teams. This does not occur to the same degree in the ETF space much when it comes to inflows. Comparing the 13F data of performance VS flows, the ETFs which had the largest Q3 net flows were more portfolio building block allocations, VS the top performers were thematic or shorter term in nature.",
+    "sections": [
+      {
+        "type": "section",
+        "level": 1,
+        "title": "Q3 13F ETF Product Trends",
+        "content": "With the 3rd quarter 13F filing window now closed, Marketplace was tracking 3250 ETFs from 300 sponsors via the filings, which has grown from the close of Q2 when 3010 individual ETFs from 255 sponsors were being tracked.  For the quarter this amounts to over 33 thousand individual positions which are linked to an allocator inside of Marketplace. Some stats at the end of the quarter which caught our attention: The universe of actively managed strategies grew to 1,021 actively managed ETFs. Almost 30% of ETFs are now actively managed.  Continued conversions from ’40 act and active bond ETF launches continue to move the active needle.  For the year, 60% of launched strategies are active ETFs with a focus on fixed-income funds. 116 individual managers launched strategies with the most coming from Bond Bloxx launching 19 funds, followed by the largest issuer of leveraged strategies Direxion at 17 funds and BlackRock /Ishares with 13 funds. Single stock ETF filings were all the rage in Q2, however during Q3 over 130 of these launches were withdrawn as the SEC deemed these as carrying too much investor risk. For the year we have seen 319 new ETFs brought to market.  This pace is matching the 334 ETFs that rolled out in the first three quarters of 2021.  This data shows us that no matter what the market conditions, asset managers continue to bring solutions to market for allocators. Capital Group, Neuberger Berman and Alliance Bernstein, were all major investment managers that entered the ETF market for the first time with actively managed funds. Peeling back the onion a bit on the actively managed strategies, we did not see outsized momentum build for the ANT/active non-transparent structure.  Year to date, only 55 ETFs of the 1,021 active funds are using the active non-transparent wrapper, while the majority continue to go the active transparent route. Looking at ETF closures, this is higher than last year’s count with 115 ETFs liquidated so far in 2022 VS 79 last year. Many of these closed strategies were in small sub-asset/niche areas.  When ETFs are liquidated, characteristics such as AUM, trading activity, size of the peer group, rank in the group are all factors when ETFs are de-listed.  Unlike mutual funds, performance is not considered.  In the mutual fund/managed account world we tend to follow the performance, process and track records of specific PM teams. This does not occur to the same degree in the ETF space much when it comes to inflows. Comparing the 13F data of performance VS flows, the ETFs which had the largest Q3 net flows were more portfolio building block allocations, VS the top performers were thematic or shorter term in nature.",
+        "bullet_points": [],
+        "subsections": []
+      }
+    ],
+    "key_takeaways": [],
+    "faqs": []
+  },
+  "structure": {
+    "heading_count": 1,
+    "bullet_points": 0,
+    "paragraphs": 7,
+    "sections_count": 1
+  },
+  "source": {
+    "type": "dakota_learning_center_excel",
+    "excel_index": 273,
+    "original_url": "https://www.dakota.com/resources/blog/q3-13f-etf-product-trends",
+    "extraction_date": "2025-07-31T19:35:08.263570"
+  },
+  "analysis": {
+    "word_count": 449,
+    "character_count": 2705,
+    "estimated_read_time": "2 minutes",
+    "dakota_indicators": [],
+    "investment_terms": [
+      "portfolio",
+      "asset",
+      "investment",
+      "risk",
+      "allocation",
+      "market",
+      "bond",
+      "fund",
+      "etf"
+    ],
+    "content_hash": "8d3236236dee67304111f5c10aff83bb"
+  }
+}

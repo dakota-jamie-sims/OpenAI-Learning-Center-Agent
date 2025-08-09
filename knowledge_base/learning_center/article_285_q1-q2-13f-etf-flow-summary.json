@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "generated_at": "2025-07-31T19:35:08.273408",
+    "format_version": "1.0",
+    "source_format": "markdown",
+    "word_count": 429,
+    "character_count": 2506,
+    "title": "Q1-Q2 13F ETF Flow Summary",
+    "date": "10/5/22",
+    "author": "Gui Costin",
+    "url": "https://www.dakota.com/resources/blog/q1-q2-13f-etf-flow-summary",
+    "source": "dakota_learning_center",
+    "index": 285
+  },
+  "content": {
+    "title": "Q1-Q2 13F ETF Flow Summary",
+    "introduction": "At the close of Q1, Marketplace was tracking 2,100 ETFs from 247 sponsors, and at the close of Q2 that has grown to over 3,010 ETFs from 255 sponsors which is the entire listed ETF universe. In connecting these positions to the allocators that hold them in their portfolios, Marketplace helps asset managers make informed decisions on who to call, and what asset classes to potentially focus on. Entities which file with the SEC have 45 days to file their positions after the close of the quarter. We often see major headlines during this timeframe that buffet, major institutional investors and hedge funds may have bought or sold individual stocks... while that info is timely and makes news, it is not extremely useful to investment sales professionals. What is useful is connecting that ETF, BDC, and CEF position with an end allocator whether it be FA/RIA/Institutions, and making sure the contact information and firm information is accurate so you know how to connect with that allocator. With the latest Q2 filing window closed, we wanted to quickly highlight the overall trends we saw across all exchange traded packed products. Changes in asset growth and sponsor firms 2nd highest quarter of net new asset growth in the filings, with over $189 billion in net flows into ETF products More firms have launched products for the first time, taking existing ETF sponsors from 240 to 255 Overall, $6.4 trillion is now invested via ETFs/ETP vehicles Hi-level takeaways from the filings: Biggest net new asset change we saw from the q1 filings to the latest were all had rates/yields as a common factor as the 10yr Treasury yield went from 2.3 to 3% and the 2yr Treasury from 2.35% to 2.8%. Drove flows into ETFs that benefited from higher interest rates across the board, from financials to high quality investment grade and government bonds across the curve. We saw insurance and pension as more recent buyer group as well in fixed income ETFs. This would not have been common a few years ago due to the change in capital charges via the NAIC. Those fixed income ETFs took the place of the large cap equity, international and emerging market equity flows we saw in the Q1 filings Looking at ETP/ETN vehicles, which tend to be more thematic or directional in nature, the net asset gains continued to be made commodity plays in both directions and volatility via the VIX etp Below we have highlighted some areas of interest when comparing Q1 and Q2 13F flows -",
+    "sections": [
+      {
+        "type": "section",
+        "level": 1,
+        "title": "Q1-Q2 13F ETF Flow Summary",
+        "content": "At the close of Q1, Marketplace was tracking 2,100 ETFs from 247 sponsors, and at the close of Q2 that has grown to over 3,010 ETFs from 255 sponsors which is the entire listed ETF universe. In connecting these positions to the allocators that hold them in their portfolios, Marketplace helps asset managers make informed decisions on who to call, and what asset classes to potentially focus on. Entities which file with the SEC have 45 days to file their positions after the close of the quarter. We often see major headlines during this timeframe that buffet, major institutional investors and hedge funds may have bought or sold individual stocks... while that info is timely and makes news, it is not extremely useful to investment sales professionals. What is useful is connecting that ETF, BDC, and CEF position with an end allocator whether it be FA/RIA/Institutions, and making sure the contact information and firm information is accurate so you know how to connect with that allocator. With the latest Q2 filing window closed, we wanted to quickly highlight the overall trends we saw across all exchange traded packed products. Changes in asset growth and sponsor firms 2nd highest quarter of net new asset growth in the filings, with over $189 billion in net flows into ETF products More firms have launched products for the first time, taking existing ETF sponsors from 240 to 255 Overall, $6.4 trillion is now invested via ETFs/ETP vehicles Hi-level takeaways from the filings: Biggest net new asset change we saw from the q1 filings to the latest were all had rates/yields as a common factor as the 10yr Treasury yield went from 2.3 to 3% and the 2yr Treasury from 2.35% to 2.8%. Drove flows into ETFs that benefited from higher interest rates across the board, from financials to high quality investment grade and government bonds across the curve. We saw insurance and pension as more recent buyer group as well in fixed income ETFs. This would not have been common a few years ago due to the change in capital charges via the NAIC. Those fixed income ETFs took the place of the large cap equity, international and emerging market equity flows we saw in the Q1 filings Looking at ETP/ETN vehicles, which tend to be more thematic or directional in nature, the net asset gains continued to be made commodity plays in both directions and volatility via the VIX etp Below we have highlighted some areas of interest when comparing Q1 and Q2 13F flows -",
+        "bullet_points": [],
+        "subsections": []
+      }
+    ],
+    "key_takeaways": [],
+    "faqs": []
+  },
+  "structure": {
+    "heading_count": 1,
+    "bullet_points": 0,
+    "paragraphs": 13,
+    "sections_count": 1
+  },
+  "source": {
+    "type": "dakota_learning_center_excel",
+    "excel_index": 285,
+    "original_url": "https://www.dakota.com/resources/blog/q1-q2-13f-etf-flow-summary",
+    "extraction_date": "2025-07-31T19:35:08.273520"
+  },
+  "analysis": {
+    "word_count": 423,
+    "character_count": 2475,
+    "estimated_read_time": "2 minutes",
+    "dakota_indicators": [],
+    "investment_terms": [
+      "portfolio",
+      "asset",
+      "investment",
+      "market",
+      "equity",
+      "bond",
+      "fund",
+      "etf"
+    ],
+    "content_hash": "eab4a7b8a12b9711e7321bcda89cf0e5"
+  }
+}
