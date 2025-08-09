@@ -230,6 +230,16 @@ class ChatOrchestrator:
                 "prompt_file": "dakota-evidence-packager.md",
                 "tools": [TOOL_DEFINITIONS["write_file"]],
                 "temperature": 0.1
+            },
+            # Metadata
+            {
+                "name": "metadata_generator",
+                "prompt_file": "dakota-metadata-generator.md",
+                "tools": [
+                    TOOL_DEFINITIONS["read_file"],
+                    TOOL_DEFINITIONS["write_file"]
+                ],
+                "temperature": 0.1
             }
         ]
         
@@ -238,7 +248,7 @@ class ChatOrchestrator:
             self.manager.create_agent_from_prompt(
                 name=config["name"],
                 prompt_file=config["prompt_file"],
-                model=DEFAULT_MODELS.get(config["name"].replace("_", ""), "gpt-4-turbo-preview"),
+                model=DEFAULT_MODELS.get(config["name"].replace("_", ""), "gpt-4.1"),
                 temperature=config.get("temperature", 0.7),
                 tools=config.get("tools", []),
                 tool_handlers=self.tool_handlers
@@ -614,6 +624,48 @@ Requirements:
             # Phase 7: Distribution
             distribution = await self.phase7_distribution(article_path, run_dir)
             
+            # Phase 8: Generate comprehensive metadata
+            print("\n📊 Phase 8: Generating comprehensive metadata...")
+            metadata_path = os.path.join(run_dir, "metadata.json")
+            
+            # Collect validation data
+            validation_data = {
+                "overall_credibility": validation.get("fact_verification_report", {}).get("credibility_score", 0),
+                "fact_accuracy": validation.get("fact_verification_report", {}).get("fact_accuracy", 0),
+                "source_quality": validation.get("fact_verification_report", {}).get("source_quality", 0),
+                "data_freshness": validation.get("fact_verification_report", {}).get("data_freshness", {}).get("freshness_score", 0)
+            }
+            
+            # Collect all data for metadata generation
+            metadata_prompt = f"""Generate comprehensive metadata for the article using ONLY REAL DATA.
+
+INPUTS PROVIDED:
+- Topic: {topic}
+- Article Path: {article_path}
+- Evidence Pack: {proof_path if ENABLE_EVIDENCE else 'N/A'}
+- Generation Time: {elapsed:.1f} seconds
+- Iterations: {iteration_count}
+- Token Usage: {json.dumps(self.token_usage, indent=2)}
+- Quality Scores: {json.dumps(validation_data, indent=2)}
+- Start Time: {start_time}
+
+REQUIRED ACTIONS:
+1. READ the article at {article_path} to count words, sentences, paragraphs
+2. EXTRACT all URLs from the article markdown
+3. PARSE all dates mentioned in the article
+4. COUNT statistics, citations, and Dakota references
+5. CALCULATE exact costs from token usage data
+6. EXTRACT real keywords from article content
+7. FIND actual related Dakota articles mentioned
+
+NO MOCK DATA - Every value must be calculated or extracted from real files.
+
+Save the complete metadata JSON to: {metadata_path}"""
+
+            metadata_result = await self.manager.run_agent("metadata_generator", metadata_prompt)
+            if "usage" in metadata_result:
+                self.token_usage["metadata_generator"] = metadata_result["usage"]
+            
             # Generate quality report
             quality_report = self._generate_quality_report(
                 topic, article_path, validation, enhancements, 
@@ -636,6 +688,7 @@ Requirements:
                 "run_dir": run_dir,
                 "article_path": article_path,
                 "proof_path": proof_path if ENABLE_EVIDENCE else None,
+                "metadata_path": metadata_path,
                 "distribution": distribution,
                 "quality_report": report_path,
                 "iterations": iteration_count,

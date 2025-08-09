@@ -78,7 +78,7 @@ def main():
         assistant = client.beta.assistants.create(
             name="Test Assistant",
             instructions="Search for information",
-            model="gpt-4-turbo-preview",
+            model="gpt-4.1",
             tools=[{
                 "type": "file_search",
                 "file_search": {

@@ -8,12 +8,14 @@ from typing import Dict, Any, List, Tuple
 from datetime import datetime, timedelta
 import json
 from urllib.parse import urlparse
+from .data_freshness_validator import DataFreshnessValidator
 
 
 class FactVerificationSystem:
     """Comprehensive fact verification with source validation"""
     
     def __init__(self):
+        self.data_validator = DataFreshnessValidator()
         self.credibility_scores = {
             # Government/Official - Highest credibility
             "sec.gov": 10,
@@ -55,7 +57,7 @@ class FactVerificationSystem:
         }
     
     def verify_article_facts(self, article_text: str) -> Dict[str, Any]:
-        """Comprehensive fact verification of article"""
+        """Comprehensive fact verification of article including data freshness"""
         
         # Extract all facts and claims
         facts = self._extract_facts(article_text)
@@ -63,14 +65,30 @@ class FactVerificationSystem:
         # Extract all sources
         sources = self._extract_sources(article_text)
         
+        # Verify data freshness
+        freshness_results = self.data_validator.validate_article_freshness(article_text)
+        
         # Verify each fact
         verification_results = []
         for fact in facts:
             result = self._verify_fact(fact, sources)
+            # Add freshness check for date-based facts
+            if fact["type"] == "date_claim" and fact["claim"]:
+                date_analysis = self._check_fact_freshness(fact["claim"])
+                if date_analysis and not date_analysis["is_current"]:
+                    result["issues"].append(f"Outdated data: {date_analysis['recommendation']}")
+                    result["confidence"] *= 0.7
             verification_results.append(result)
         
         # Check source quality
         source_analysis = self._analyze_sources(sources)
+        
+        # Add freshness issues
+        freshness_issues = []
+        if not freshness_results["is_fresh"]:
+            freshness_issues.append("Article contains outdated data")
+        if not freshness_results["has_current_year_data"]:
+            freshness_issues.append(f"No current year ({datetime.now().year}) data found")
         
         # Generate report
         return {
@@ -81,7 +99,9 @@ class FactVerificationSystem:
             "source_analysis": source_analysis,
             "verification_details": verification_results,
             "overall_credibility": self._calculate_overall_credibility(verification_results, source_analysis),
-            "issues": self._identify_issues(verification_results, source_analysis)
+            "issues": self._identify_issues(verification_results, source_analysis) + freshness_issues,
+            "data_freshness": freshness_results,
+            "freshness_recommendations": freshness_results.get("recommendations", [])
         }
     
     def _extract_facts(self, text: str) -> List[Dict[str, Any]]:
@@ -193,6 +213,33 @@ class FactVerificationSystem:
                 result["confidence"] *= 0.8
         
         return result
+    
+    def _check_fact_freshness(self, fact_text: str) -> Dict[str, Any]:
+        """Check if a specific fact is current"""
+        dates = self.data_validator.extract_dates_from_text(fact_text)
+        if not dates:
+            return None
+            
+        # Get the most recent date mentioned
+        latest_date = None
+        for date_info in dates:
+            parsed = self.data_validator.parse_date_to_datetime(date_info)
+            if parsed and (not latest_date or parsed > latest_date):
+                latest_date = parsed
+        
+        if latest_date:
+            age_days = self.data_validator.calculate_age_in_days(latest_date)
+            freshness = self.data_validator.categorize_data_freshness(age_days, 'general')
+            
+            return {
+                "date": latest_date,
+                "age_days": age_days,
+                "is_current": freshness["is_acceptable"],
+                "category": freshness["category"],
+                "recommendation": freshness["recommendation"]
+            }
+        
+        return None
     
     def _analyze_sources(self, sources: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze source quality and diversity"""
@@ -311,16 +358,26 @@ class EnhancedFactChecker:
         # Run comprehensive verification
         verification = self.verifier.verify_article_facts(article_text)
         
-        # Determine if approved
+        # Check data freshness
+        data_freshness = verification.get("data_freshness", {})
+        freshness_approved = (
+            data_freshness.get("is_fresh", False) and
+            data_freshness.get("has_current_year_data", False)
+        )
+        
+        # Determine if approved (including freshness)
         approved = (
             verification["overall_credibility"] >= min_credibility and
             verification["fact_accuracy_rate"] >= 0.9 and
-            len(verification["issues"]) == 0
+            len(verification["issues"]) == 0 and
+            freshness_approved
         )
         
         # Generate detailed report
         report = {
             "approved": approved,
+            "data_freshness": data_freshness,
+            "freshness_recommendations": verification.get("freshness_recommendations", []),
             "credibility_score": verification["overall_credibility"],
             "fact_accuracy": verification["fact_accuracy_rate"],
             "total_facts_checked": verification["total_facts"],

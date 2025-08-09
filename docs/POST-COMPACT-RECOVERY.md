@@ -35,7 +35,7 @@ Remember the system has 9 phases:
 - Phase 3: Synthesis
 - Phase 4: Content Creation
 - Phase 5: Parallel Enhancement (SEO + Metrics)
-- Phase 6: Validation (Fact + Claim check)
+- Phase 6: Validation (Fact + Claim check + Data Freshness)
 - Phase 6.5: Iteration (if needed)
 - Phase 7: Distribution (Summary + Social)
 
@@ -45,10 +45,12 @@ Remember the system has 9 phases:
 - All facts must have citations
 - Sources must score 6+ credibility
 - Automatic iteration up to 3 times
+- 100% data freshness enforcement
+- Must have current year (2025) data
 
 ### 3. **Key Commands Often Forgotten**
 ```bash
-# Generate with auto topic
+# Generate with auto topic (KB-aware)
 python main_chat.py generate --auto
 
 # Quick 500-word brief
@@ -66,7 +68,12 @@ python main_chat.py topics
 - Agents defined by .md prompts in src/prompts/
 - Parallel execution via asyncio.gather()
 - Vector store for KB search
-- Token tracking per agent
+- Token tracking per agent (~$1.67 per article)
+- GPT-5 for complex tasks, GPT-4.1 for efficient ops (production models)
+- GPT's built-in web search (no web_search tool)
+- Data freshness validation integrated
+- No "I" statements, limited "we/our"
+- Dakota CTAs at article end
 
 ## Feature Documentation
 Check these based on what you were working on:
@@ -75,6 +82,14 @@ Check these based on what you were working on:
 - `/docs/features/parallel-execution.md` - Async orchestration
 - `/docs/features/auto-topics.md` - Topic generation
 - `/docs/features/quality-iteration.md` - Automatic fixes
+- `/docs/DATA_FRESHNESS_GUARANTEE.md` - Data freshness system
+- `/docs/METADATA_SPECIFICATION.md` - Metadata structure and extraction
+- `/docs/PIPELINE_ACCURACY_FLOW.md` - Post-approval distribution
+- `/docs/UPDATING_KNOWLEDGE_BASE.md` - KB update procedures
+- `/docs/ADDING_LEARNING_CENTER_ARTICLES.md` - Article addition guide
+- `/src/tools/data_freshness_validator.py` - Freshness validation
+- `/src/utils/topic_generator.py` - KB-aware topic generation
+- `/src/prompts/dakota-metadata-generator.md` - Metadata prompt
 
 ## Quick Diagnostic Commands
 ```bash
@@ -110,9 +125,62 @@ grep -B2 -A2 "gather" src/pipeline/chat_orchestrator.py
    - Prompts in `src/prompts/dakota-*.md`
    - Logic in `src/pipeline/chat_orchestrator.py`
 
+## Recent Enhancements
+
+### 1. **Data Freshness Validation**
+- Automated date extraction and validation
+- Multi-layer enforcement (research → writing → validation)
+- Rejects articles without current year data
+- Specific freshness rules by data type
+
+### 2. **Dakota-Specific Features**
+- Focus on real allocation data
+- RFP and search activity tracking
+- Target investor types (RIAs, Family Offices, etc.)
+- Fundraising application insights
+- Dakota Way integration
+
+### 3. **KB-Aware Topic Generation**
+- Analyzes existing content to avoid duplicates
+- Identifies content gaps
+- Aligns with Dakota's focus areas
+
+### 4. **GPT's Built-in Search**
+- Web researcher uses GPT's native search
+- No separate web_search tool needed
+- Automatic current data searches
+
+### 5. **Comprehensive Metadata**
+- Real data extraction (no mock values)
+- SEO optimization data
+- Cost tracking and analytics
+- Content relationship mapping
+- Generation metrics
+
+### 6. **Post-Approval Distribution**
+- Summary/social only after fact-checking
+- Uses verified content only
+- Cannot introduce new claims
+- 100% accuracy maintained
+
+### 7. **Knowledge Base Tools**
+- `update_knowledge_base.py` for adding content
+- Incremental updates without recreation
+- Support for individual files or directories
+
+### 8. **Writing & Cost Updates**
+- No "I" or "my" in content
+- Use "we/our" sparingly
+- Dakota CTAs at article end
+- Strategic emojis in social media
+- GPT-5 and GPT-4.1 in production
+- ~$1.67 per standard article
+
 ## Remember
 - The system is already sophisticated
 - Don't rebuild what exists
 - Check feature docs before implementing
 - Simplicity over complexity
 - Quality is non-negotiable
+- Data must be 100% current
+- Focus on fundraising applications

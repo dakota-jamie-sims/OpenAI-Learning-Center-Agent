@@ -92,7 +92,7 @@ class VectorStoreHandler:
             assistant = self.client.beta.assistants.create(
                 name="KB Search Assistant",
                 instructions="You are a search assistant. Return relevant content from the knowledge base.",
-                model="gpt-4-turbo-preview",
+                model="gpt-4.1",
                 tools=[{
                     "type": "file_search",
                     "file_search": {

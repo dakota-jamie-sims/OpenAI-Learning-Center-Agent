@@ -30,7 +30,8 @@ DEFAULT_MODELS = {
     "summary": "gpt-5",                  # High-quality executive summaries
     "social": "gpt-4.1",                 # Social media content
     "evidence": "gpt-5",                 # Critical evidence validation
-    "claims": "gpt-5"                    # Advanced claim verification
+    "claims": "gpt-5",                   # Advanced claim verification
+    "metadata": "gpt-4.1"                # Metadata generation
 }
 
 # Quality Thresholds (ZERO COMPROMISE)
@@ -45,6 +46,13 @@ REQUIRE_ALLOCATION_DATA = True    # Articles should include real allocation amou
 REQUIRE_INVESTOR_TYPES = True     # Must specify RIA, Pension, etc.
 REQUIRE_FUNDRAISING_APPLICATION = True  # Must have practical takeaways
 MIN_DAKOTA_REFERENCES = 2         # Reference existing Dakota content
+
+# Data Freshness Requirements (100% Current Data)
+MAX_AGE_MARKET_DATA_DAYS = 30     # Market data must be within 30 days
+MAX_AGE_ALLOCATION_DATA_DAYS = 90 # Allocation data within 90 days
+MAX_AGE_GENERAL_DATA_DAYS = 180   # General data within 6 months
+REQUIRE_CURRENT_YEAR_DATA = True  # Must have 2025 data
+REQUIRE_DATED_CITATIONS = True    # All citations must include dates
 
 # Target Audience (Dakota's Database)
 TARGET_INVESTORS = [

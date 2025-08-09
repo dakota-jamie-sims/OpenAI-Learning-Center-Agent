@@ -1,116 +1,169 @@
-# Dakota Learning Center Article Generation System - Main Context
+# Dakota Learning Center Article Generation System - Architecture
 
 ## Project Overview
-This is an AI-powered article generation system for Dakota's Learning Center that creates high-quality investment education content with zero compromise on accuracy. It uses OpenAI's Chat Completions API with a sophisticated multi-agent architecture.
+This is an AI-powered article generation system for Dakota's Learning Center that creates high-quality investment education content with zero compromise on accuracy. It uses OpenAI's Chat Completions API with a sophisticated multi-agent architecture. Dakota has raised $40+ billion since 2006 and serves 6,000+ fundraisers across 1,400+ investment firms.
 
 ## Core Mission
 Generate institutional-quality investment articles that:
-- Meet Dakota's educational standards
-- Contain 100% verified facts with credible sources
-- Provide actionable insights for institutional investors
-- Maintain consistency with Dakota's investment philosophy
+- Meet Dakota's educational standards with 100% current data
+- Contain verified facts with credible, dated sources
+- Provide actionable insights for fundraisers and allocators
+- Focus on "What Matters Most" for investment sales professionals
+- Include real allocation data and RFP activity
 
 ## System Architecture
 
 ### 1. **Technology Stack**
 - **API**: OpenAI Chat Completions (NOT Assistants API)
+- **Models**: GPT-5 and GPT-4.1 (released models in production)
 - **Language**: Python 3.8+ with asyncio
-- **Vector Store**: OpenAI vector store for knowledge base
+- **Vector Store**: OpenAI vector store for Dakota knowledge base
 - **Execution**: Parallel agent orchestration
+- **Data Validation**: Real-time freshness checking
+- **Metadata**: Comprehensive tracking with real data extraction
+- **Cost**: ~$1.67 per standard article
 
-### 2. **Agent System (12 Specialized Agents)**
+### 2. **Agent System (13 Specialized Agents)**
 ```
 Research Phase (Parallel):
-├── Web Researcher - Searches credible web sources
-└── KB Researcher - Searches Dakota knowledge base via vector store
+├── Web Researcher - Searches for current allocation data, RFP activity
+└── KB Researcher - Searches Dakota Way content and knowledge base
 
 Synthesis Phase:
-└── Research Synthesizer - Combines findings
+└── Research Synthesizer - Combines findings with fundraising focus
 
 Content Phase:
-├── Content Writer - Creates article with citations
-└── Evidence Packager - Creates proof pack
+├── Content Writer - Creates article with dated citations
+└── Evidence Packager - Creates verification proof pack
 
 Enhancement Phase (Parallel):
 ├── SEO Specialist - Metadata and keywords
-└── Metrics Analyzer - Quality metrics
+└── Metrics Analyzer - Quality metrics and data freshness
 
 Validation Phase:
-├── Fact Checker - Verifies all facts and sources
-├── Claim Checker - Validates accuracy
-└── Iteration Manager - Fixes issues
+├── Fact Checker - Verifies facts, sources, and data currency
+├── Claim Checker - Validates accuracy and dates
+└── Iteration Manager - Fixes issues including outdated data
 
-Distribution Phase (Parallel):
-├── Summary Writer - Executive summary
-└── Social Promoter - Social media content
+Distribution Phase (Parallel) - After Approval Only:
+├── Summary Writer - Executive summary from fact-checked article
+└── Social Promoter - Social media content from verified facts
+
+Metadata Phase:
+└── Metadata Generator - Comprehensive metrics and SEO data
 ```
 
 ### 3. **Quality Standards**
 - **Minimum Credibility**: 80% overall score
 - **Fact Accuracy**: 90% verified facts
+- **Data Freshness**: 100% current data required
+  - Market data: Within 30 days
+  - Allocation data: Within 90 days
+  - General data: Within 180 days
 - **Word Count**: Configurable (default 2000+)
 - **Sources**: Configurable (default 12+)
+- **Dakota References**: Minimum 2 internal links
 - **Max Iterations**: 3 attempts to meet quality
 
 ### 4. **Source Credibility Hierarchy**
 ```
-10/10: Government (.gov), Central banks, IMF, World Bank
+10/10: Government (.gov), Central banks, SEC, Federal Reserve
 9/10:  Academic journals, NBER, JSTOR
 8/10:  Bloomberg, Reuters, WSJ, FT, Morningstar
 7/10:  Industry organizations (CFA Institute)
-6/10:  CNBC, MarketWatch
+6/10:  CNBC, MarketWatch, established media
 3-4/10: Blogs, Medium, SeekingAlpha
-2/10:  Forums, Reddit (avoided)
+2/10:  Forums, Reddit, social media (avoided)
 ```
+
+### 5. **Target Audience (Dakota's Database)**
+- RIAs (Registered Investment Advisors)
+- Family Offices & Multi-Family Offices
+- Public & Corporate Pension Funds
+- Endowments & Foundations
+- OCIOs & Institutional Consultants
+- Insurance Companies
+- Fund of Funds
+- Healthcare Systems
+- Bank Trusts & Broker Dealers
 
 ## Key Features
 
 ### 1. **Configurable Generation**
 - `--quick`: 500-word briefs
 - `--words N`: Custom word count
-- `--auto`: AI-generated topics
+- `--auto`: AI-generated topics with KB awareness
 - `--no-kb`: Skip knowledge base
 
 ### 2. **Parallel Execution**
 - Research: Web + KB simultaneously
 - Enhancement: SEO + Metrics together
-- Distribution: Summary + Social in parallel
+- Distribution: Summary + Social in parallel (after approval)
 - ~40% faster than sequential
 
-### 3. **Automatic Quality Control**
-- Extracts all factual claims
-- Verifies each has credible citation
-- Checks URL accessibility
-- Iterates to fix issues automatically
+### 3. **Data Freshness Validation**
+- Automated date extraction and parsing
+- Contextual freshness rules by data type
+- Real-time validation during fact-checking
+- Rejection of outdated information
+- Specific recommendations for updates
 
-### 4. **Output Package**
+### 4. **Dakota-Specific Features**
+- Focus on allocation data and investor activity
+- Integration with Dakota Way principles
+- Fundraising application insights
+- RFP and search tracking
+- Fee and terms intelligence
+
+### 5. **Output Package**
 ```
 runs/[timestamp]-[topic]/
-├── [slug]-article.md         # Main article
-├── evidence-pack.json        # Source verification
-├── quality-report.md         # Performance metrics
-├── fact-check-report.md      # Detailed verification
-├── executive-summary.md      # Summary
-├── social-media.md          # Social posts
-└── seo-metadata.json        # SEO data
+├── [slug]-article.md         # Main article with dated citations
+├── metadata.json            # Comprehensive metrics, SEO, costs (NEW)
+├── evidence-pack.json        # Source verification with dates
+├── quality-report.md         # Performance & freshness metrics
+├── fact-check-report.md      # Detailed verification & dates
+├── executive-summary.md      # Summary for fundraisers (post-approval)
+├── social-media.md          # Social posts (post-approval)
+└── seo-metadata.json        # SEO data (now in metadata.json)
 ```
+
+## Data Freshness System
+
+### Multi-Layer Validation
+1. **Research Phase**: Web researcher mandates current data
+2. **Writing Phase**: Content writer timestamps all data
+3. **Validation Phase**: Fact checker verifies all dates
+4. **Final Check**: Rejects if missing current year data
+
+### Automated Tools
+- `DataFreshnessValidator`: Extracts and analyzes all dates
+- `EnhancedFactChecker`: Integrates freshness validation
+- Configuration controls for maximum data age
+- Detailed freshness reports with recommendations
 
 ## Current State & Capabilities
 
 ### ✅ Implemented
 - Full Chat Completions API pipeline
-- Vector store integration
+- Vector store with Dakota Way content
 - Parallel agent execution
-- Comprehensive fact-checking
+- Comprehensive fact-checking with dates
+- Data freshness validation system
 - Automatic quality iteration
 - Token/cost tracking
-- Configurable parameters
-- Auto topic generation
+- KB-aware topic generation
+- Real URL verification
+- Dakota-specific enhancements
+- Comprehensive metadata generation
+- Post-approval distribution flow
 
-### 🚧 Limitations
-- Web search currently simulated (needs real API)
-- URL verification simulated (needs real HTTP)
-- Vector store requires manual setup
+### 🎯 Optimized For
+- Fundraising professionals
+- Current market intelligence
+- Allocation tracking
+- RFP activity monitoring
+- Investor preference insights
 
 ## Quick Start Commands
 ```bash
@@ -123,11 +176,17 @@ python main_chat.py generate "Your topic"
 # Quick brief
 python main_chat.py generate "Topic" --quick
 
-# Auto topic
+# Auto topic with KB awareness
 python main_chat.py generate --auto
+
+# Get topic suggestions
+python main_chat.py topics
 
 # Check config
 python main_chat.py config
+
+# Test generation
+python main_chat.py test
 ```
 
 ## Project Structure
@@ -137,10 +196,13 @@ python main_chat.py config
 │   ├── agents/          # Agent implementations
 │   ├── pipeline/        # Orchestrators
 │   ├── prompts/         # Agent instructions (.md)
-│   ├── tools/           # Fact verification, vector store
+│   ├── tools/           # Fact verification, freshness validation
+│   ├── utils/           # Topic generator, helpers
 │   └── config_enhanced.py
-├── knowledge_base/      # Dakota materials
-├── context-docs/        # This documentation
+├── knowledge_base/      # Dakota Way & Learning Center content
+│   ├── dakota_way/      # The Dakota Way chapters
+│   └── learning_center/ # 397 educational articles
+├── docs/                # Documentation
 ├── main_chat.py        # Entry point
 └── setup_vector_store.py
 ```
@@ -149,21 +211,57 @@ python main_chat.py config
 - **Pipeline Logic**: `src/pipeline/chat_orchestrator.py`
 - **Configuration**: `src/config_enhanced.py`
 - **Fact Checking**: `src/tools/fact_verification.py`
+- **Data Freshness**: `src/tools/data_freshness_validator.py`
+- **Topic Generator**: `src/utils/topic_generator.py`
 - **Entry Point**: `main_chat.py`
+- **Metadata Generator**: `src/prompts/dakota-metadata-generator.md`
+- **Knowledge Base Updates**: `update_knowledge_base.py`
 
 ## Recovery Checklist
 If returning after break:
 1. Read this document
 2. Check `python main_chat.py config`
-3. Review any feature docs in `/context-docs/features/`
+3. Review `/docs/POST-COMPACT-RECOVERY.md`
 4. Check current todo list
 5. Run `python main_chat.py test`
 
 ## Design Philosophy
-- **Simplicity**: Use existing tools, avoid over-engineering
-- **Quality**: No compromises on accuracy
+- **Focus on What Matters Most**: Dakota's core principle
+- **Current Data Only**: 100% up-to-date information
+- **Fundraising Focus**: Practical applications for sales
+- **Quality Without Compromise**: Automated verification
 - **Efficiency**: Parallel execution where possible
-- **Transparency**: Track all sources and costs
-- **Automation**: Self-correcting system
+- **Transparency**: Track all sources, dates, and costs
 
-Last Updated: 2024-01-09
+## Writing Guidelines
+- **No "I" Statements**: Never use "I" or "my" - too personal
+- **Limited First Person**: Use "we/our" sparingly when necessary
+- **Professional Voice**: Maintain Dakota's authority
+- **Dakota CTAs**: End articles with appropriate Dakota Marketplace or Research CTAs
+
+## Recent Enhancements
+- Dakota-specific content requirements
+- Real-time data freshness validation
+- KB-aware topic generation
+- Enhanced prompts for allocation data
+- Automated date extraction and verification
+- Fundraising application focus
+- Comprehensive metadata generation with real data
+- Post-approval distribution flow for accuracy
+- Knowledge base update tooling
+- No mock data enforcement
+- Strategic emoji usage in social media
+- Dakota CTA integration in articles
+- GPT-5 and GPT-4.1 models in production
+
+## Pipeline Accuracy Flow
+1. **Research → Writing → Enhancement** (can have errors)
+2. **Fact-Checking & Validation** (catches all issues)
+3. **Iteration if needed** (fixes problems)
+4. **APPROVAL** (only if 100% accurate)
+5. **Distribution** (summary/social from approved content)
+6. **Metadata** (real metrics from final article)
+
+This ensures summary and social content are as accurate as the main article.
+
+Last Updated: 2025-01-09

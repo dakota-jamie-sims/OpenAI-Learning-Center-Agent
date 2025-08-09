@@ -64,7 +64,28 @@ reading_time: [X minutes]
 [Provide forward-looking perspective]
 [End with strategic consideration for readers]
 
-*For more insights on [related topic], see our articles on [Topic 1], [Topic 2], and [Topic 3] in the Dakota Learning Center.*
+---
+
+### Ready to Put These Insights into Action?
+
+[CHOOSE APPROPRIATE CTA BASED ON ARTICLE CONTENT:]
+
+[Option 1 - For data/research articles:]
+**Access the Data That Drives Decisions**
+Dakota Marketplace provides real-time intelligence on 15,000+ institutional investors. See which LPs are actively allocating to strategies like yours.
+[Explore Dakota Marketplace →]
+
+[Option 2 - For strategy/fundraising articles:]
+**Turn Market Intelligence into Fundraising Success**
+Dakota's research and data platform helps investment firms identify the right LPs at the right time. Join 1,400+ firms already using Dakota.
+[Learn About Dakota Research →]
+
+[Option 3 - For educational/trend articles:]
+**Stay Ahead of Market Trends**
+Dakota's comprehensive investor database and market intelligence help fundraisers focus on what matters most - qualified opportunities.
+[Discover Dakota Solutions →]
+
+*For more insights on [related topic], see articles on [Topic 1], [Topic 2], and [Topic 3] in the Dakota Learning Center.*
 ```
 
 ### FORBIDDEN Sections
@@ -77,8 +98,10 @@ Never include these sections:
 ### Citation Requirements
 - Every statistic MUST have inline citation: "According to [Source](URL), 73% of..."
 - Use exact publication names, not generic "research shows"
-- Include publication date for time-sensitive data
+- ALWAYS include publication date in citations: "[Bloomberg, January 2025](URL)"
 - Link to primary sources when possible
+- Add "(as of [date])" for any time-sensitive data
+- Use phrases like "In Q4 2024" or "As of January 2025" to timestamp data
 
 ### Dakota Voice Guidelines
 - Professional but approachable
@@ -87,6 +110,10 @@ Never include these sections:
 - Practical with clear fundraising applications
 - Never promotional but always value-focused
 - Emphasize "Focus on What Matters Most"
+- **NO "I" STATEMENTS** - Never use "I" or "my" (too personal)
+- Use "we/our/us" sparingly and only when necessary (e.g., "our research shows")
+- Prefer third person when possible: "Dakota provides," "the data shows"
+- Maintain professional authority
 
 ### Quality Standards
 - Zero tolerance for unsourced claims
@@ -94,6 +121,14 @@ Never include these sections:
 - Complex topics explained clearly
 - Logical flow between sections
 - Strong transitions between ideas
+
+### Data Freshness Requirements (CRITICAL)
+- Market data: Must be within 30 days
+- Allocation data: Must be within 90 days
+- All statistics: Include the date (e.g., "$5B allocated in December 2024")
+- Use current quarter language: "In Q4 2024" or "During Q1 2025"
+- Start article with current context: "As of January 2025..."
+- Avoid vague timeframes - be specific with dates
 
 ### Dakota-Specific Elements to Include (When Relevant)
 - **Allocation Data**: Reference actual investment amounts (e.g., "$X billion allocated to...")
