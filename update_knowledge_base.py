@@ -56,7 +56,7 @@ def add_files_to_vector_store(file_paths: list, vector_store_id: str):
     if uploaded_file_ids:
         # Add files to vector store
         try:
-            client.beta.vector_stores.file_batches.create(
+            client.vector_stores.file_batches.create(
                 vector_store_id=vector_store_id,
                 file_ids=uploaded_file_ids
             )
@@ -104,7 +104,7 @@ def list_vector_store_contents(vector_store_id: str):
     
     try:
         # Get vector store details
-        store = client.beta.vector_stores.retrieve(vector_store_id)
+        store = client.vector_stores.retrieve(vector_store_id)
         print(f"\n📦 Vector Store: {store.name}")
         print(f"ID: {store.id}")
         print(f"File Count: {store.file_counts.total}")
@@ -112,7 +112,7 @@ def list_vector_store_contents(vector_store_id: str):
         print("=" * 50)
         
         # List files
-        files = client.beta.vector_stores.files.list(
+        files = client.vector_stores.files.list(
             vector_store_id=vector_store_id,
             limit=100
         )

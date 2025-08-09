@@ -176,6 +176,19 @@ grep -B2 -A2 "gather" src/pipeline/chat_orchestrator.py
 - GPT-5 and GPT-4.1 in production
 - ~$1.67 per standard article
 
+### 9. **Output Structure Updates**
+- Files save to: `output/Learning Center Articles/YYYY-MM-DD-[topic]/`
+- Simplified to 4 files: article.md, metadata.md, summary.md, social.md
+- All outputs in markdown format
+- Short topic-based filenames
+- Consolidated metadata includes SEO, quality, sources, and costs
+
+### 10. **Knowledge Base Status**
+- 407 files loaded in vector store
+- 397 Learning Center articles
+- 9 Dakota Way chapters
+- Fully operational for semantic search
+
 ## Remember
 - The system is already sophisticated
 - Don't rebuild what exists

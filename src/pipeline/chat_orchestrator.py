@@ -234,7 +234,7 @@ class ChatOrchestrator:
             # Metadata
             {
                 "name": "metadata_generator",
-                "prompt_file": "dakota-metadata-generator.md",
+                "prompt_file": "dakota-metadata-writer.md",
                 "tools": [
                     TOOL_DEFINITIONS["read_file"],
                     TOOL_DEFINITIONS["write_file"]
@@ -327,7 +327,7 @@ Requirements:
             
         return result["content"] or "Synthesis failed"
     
-    async def phase4_content_creation(self, topic: str, synthesis: str, proof_path: str, article_path: str) -> str:
+    async def phase4_content_creation(self, topic: str, synthesis: str, article_path: str) -> str:
         """Phase 4: Write the article"""
         print("\n✍️  Phase 4: Writing article...")
         
@@ -348,7 +348,7 @@ CRITICAL REQUIREMENTS:
 RESEARCH SYNTHESIS:
 {synthesis}
 
-Evidence package: {proof_path if os.path.exists(proof_path) else 'Not available'}
+Evidence package: {getattr(self, '_evidence_content', 'Not available')[:2000]}
 
 Write the complete article now. Use the write_file function to save it."""
 
@@ -375,7 +375,7 @@ Requirements:
 - 5 related article suggestions
 - Schema markup recommendations
 
-Save to: {os.path.join(run_dir, 'seo-metadata.json')}"""))
+Format as markdown sections and return the content (don't save to file)"""))
         
         if ENABLE_METRICS:
             agent_prompts.append(("metrics_analyzer", f"""Analyze quality metrics for article at: {article_path}
@@ -508,6 +508,10 @@ Requirements:
         """Phase 7: Create distribution assets"""
         print("\n📢 Phase 7: Creating distribution assets...")
         
+        # Define output paths
+        summary_path = os.path.join(run_dir, "summary.md")
+        social_path = os.path.join(run_dir, "social.md")
+        
         agent_prompts = []
         
         if ENABLE_SUMMARY:
@@ -518,7 +522,7 @@ Requirements:
 - 250-300 words
 - 3-5 bullet point key takeaways
 - Clear value proposition
-- Save to: {os.path.join(run_dir, 'executive-summary.md')}"""))
+Save to: {summary_path}"""))
         
         if ENABLE_SOCIAL:
             agent_prompts.append(("social_promoter",
@@ -528,7 +532,7 @@ Include:
 - LinkedIn post (1500 characters)
 - Twitter/X thread (5-7 tweets) 
 - Email newsletter teaser (150 words)
-- Save to: {os.path.join(run_dir, 'social-media.md')}"""))
+Save to: {social_path}"""))
         
         if agent_prompts:
             results = await self.manager.run_agents_parallel(agent_prompts)
@@ -554,8 +558,12 @@ Include:
         
         # Setup
         run_dir, slug = run_dir_for_topic(RUNS_DIR, topic)
-        article_path = os.path.join(run_dir, f"{slug}-article.md")
-        proof_path = os.path.join(run_dir, "evidence-pack.json")
+        # Use short topic-based filenames
+        article_filename = f"{slug[:30]}.md" if len(slug) > 30 else f"{slug}.md"
+        article_path = os.path.join(run_dir, article_filename)
+        metadata_path = os.path.join(run_dir, "metadata.md")
+        summary_path = os.path.join(run_dir, "summary.md")
+        social_path = os.path.join(run_dir, "social.md")
         
         try:
             # Initialize agents
@@ -583,17 +591,19 @@ Requirements:
 - Top 25 sources with title, URL, relevance score
 - Key quotes with attribution
 - Confidence levels for claims
-- Save to: {proof_path}"""
+Format as markdown with sections for sources, quotes, and confidence levels. Return the content (don't save to file)."""
                 
                 evidence_result = await self.manager.run_agent("evidence_packager", evidence_prompt)
                 if "usage" in evidence_result:
                     self.token_usage["evidence_packager"] = evidence_result["usage"]
+                # Store evidence content for metadata generation
+                self._evidence_content = evidence_result.get("content", "")
             
             # Phase 3: Synthesis
             synthesis = await self.phase3_synthesis(research)
             
             # Phase 4: Content Creation
-            await self.phase4_content_creation(topic, synthesis, proof_path, article_path)
+            await self.phase4_content_creation(topic, synthesis, article_path)
             
             # Phase 5: Parallel Enhancement
             enhancements = await self.phase5_parallel_enhancement(article_path, topic, run_dir)
@@ -626,7 +636,6 @@ Requirements:
             
             # Phase 8: Generate comprehensive metadata
             print("\n📊 Phase 8: Generating comprehensive metadata...")
-            metadata_path = os.path.join(run_dir, "metadata.json")
             
             # Collect validation data
             validation_data = {
@@ -636,49 +645,57 @@ Requirements:
                 "data_freshness": validation.get("fact_verification_report", {}).get("data_freshness", {}).get("freshness_score", 0)
             }
             
+            # Collect evidence data if available
+            evidence_data = ""
+            if ENABLE_EVIDENCE and hasattr(self, '_evidence_content'):
+                evidence_data = self._evidence_content
+            
+            # Collect SEO data if available
+            seo_data = ""
+            if enhancements and "seo_specialist" in enhancements:
+                seo_data = enhancements["seo_specialist"]
+            
             # Collect all data for metadata generation
-            metadata_prompt = f"""Generate comprehensive metadata for the article using ONLY REAL DATA.
+            metadata_prompt = f"""Generate comprehensive metadata document that consolidates ALL information about this article.
 
 INPUTS PROVIDED:
 - Topic: {topic}
 - Article Path: {article_path}
-- Evidence Pack: {proof_path if ENABLE_EVIDENCE else 'N/A'}
 - Generation Time: {elapsed:.1f} seconds
 - Iterations: {iteration_count}
 - Token Usage: {json.dumps(self.token_usage, indent=2)}
 - Quality Scores: {json.dumps(validation_data, indent=2)}
 - Start Time: {start_time}
+- Evidence Data: {evidence_data[:1000] if evidence_data else 'N/A'}
+- SEO Data: {seo_data[:1000] if seo_data else 'N/A'}
+- Fact Check Report: {json.dumps(validation.get('fact_verification_report', {}), indent=2)[:2000]}
+
+REQUIRED SECTIONS IN METADATA:
+
+1. **Generation Details** - Topic, timestamp, time taken, iterations, models used
+2. **Content Metrics** - Word count, reading time, sentences, paragraphs (READ from article)
+3. **Quality Scores** - Credibility, fact accuracy, source quality, data freshness
+4. **SEO Optimization** - Title, description, keywords (from SEO data or generate)
+5. **Sources & Evidence** - List all sources with credibility scores (from evidence/article)
+6. **Fact Check Summary** - Key findings from fact verification
+7. **Token Usage & Cost** - Detailed breakdown by agent with total cost
+8. **Distribution Strategy** - Target audience, best publishing time
 
 REQUIRED ACTIONS:
-1. READ the article at {article_path} to count words, sentences, paragraphs
-2. EXTRACT all URLs from the article markdown
-3. PARSE all dates mentioned in the article
-4. COUNT statistics, citations, and Dakota references
-5. CALCULATE exact costs from token usage data
-6. EXTRACT real keywords from article content
-7. FIND actual related Dakota articles mentioned
+1. READ the article at {article_path} to extract all data
+2. CALCULATE exact metrics from real content
+3. EXTRACT all sources and URLs
+4. COMPUTE actual costs from token data
 
-NO MOCK DATA - Every value must be calculated or extracted from real files.
+NO MOCK DATA - Every value must be real.
 
-Save the complete metadata JSON to: {metadata_path}"""
+Save the complete consolidated metadata as a Markdown document to: {metadata_path}"""
 
             metadata_result = await self.manager.run_agent("metadata_generator", metadata_prompt)
             if "usage" in metadata_result:
                 self.token_usage["metadata_generator"] = metadata_result["usage"]
             
-            # Generate quality report
-            quality_report = self._generate_quality_report(
-                topic, article_path, validation, enhancements, 
-                iteration_count, self.token_usage
-            )
-            report_path = os.path.join(run_dir, "quality-report.md")
-            write_text(report_path, quality_report)
-            
-            # Generate fact-check report
-            if validation.get("fact_verification_report"):
-                fact_report = self._generate_fact_check_report(validation["fact_verification_report"])
-                fact_report_path = os.path.join(run_dir, "fact-check-report.md")
-                write_text(fact_report_path, fact_report)
+            # Quality and fact-check reports are now consolidated into metadata.md
             
             elapsed = time.time() - start_time
             
@@ -687,7 +704,8 @@ Save the complete metadata JSON to: {metadata_path}"""
                 "topic": topic,
                 "run_dir": run_dir,
                 "article_path": article_path,
-                "proof_path": proof_path if ENABLE_EVIDENCE else None,
+                "summary_path": summary_path,
+                "social_path": social_path,
                 "metadata_path": metadata_path,
                 "distribution": distribution,
                 "quality_report": report_path,

@@ -243,14 +243,18 @@ def generate(topic: str, model: str, debug: bool, no_kb: bool, words: int, quick
         table.add_column("Location", style="yellow")
         
         table.add_row("Article", results['article_path'])
-        table.add_row("Quality Report", results['quality_report'])
+        table.add_row("Metadata", results.get('metadata_path', 'metadata.md'))
         
-        if results.get('proof_path'):
-            table.add_row("Evidence Pack", results['proof_path'])
+        if results.get('summary_path'):
+            table.add_row("Summary", results['summary_path'])
+        
+        if results.get('social_path'):
+            table.add_row("Social Media", results['social_path'])
             
         if results.get('distribution'):
             for asset, path in results['distribution'].items():
-                table.add_row(f"{asset.replace('_', ' ').title()}", path)
+                if asset not in ['summary_writer', 'social_promoter']:
+                    table.add_row(f"{asset.replace('_', ' ').title()}", path)
         
         table.add_row("Run Directory", results['run_dir'])
         
@@ -377,7 +381,8 @@ def test():
     
     from click.testing import CliRunner
     runner = CliRunner()
-    result = runner.invoke(generate, [test_topic, '--debug'])
+    # Use input parameter to auto-confirm and skip KB
+    result = runner.invoke(generate, [test_topic, '--no-kb'], input='y\n')
     
     if result.exit_code == 0:
         console.print("[green]✅ Test completed successfully![/green]")

@@ -7,8 +7,13 @@ def slugify(value: str) -> str:
 
 def run_dir_for_topic(base_dir: str, topic: str) -> tuple[str, str]:
     slug = slugify(topic)
+    # Shorten slug to max 50 chars
+    if len(slug) > 50:
+        slug = slug[:50].rstrip('-')
     date = datetime.date.today().isoformat()
-    path = os.path.join(base_dir, f"{date}-{slug}")
+    # Create path: output/Learning Center Articles/YYYY-MM-DD-slug/
+    learning_center_dir = os.path.join(base_dir, "Learning Center Articles")
+    path = os.path.join(learning_center_dir, f"{date}-{slug}")
     os.makedirs(path, exist_ok=True)
     return path, slug
 

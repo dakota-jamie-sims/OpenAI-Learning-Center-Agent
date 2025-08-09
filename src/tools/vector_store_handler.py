@@ -25,7 +25,7 @@ class VectorStoreHandler:
         if existing_id:
             try:
                 # Verify it still exists
-                store = self.client.beta.vector_stores.retrieve(existing_id)
+                store = self.client.vector_stores.retrieve(existing_id)
                 self.vector_store_id = existing_id
                 print(f"✅ Using existing vector store: {existing_id}")
                 return existing_id
@@ -33,7 +33,7 @@ class VectorStoreHandler:
                 print(f"⚠️ Existing vector store {existing_id} not found, creating new one")
         
         # Create new vector store
-        vector_store = self.client.beta.vector_stores.create(name=name)
+        vector_store = self.client.vector_stores.create(name=name)
         self.vector_store_id = vector_store.id
         
         # Save to .env for future use
@@ -71,7 +71,7 @@ class VectorStoreHandler:
         
         # Add files to vector store
         if self.file_ids and self.vector_store_id:
-            self.client.beta.vector_stores.file_batches.create(
+            self.client.vector_stores.file_batches.create(
                 vector_store_id=self.vector_store_id,
                 file_ids=self.file_ids
             )

@@ -117,15 +117,11 @@ Metadata Phase:
 
 ### 5. **Output Package**
 ```
-runs/[timestamp]-[topic]/
-├── [slug]-article.md         # Main article with dated citations
-├── metadata.json            # Comprehensive metrics, SEO, costs (NEW)
-├── evidence-pack.json        # Source verification with dates
-├── quality-report.md         # Performance & freshness metrics
-├── fact-check-report.md      # Detailed verification & dates
-├── executive-summary.md      # Summary for fundraisers (post-approval)
-├── social-media.md          # Social posts (post-approval)
-└── seo-metadata.json        # SEO data (now in metadata.json)
+output/Learning Center Articles/[YYYY-MM-DD]-[topic-slug]/
+├── [topic-slug].md          # Main article with dated citations
+├── metadata.md              # Consolidated metrics, SEO, sources, quality scores
+├── summary.md               # Executive summary (post-approval)
+└── social.md                # Social media content (post-approval)
 ```
 
 ## Data Freshness System
@@ -253,6 +249,11 @@ If returning after break:
 - Strategic emoji usage in social media
 - Dakota CTA integration in articles
 - GPT-5 and GPT-4.1 models in production
+- Simplified output structure with date-prefixed folders
+- All outputs in markdown format
+- Consolidated files (4 instead of 8)
+- Short topic-based filenames
+- 407 files loaded in knowledge base
 
 ## Pipeline Accuracy Flow
 1. **Research → Writing → Enhancement** (can have errors)

@@ -10,7 +10,8 @@ load_dotenv()
 
 # Directory Configuration
 PROJECT_ROOT = Path(__file__).parent.parent
-RUNS_DIR = PROJECT_ROOT / "runs"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+RUNS_DIR = OUTPUT_DIR  # For backward compatibility
 KNOWLEDGE_BASE_DIR = PROJECT_ROOT / "knowledge_base"
 
 # API Configuration
