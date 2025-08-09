@@ -1,6 +1,7 @@
 """
-Enhanced Configuration for Zero-Compromise Quality
+Recommended Configuration with Actual OpenAI Models
 Dakota Learning Center Article Generation System
+Updated: August 2025
 """
 import os
 from pathlib import Path
@@ -17,20 +18,61 @@ KNOWLEDGE_BASE_DIR = PROJECT_ROOT / "knowledge_base"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID")
 
-# Model Selection (Optimized for GPT-5 and GPT-4.1)
+# Model Selection - BALANCED CONFIGURATION (Quality + Cost)
+# Using actual OpenAI models available as of August 2025
 DEFAULT_MODELS = {
-    "web_researcher": "gpt-4.1",         # Fast, efficient research
-    "kb_researcher": "gpt-4.1",          # Knowledge base integration
-    "synthesizer": "gpt-5",              # Advanced synthesis capabilities
-    "writer": "gpt-5",                   # Premium content generation
-    "factchecker": "gpt-5",              # Maximum accuracy verification
-    "iteration": "gpt-5",                # Advanced self-improvement
-    "metrics": "gpt-4.1",                # Standard metrics analysis
-    "seo": "gpt-4.1",                    # SEO optimization
-    "summary": "gpt-5",                  # High-quality executive summaries
-    "social": "gpt-4.1",                 # Social media content
-    "evidence": "gpt-5",                 # Critical evidence validation
-    "claims": "gpt-5"                    # Advanced claim verification
+    # Critical quality agents - use GPT-4 Turbo for best results
+    "writer": "gpt-4-turbo",           # Premium content generation (1,750+ words)
+    "factchecker": "gpt-4-turbo",      # Critical accuracy verification
+    "synthesizer": "gpt-4-turbo",      # Complex synthesis task
+    
+    # Research and analysis agents - use GPT-4o for good performance
+    "web_researcher": "gpt-4o",        # Web search and synthesis
+    "kb_researcher": "gpt-4o",         # Knowledge base analysis
+    "evidence": "gpt-4o",              # Evidence verification
+    "claims": "gpt-4o",                # Claims validation
+    "iteration": "gpt-4o",             # Improvement reasoning
+    
+    # Supporting agents - use GPT-4o-mini for efficiency
+    "summary": "gpt-4o-mini",          # Summary generation
+    "metrics": "gpt-4o-mini",          # Metrics analysis
+    
+    # Low-complexity agents - use GPT-3.5 Turbo for cost savings
+    "seo": "gpt-3.5-turbo",           # SEO optimization
+    "social": "gpt-3.5-turbo"         # Social media content
+}
+
+# Alternative Model Configurations
+HIGH_QUALITY_MODELS = {
+    # Use GPT-4 Turbo for all complex tasks
+    "web_researcher": "gpt-4-turbo",
+    "kb_researcher": "gpt-4-turbo",
+    "synthesizer": "gpt-4-turbo",
+    "writer": "gpt-4-turbo",
+    "factchecker": "gpt-4-turbo",
+    "iteration": "gpt-4-turbo",
+    "evidence": "gpt-4-turbo",
+    "claims": "gpt-4-turbo",
+    "summary": "gpt-4o",
+    "metrics": "gpt-4o",
+    "seo": "gpt-4o",
+    "social": "gpt-3.5-turbo"
+}
+
+COST_OPTIMIZED_MODELS = {
+    # Minimize costs while maintaining quality
+    "writer": "gpt-4o",
+    "factchecker": "gpt-4o",
+    "synthesizer": "gpt-4o-mini",
+    "web_researcher": "gpt-4o-mini",
+    "kb_researcher": "gpt-4o-mini",
+    "iteration": "gpt-4o-mini",
+    "evidence": "gpt-4o-mini",
+    "claims": "gpt-4o-mini",
+    "summary": "gpt-4o-mini",
+    "metrics": "gpt-4o-mini",
+    "seo": "gpt-3.5-turbo",
+    "social": "gpt-3.5-turbo"
 }
 
 # Quality Thresholds (ZERO COMPROMISE)
@@ -39,39 +81,6 @@ MIN_SOURCES = 12       # Increased from 10
 MAX_ITERATIONS = 3     # Allow more iterations for perfection
 MIN_READING_TIME = 8   # Minutes (ensures depth)
 MAX_BROKEN_LINKS = 0   # Zero tolerance for broken links
-
-# Dakota-Specific Requirements
-REQUIRE_ALLOCATION_DATA = True    # Articles should include real allocation amounts
-REQUIRE_INVESTOR_TYPES = True     # Must specify RIA, Pension, etc.
-REQUIRE_FUNDRAISING_APPLICATION = True  # Must have practical takeaways
-MIN_DAKOTA_REFERENCES = 2         # Reference existing Dakota content
-
-# Target Audience (Dakota's Database)
-TARGET_INVESTORS = [
-    "RIAs (Registered Investment Advisors)",
-    "Family Offices",
-    "Multi-Family Offices (MFOs)",
-    "Public Pension Funds",
-    "Corporate Pension Funds",
-    "Endowments",
-    "Foundations",
-    "OCIOs",
-    "Institutional Consultants",
-    "Insurance Companies",
-    "Fund of Funds",
-    "Healthcare Systems",
-    "Bank Trusts",
-    "Broker Dealers"
-]
-
-# Dakota Philosophy
-DAKOTA_CORE_VALUE = "Focus on What Matters Most"
-DAKOTA_WAY_PRINCIPLES = [
-    "Set Expectations",
-    "Know Who to Call On",
-    "Become a Master Messenger",
-    "Master Your CRM"
-]
 
 # Research Budgets (Generous for thoroughness)
 MAX_WEB_CALLS = 100    # Increased from 80

@@ -17,6 +17,7 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.pipeline.chat_orchestrator import ChatOrchestrator
 from src.config_enhanced import *
+from src.utils.topic_generator import generate_topic_sync, EnhancedTopicGenerator
 from openai import OpenAI
 import random
 from datetime import datetime
@@ -24,7 +25,7 @@ from datetime import datetime
 console = Console()
 
 
-def generate_topic():
+def generate_topic_legacy():
     """Generate a relevant topic based on current trends and Dakota's focus areas"""
     
     # Topic categories aligned with Dakota's expertise
@@ -86,7 +87,7 @@ Generate ONE specific, timely topic that would be valuable right now.
 Format: Just the topic title, no explanation."""
 
         response = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+            model="gpt-4.1",  # Using your specified model
             messages=[{"role": "user", "content": prompt}],
             temperature=0.8,
             max_tokens=50
@@ -148,8 +149,13 @@ def generate(topic: str, model: str, debug: bool, no_kb: bool, words: int, quick
         return
     
     if auto or not topic:
-        console.print("\n[yellow]Generating relevant topic...[/yellow]")
-        topic = generate_topic()
+        console.print("\n[yellow]Generating relevant topic using knowledge base insights...[/yellow]")
+        try:
+            # Try enhanced KB-aware generation first
+            topic = generate_topic_sync()
+        except:
+            # Fallback to legacy generation
+            topic = generate_topic_legacy()
         console.print(f"[green]Selected topic:[/green] {topic}\n")
     
     # Determine word count and sources
@@ -341,8 +347,17 @@ def topics():
     
     # Generate multiple topics
     topics_list = []
+    console.print("[dim]Using knowledge base analysis to generate unique topics...[/dim]\n")
+    
     for i in range(5):
-        topic = generate_topic()
+        try:
+            # Use enhanced generator for variety
+            if i < 2:
+                topic = generate_topic_sync()  # KB-aware for first 2
+            else:
+                topic = generate_topic_legacy()  # Template-based for variety
+        except:
+            topic = generate_topic_legacy()
         topics_list.append(topic)
         console.print(f"{i+1}. [cyan]{topic}[/cyan]")
     

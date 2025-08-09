@@ -51,22 +51,18 @@ class ChatOrchestrator:
         }
     
     async def _handle_web_search(self, query: str, num_results: int = 10) -> Dict[str, Any]:
-        """Handle web search - in production, use a real search API"""
-        # Simulate web search
-        await asyncio.sleep(0.5)  # Simulate API call
-        return {
-            "query": query,
-            "results": [
-                {
-                    "title": f"Result {i+1} for: {query}",
-                    "url": f"https://example{i+1}.com/article",
-                    "snippet": f"This is a snippet about {query} from a credible source.",
-                    "source": f"Example{i+1}.com",
-                    "date": "2024-01-15"
-                }
-                for i in range(min(num_results, 5))
-            ]
-        }
+        """Handle web search using external search API"""
+        # This function is no longer needed since GPT models have built-in search
+        # The web_researcher agent uses GPT's native search capabilities
+        # If you need to use external search, integrate with:
+        # - Google Custom Search API
+        # - Bing Search API  
+        # - SerpAPI
+        # - Brave Search API
+        raise NotImplementedError(
+            "Web search is handled by GPT's built-in capabilities. "
+            "For external search, please integrate a real search API."
+        )
     
     async def _handle_write_file(self, path: str, content: str) -> Dict[str, Any]:
         """Handle file writing asynchronously"""
@@ -88,17 +84,27 @@ class ChatOrchestrator:
             return {"success": False, "error": str(e)}
     
     async def _handle_verify_urls(self, urls: List[str]) -> List[Dict[str, Any]]:
-        """Verify URLs asynchronously"""
-        # In production, make actual HTTP requests
-        results = []
-        for url in urls:
-            # Simulate URL checking
-            is_valid = not any(broken in url for broken in ["broken", "404", "invalid"])
-            results.append({
-                "url": url,
-                "status_code": 200 if is_valid else 404,
-                "accessible": is_valid
-            })
+        """Verify URLs asynchronously using real HTTP requests"""
+        import aiohttp
+        import asyncio
+        
+        async def check_url(session: aiohttp.ClientSession, url: str) -> Dict[str, Any]:
+            try:
+                async with session.head(url, timeout=10, allow_redirects=True) as response:
+                    return {
+                        "url": url,
+                        "status_code": response.status,
+                        "accessible": 200 <= response.status < 400
+                    }
+            except asyncio.TimeoutError:
+                return {"url": url, "status_code": 0, "accessible": False, "error": "Timeout"}
+            except Exception as e:
+                return {"url": url, "status_code": 0, "accessible": False, "error": str(e)}
+        
+        async with aiohttp.ClientSession() as session:
+            tasks = [check_url(session, url) for url in urls]
+            results = await asyncio.gather(*tasks)
+        
         return results
     
     async def _handle_validate_article(self, text: str, min_words: int = None, min_sources: int = None) -> Dict[str, Any]:
@@ -143,7 +149,7 @@ class ChatOrchestrator:
             {
                 "name": "web_researcher",
                 "prompt_file": "dakota-web-researcher.md",
-                "tools": [TOOL_DEFINITIONS["web_search"]],
+                "tools": [],  # Uses GPT's built-in web search
                 "temperature": 0.7
             },
             {

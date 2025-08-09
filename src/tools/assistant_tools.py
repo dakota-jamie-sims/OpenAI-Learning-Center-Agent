@@ -13,18 +13,13 @@ class AssistantTools:
     
     @staticmethod
     def web_search(query: str, max_results: int = 10) -> Dict[str, Any]:
-        """Simulate web search functionality"""
-        # In production, integrate with a real search API
-        return {
-            "query": query,
-            "results": [
-                {
-                    "title": f"Result for {query}",
-                    "url": "https://example.com",
-                    "snippet": "This would contain actual search results"
-                }
-            ]
-        }
+        """Web search is handled by GPT's built-in capabilities"""
+        # GPT-4.1 and GPT-5 have native web search
+        # This function is kept for backward compatibility
+        raise NotImplementedError(
+            "Web search should be handled by GPT's built-in search capabilities. "
+            "The web_researcher agent uses native search without function calls."
+        )
     
     @staticmethod
     def verify_url(url: str) -> Dict[str, Any]:

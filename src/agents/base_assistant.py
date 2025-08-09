@@ -99,8 +99,7 @@ class BaseAssistant:
         if run.required_action.type == 'submit_tool_outputs':
             tool_outputs = []
             for tool_call in run.required_action.submit_tool_outputs.tool_calls:
-                # This is where you'd implement actual tool logic
-                # For now, we'll just return a placeholder
+                # Execute the actual tool
                 output = self._execute_tool(tool_call)
                 tool_outputs.append({
                     "tool_call_id": tool_call.id,
