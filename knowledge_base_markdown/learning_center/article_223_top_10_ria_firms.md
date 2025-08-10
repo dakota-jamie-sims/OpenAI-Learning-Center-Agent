@@ -1,0 +1,14 @@
+# Top 10 RIA Firms in the Boston Metro Area
+
+## Article Information
+- **Published:** 9/26/23
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/the-top-10-rias-in-the-boston-metro-area
+
+## Content
+
+The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Boston that we thought you might like to know. For a more detailed list of RIAs in Boston click here to see for free. 1. Fidelity Strategic Advisors AUM: $450,000,000,000 2. SCS Financial Services AUM: $32,181,107,000 3. Partners Capital Group AUM: $29,812,849,622 4. Pathstone AUM: $22,604,852,072 New call-to-action 5. The Colony Group AUM: $18,638,723,308 6. Integrated Partners AUM: $16,000,000,000 7. CI Eaton Private Wealth AUM: $11,478,077,185 8. Ballentine Partners AUM: $10,519,787,346 9. Sentinel Pension Advisors Inc AUM: $10,503,429,858 10. GW & Wade AUM: $10,403,985,549 The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Boston that we thought you might like to know. For a more detailed list of RIAs in Boston click here to see for free. 1. Fidelity Strategic Advisors AUM: $450,000,000,000 2. SCS Financial Services AUM: $32,181,107,000 3. Partners Capital Group AUM: $29,812,849,622 4. Pathstone AUM: $22,604,852,072 New call-to-action 5. The Colony Group AUM: $18,638,723,308 6. Integrated Partners AUM: $16,000,000,000 7. CI Eaton Private Wealth AUM: $11,478,077,185 8. Ballentine Partners AUM: $10,519,787,346 9. Sentinel Pension Advisors Inc AUM: $10,503,429,858 10. GW & Wade AUM: $10,403,985,549
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

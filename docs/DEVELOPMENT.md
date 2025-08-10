@@ -44,7 +44,9 @@ python main_chat.py generate --auto
 
 ## Core Architecture
 
-### 1. Agent System (Chat Completions API)
+### 1. Agent System (Responses API / Chat Completions)
+- **API**: Uses OpenAI Responses API, NOT the deprecated Assistants API
+- **Models**: GPT-5 and GPT-4.1 available in production
 - **13 Specialized Agents**: Each with specific role and prompt (includes metadata generator)
 - **Parallel Execution**: Web + KB research, SEO + Metrics, Summary + Social
 - **Function Calling**: GPT's built-in search, file operations, URL verification

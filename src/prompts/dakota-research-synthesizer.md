@@ -133,14 +133,18 @@ Based on this research, recommend the following flow:
 5. [Forward-looking conclusion]
 
 ## Source Library
+**CRITICAL: Include ACTUAL URLs from research - Content Writer needs these for citations**
+
 ### Tier 1 Sources (Government/Academic)
-1. [Source Name] - [URL] - [Date] - [Key Data Used]
+1. [Source Name] - [FULL URL like https://example.com/report] - [Date] - [Key Data Used]
 
 ### Tier 2 Sources (Major Financial Media)
-1. [Source Name] - [URL] - [Date] - [Key Data Used]
+1. [Source Name] - [FULL URL like https://bloomberg.com/article] - [Date] - [Key Data Used]
 
 ### Tier 3 Sources (Industry/Other)
-1. [Source Name] - [URL] - [Date] - [Key Data Used]
+1. [Source Name] - [FULL URL like https://pitchbook.com/data] - [Date] - [Key Data Used]
+
+**IMPORTANT: Extract all URLs from the web research and KB research provided. Do not use placeholder URLs.**
 
 ## Writing Guidance
 - **Tone**: [Specific tone recommendations based on topic]

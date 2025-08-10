@@ -8,7 +8,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 import json
 from datetime import datetime
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 import time
 from concurrent.futures import ThreadPoolExecutor
 

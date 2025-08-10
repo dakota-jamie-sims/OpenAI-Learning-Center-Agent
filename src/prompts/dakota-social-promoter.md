@@ -111,17 +111,56 @@ Key takeaways:
 
 ## Instagram Posts (3)
 
-### Post 1: Key Statistic
-[Visual: Bold statistic graphic]
-Caption: [Statistic] 📊 [Brief explanation and context] [Relevant hashtags]
+### Post 1: Hero Statistic
+**Visual**: Eye-catching graphic with main statistic
+**Caption**: 
+[Lead with powerful statistic] 📊
 
-### Post 2: Quote Card
-[Visual: Impactful quote from article]
-Caption: [Expand on quote meaning] 💡 [Link in bio for full article]
+[2-3 sentences providing context and why this matters to investors]
 
-### Post 3: Key Takeaways
-[Visual: Carousel with 3-5 key points]
-Caption: [Topic] insights every investor needs to know ⬇️ [Preview of points]
+[Call to action with relevant emojis]
+
+🔗 Full analysis in bio
+.
+.
+.
+#InstitutionalInvesting #PrivateEquity #AlternativeAssets #InvestmentStrategy #DakotaInsights #[TopicHashtag] #DataDriven #MarketInsights
+
+### Post 2: Key Insights Carousel
+**Visual**: 5-slide carousel
+- Slide 1: Title card with article headline
+- Slides 2-4: Top 3 insights with supporting data
+- Slide 5: CTA to read full article
+
+**Caption**:
+[Engaging question or statement] 🎯
+
+Here's what institutional investors need to know about [topic]:
+
+1️⃣ [First key point]
+2️⃣ [Second key point]  
+3️⃣ [Third key point]
+
+[Closing thought or question to drive engagement]
+
+👉 Swipe for insights | Full article link in bio
+
+#AlternativeInvestments #AssetAllocation #InvestmentResearch #[LocationHashtag] #MarketTrends
+
+### Post 3: Takeaway Quote
+**Visual**: Branded quote card with powerful insight from article
+**Caption**:
+"[Impactful quote from the article]" 💡
+
+[Expand on what this means for investors in 2-3 sentences]
+
+[Question to encourage comments]
+
+What's your take on [topic]? Let us know below 👇
+
+📖 Read the complete analysis (link in bio)
+
+#InvestmentWisdom #MarketInsights #QuoteOfTheDay #FinancialMarkets #DakotaLearningCenter
 
 ## Facebook Post
 

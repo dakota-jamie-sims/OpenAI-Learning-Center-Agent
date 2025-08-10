@@ -1,0 +1,14 @@
+# The Top Private Equity Conferences to Attend Through 2023 and 2024
+
+## Article Information
+- **Published:** 10/24/23
+- **Author:** Tim Dolan
+- **Original URL:** https://www.dakota.com/resources/blog/the-top-private-equity-conferences-to-attend
+
+## Content
+
+There are many private equity conferences that are worth attending. Below is a list of 15 conferences in the next year that may be worth attending considering spend upon location, content, and speakers. Conference Name Date Metro Organizer 10th Annual Southeast Institutional Forum 11/15/23 Atlanta Markets Group, Inc. 9th Annual Pennsylvania Institutional Forum 11/1/23 Philadelphia Markets Group, Inc. SuperReturn Energy 2023 11/8/23 New York City Informa Connect Alternative Investing Summit 2023 12/3/23 Los Angeles Opal Financial Group Private Equity US Leadership Summit 12/5/23 New York City Hedgeweek Global Alternatives 2024 1/29/24 Miami iConnections 24th Real Estate Private Equity Summit 2024 3/29/24 New York City iGlobal Forum SuperTechnology North America 2024 4/9/24 Los Angeles Informa Connect 5th Annual Michigan Institutional Forum 6/12/24 Detroit Markets Group, Inc. 12th Annual Private Equity New York Forum 5/15/24 New York City Markets Group, Inc. SuperReturn International 2024 6/4/24 Berlin Informa Connect Annual Private Equity Chicago Forum 7/30/24 Chicago Markets Group, Inc. 10th Annual Great Plains Institutional Forum 9/25/24 Minneapolis Markets Group, Inc. 7th Annual Private Equity Europe Forum 9/17/24 London Markets Group, Inc. ALTSSEA 10/17/24 Seattle Markets Group, Inc. There are many private equity conferences that are worth attending. Below is a list of 15 conferences in the next year that may be worth attending considering spend upon location, content, and speakers. Conference Name Date Metro Organizer 10th Annual Southeast Institutional Forum 11/15/23 Atlanta Markets Group, Inc. 9th Annual Pennsylvania Institutional Forum 11/1/23 Philadelphia Markets Group, Inc. SuperReturn Energy 2023 11/8/23 New York City Informa Connect Alternative Investing Summit 2023 12/3/23 Los Angeles Opal Financial Group Private Equity US Leadership Summit 12/5/23 New York City Hedgeweek Global Alternatives 2024 1/29/24 Miami iConnections 24th Real Estate Private Equity Summit 2024 3/29/24 New York City iGlobal Forum SuperTechnology North America 2024 4/9/24 Los Angeles Informa Connect 5th Annual Michigan Institutional Forum 6/12/24 Detroit Markets Group, Inc. 12th Annual Private Equity New York Forum 5/15/24 New York City Markets Group, Inc. SuperReturn International 2024 6/4/24 Berlin Informa Connect Annual Private Equity Chicago Forum 7/30/24 Chicago Markets Group, Inc. 10th Annual Great Plains Institutional Forum 9/25/24 Minneapolis Markets Group, Inc. 7th Annual Private Equity Europe Forum 9/17/24 London Markets Group, Inc. ALTSSEA 10/17/24 Seattle Markets Group, Inc.
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

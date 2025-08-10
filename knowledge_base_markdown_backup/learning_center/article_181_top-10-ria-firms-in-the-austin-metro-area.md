@@ -1,0 +1,14 @@
+# Top 10 RIA Firms in the Austin Metro Area
+
+## Article Information
+- **Published:** 2/23/24
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/top-ria-firms-austin
+
+## Content
+
+RIAs are one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through Dakota Marketplace, a database of RIAs, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Austin that we thought you might like to know. For a more detailed list of RIAs in Austin, click here to see for free. 1. LeafHouse Financial AUM: $14,128,243,774 2. Venturi Private Wealth AUM: $1,973,168,667 3. Oxbow Advisors AUM: $1,778,335,240 4. Durbin Bennett Wealth AUM: $1,429,423,495 5. Waterloo Capital Management AUM: $1,400,000,000 6. Austin Asset Management AUM: $1,366,006,925 7. Meridian Wealth Advisors LLC AUM: $1,017,777,680 8. Cedarwood Financial Partners AUM: $1,000,000,000 9. Pensionmark Austin AUM: $976,000,000 10. FMP Wealth Advisers AUM: $941,773,000 For a more detailed list of all RIAs in Austin and other metros, click here to see for free. RIAs are one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through Dakota Marketplace, a database of RIAs, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Austin that we thought you might like to know. For a more detailed list of RIAs in Austin, click here to see for free. 1. LeafHouse Financial AUM: $14,128,243,774 2. Venturi Private Wealth AUM: $1,973,168,667 3. Oxbow Advisors AUM: $1,778,335,240 4. Durbin Bennett Wealth AUM: $1,429,423,495 5. Waterloo Capital Management AUM: $1,400,000,000 6. Austin Asset Management AUM: $1,366,006,925 7. Meridian Wealth Advisors LLC AUM: $1,017,777,680 8. Cedarwood Financial Partners AUM: $1,000,000,000 9. Pensionmark Austin AUM: $976,000,000 10. FMP Wealth Advisers AUM: $941,773,000 For a more detailed list of all RIAs in Austin and other metros, click here to see for free.
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

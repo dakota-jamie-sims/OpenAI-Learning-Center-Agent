@@ -1,0 +1,14 @@
+# Top 10 Real Estate Conferences to Attend in 2024
+
+## Article Information
+- **Published:** 3/7/24
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/top-10-real-estate-conferences-to-attend-in-2024
+
+## Content
+
+There are many real estate conferences that are worth attending. Below is a list of 10 conferences in the next year that may be worth attending considering spend upon location, content, and speakers. Conference Name Date Metro Organizer Real Estate Investment Summit 2024 3/17/2024 West Palm Beach Opal Financial Group Inc 2024 Spring Conference 3/21/2024 Nashville Pension Real Estate Association (PREA) 8th Annual Real Estate Midwest Forum 4/17/2024 Chicago Markets Group Real Estate Investors Summit 2024 6/5/2024 Los Angeles Marcus Evans Inc. The 24th Annual U.S. Real Estate Opportunity & Private Fund Investment Forum 6/19/2024 Providence Information Management Network (IMN) The Institutional US Real Estate Meeting East 9/4/2024 New York City Carmo Conferences 2024 NIC Fall Conference 9/23/2024 Washington, DC National Investment Center (NIC) Global Leaders in Real Estate Summit 10/15/2024 New York City iGlobal Forum Northern California Multifamily Forum 10/26/2024 San Francisco GreenPearl Events Texas Multifamily Forum 11/8/2024 Dallas GreenPearl Events To see a full list of upcoming conferences across all asset classes through 2024, start your free trial of Dakota Marketplace here. There are many real estate conferences that are worth attending. Below is a list of 10 conferences in the next year that may be worth attending considering spend upon location, content, and speakers. Conference Name Date Metro Organizer Real Estate Investment Summit 2024 3/17/2024 West Palm Beach Opal Financial Group Inc 2024 Spring Conference 3/21/2024 Nashville Pension Real Estate Association (PREA) 8th Annual Real Estate Midwest Forum 4/17/2024 Chicago Markets Group Real Estate Investors Summit 2024 6/5/2024 Los Angeles Marcus Evans Inc. The 24th Annual U.S. Real Estate Opportunity & Private Fund Investment Forum 6/19/2024 Providence Information Management Network (IMN) The Institutional US Real Estate Meeting East 9/4/2024 New York City Carmo Conferences 2024 NIC Fall Conference 9/23/2024 Washington, DC National Investment Center (NIC) Global Leaders in Real Estate Summit 10/15/2024 New York City iGlobal Forum Northern California Multifamily Forum 10/26/2024 San Francisco GreenPearl Events Texas Multifamily Forum 11/8/2024 Dallas GreenPearl Events To see a full list of upcoming conferences across all asset classes through 2024, start your free trial of Dakota Marketplace here.
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

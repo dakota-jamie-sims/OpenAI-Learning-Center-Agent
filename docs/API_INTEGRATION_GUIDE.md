@@ -6,6 +6,8 @@ This guide explains how to integrate real APIs for production use.
 
 The Dakota Learning Center system is configured to use GPT-5 and GPT-4.1 models with built-in capabilities. Most functionality is handled natively by these models.
 
+**Important**: The system uses the OpenAI Responses API (Chat Completions endpoint), NOT the deprecated Assistants API. All agent interactions use the `/v1/chat/completions` endpoint.
+
 ## Web Search
 
 ### Built-in GPT Search (Recommended)

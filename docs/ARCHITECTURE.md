@@ -14,10 +14,11 @@ Generate institutional-quality investment articles that:
 ## System Architecture
 
 ### 1. **Technology Stack**
-- **API**: OpenAI Chat Completions (NOT Assistants API)
+- **API**: OpenAI Responses API (Chat Completions) - NOT the deprecated Assistants API
 - **Models**: GPT-5 and GPT-4.1 (released models in production)
 - **Language**: Python 3.8+ with asyncio
-- **Vector Store**: OpenAI vector store for Dakota knowledge base
+- **Vector Store**: OpenAI vector store (ID: vs_68980892144c8191a36a383ff1d5dc15)
+- **Knowledge Base**: 397 files (395 Learning Center + 2 Dakota Way)
 - **Execution**: Parallel agent orchestration
 - **Data Validation**: Real-time freshness checking
 - **Metadata**: Comprehensive tracking with real data extraction
@@ -253,7 +254,10 @@ If returning after break:
 - All outputs in markdown format
 - Consolidated files (4 instead of 8)
 - Short topic-based filenames
-- 407 files loaded in knowledge base
+- 397 files loaded in knowledge base (395 Learning Center + 2 Dakota Way)
+- Vector store ID: vs_68980892144c8191a36a383ff1d5dc15
+- File naming: all underscores, no hyphens
+- Programmatic upload more reliable than web interface
 
 ## Pipeline Accuracy Flow
 1. **Research → Writing → Enhancement** (can have errors)

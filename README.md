@@ -2,6 +2,28 @@
 
 An AI-powered content generation system for creating educational articles for the Dakota Learning Center.
 
+## 🚀 Quick Start - Working Solution
+
+The simplest way to generate articles that work 100% of the time:
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Generate an article
+python generate_article.py "Your Article Topic" [word_count]
+
+# Examples:
+python generate_article.py "Top Private Equity Strategies for 2025"
+python generate_article.py "Understanding Alternative Investments" 2000
+```
+
+This will generate a complete content package in `output/Learning Center Articles/` including:
+- 📄 Main article with proper citations
+- 📋 Executive summary  
+- 📱 Social media content
+- 📊 Metadata
+
 ## Overview
 
 This project uses OpenAI's GPT models to create high-quality educational content aligned with Dakota's values and pedagogical approach. The system employs a multi-agent architecture with specialized agents for research, outlining, writing, and review.

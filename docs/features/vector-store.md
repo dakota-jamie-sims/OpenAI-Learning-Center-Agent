@@ -3,6 +3,12 @@
 ## Overview
 The system uses OpenAI's vector store to provide semantic search over Dakota's knowledge base materials, enabling the KB Researcher agent to find relevant content.
 
+**Current Configuration:**
+- Vector Store ID: `vs_68980892144c8191a36a383ff1d5dc15`
+- Total Files: 397 (395 Learning Center + 2 Dakota Way)
+- File Naming: All underscores, no hyphens
+- Upload Method: Programmatic (more reliable than web interface)
+
 ## Implementation Details
 
 ### 1. **Setup Process**
@@ -78,7 +84,7 @@ python setup_vector_store.py
 ### Environment Variable
 ```bash
 # .env file
-VECTOR_STORE_ID=vs_abc123...
+VECTOR_STORE_ID=vs_68980892144c8191a36a383ff1d5dc15
 ```
 
 ### Knowledge Base Location
@@ -146,7 +152,7 @@ python main_chat.py generate "topic" --no-kb
 ## Limitations
 - Requires Assistants API temporarily (for search only)
 - One-time setup needed
-- Limited to 100 files currently
+- Currently contains 397 files
 - No real-time updates (requires re-upload)
 
 ## Future Enhancements

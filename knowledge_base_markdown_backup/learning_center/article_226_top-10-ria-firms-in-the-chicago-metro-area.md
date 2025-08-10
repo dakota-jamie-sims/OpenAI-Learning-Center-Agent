@@ -1,0 +1,14 @@
+# Top 10 RIA Firms in the Chicago Metro Area
+
+## Article Information
+- **Published:** 9/14/23
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/the-10-leading-rias-in-the-chicago-metro-area
+
+## Content
+
+The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Chicago that we thought you might like to know. For a more detailed list of RIAs in Chicago click here to see for free. 1. CIBC Private Wealth AUM: $73,775,455,095 2. William Blair AUM: $49,965,190,648 3. Calamos Wealth Management AUM: $41,993,109,481 4. Mesirow Financial AUM: $30,500,000,000 5. Cresset Wealth Advisors AUM: $22,967,857,515 small free trial banner 6. Savant Wealth Management AUM: $20,000,000,000 7. CAP STRAT AUM: $20,000,000,000 8. Sheridan Road Financial, division of HUB International AUM: $16,836,886,298 9. Gallagher Global Office AUM: $15,800,000,000 10. Mesirow Retirement Advisory Services AUM: $12,500,000,000 The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Chicago that we thought you might like to know. For a more detailed list of RIAs in Chicago click here to see for free. 1. CIBC Private Wealth AUM: $73,775,455,095 2. William Blair AUM: $49,965,190,648 3. Calamos Wealth Management AUM: $41,993,109,481 4. Mesirow Financial AUM: $30,500,000,000 5. Cresset Wealth Advisors AUM: $22,967,857,515 small free trial banner 6. Savant Wealth Management AUM: $20,000,000,000 7. CAP STRAT AUM: $20,000,000,000 8. Sheridan Road Financial, division of HUB International AUM: $16,836,886,298 9. Gallagher Global Office AUM: $15,800,000,000 10. Mesirow Retirement Advisory Services AUM: $12,500,000,000
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

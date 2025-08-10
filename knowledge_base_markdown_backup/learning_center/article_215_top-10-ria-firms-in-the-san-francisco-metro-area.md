@@ -1,0 +1,14 @@
+# Top 10 RIA Firms in the San Francisco Metro Area
+
+## Article Information
+- **Published:** 10/31/23
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/10-leading-rias-in-san-francisco-metro-area
+
+## Content
+
+The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in San Francisco that we thought you might like to know. For a more detailed list of RIAs in San Francisco, click here to see for free. 1. Edelman Financial Engines AUM: $$290,354,747,708 2. TWP Private Wealth Management AUM: $148,561,000,000 3. Global Retirement Partners LLC AUM: $107,120,212,323 4. Iconiq Capital AUM: $89,112,612,606 5. Assetmark AUM: $60,116,320,247 6. Hall Capital Partners AUM: $55,707,371,841 7. Makena Capital Management AUM: $24,956,773,327 8. Comprehensive Financial Management AUM: $22,754,551,937 9. Empower Personal Wealth AUM: $20,500,000,000 10. IEQ Capital LLC AUM: $17,791,397,748 The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in San Francisco that we thought you might like to know. For a more detailed list of RIAs in San Francisco, click here to see for free. 1. Edelman Financial Engines AUM: $$290,354,747,708 2. TWP Private Wealth Management AUM: $148,561,000,000 3. Global Retirement Partners LLC AUM: $107,120,212,323 4. Iconiq Capital AUM: $89,112,612,606 5. Assetmark AUM: $60,116,320,247 6. Hall Capital Partners AUM: $55,707,371,841 7. Makena Capital Management AUM: $24,956,773,327 8. Comprehensive Financial Management AUM: $22,754,551,937 9. Empower Personal Wealth AUM: $20,500,000,000 10. IEQ Capital LLC AUM: $17,791,397,748
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

@@ -3,6 +3,12 @@
 ## Overview
 The Dakota Learning Center uses OpenAI's vector store to maintain its knowledge base. This includes Dakota Way content, existing Learning Center articles, and any additional materials you want the system to reference.
 
+**Current Status:**
+- Vector Store ID: `vs_68980892144c8191a36a383ff1d5dc15`
+- Total Files: 397 (395 Learning Center + 2 Dakota Way)
+- File Naming: Use underscores only (no hyphens)
+- Upload Method: Programmatic upload is more reliable than web interface
+
 ## Methods to Update Knowledge Base
 
 ### Method 1: Using the Update Script (Recommended)
@@ -97,6 +103,11 @@ knowledge_base/
    - Case studies with metrics
    - Client testimonials
    - Best practices
+
+### File Naming Convention
+**Important**: All files in the knowledge base must use underscores, not hyphens.
+- ✅ Good: `2025_01_private_equity_allocation_trends.md`
+- ❌ Bad: `2025-01-private-equity-allocation-trends.md`
 
 ### Content Format Example
 ```markdown

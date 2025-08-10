@@ -1,0 +1,14 @@
+# The Top 10 RIAs in Houston
+
+## Article Information
+- **Published:** 1/4/24
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/top-rias-in-houston
+
+## Content
+
+RIAs are one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace database of RIAs, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Houston that we thought you might like to know. For a more detailed list of RIAs in Houston, click here to see for free. 1. The Price Group AUM: $16,900,000,000 2. Alliant Retirement Consulting AUM: $15,800,000,000 3. Gallagher South Central Region AUM: $9,505,395,665 4. Avalon Advisors AUM: $8,381,714,741 5. US Capital Wealth Advisors AUM: $6,263,762,538 6. Houston Trust Company AUM: $5,100,000,000 7. Linscomb & Williams Inc. AUM: $4,696,563,994 8. Legacy Trust AUM: $4,000,000,000 9. Avidian Wealth Solutions AUM: $3,464,448,658 10. Paul Comstock Partners AUM: $3,365,393,181 For a more detailed list of all RIAs in Houston click here to see for free. RIAs are one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace database of RIAs, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Houston that we thought you might like to know. For a more detailed list of RIAs in Houston, click here to see for free. 1. The Price Group AUM: $16,900,000,000 2. Alliant Retirement Consulting AUM: $15,800,000,000 3. Gallagher South Central Region AUM: $9,505,395,665 4. Avalon Advisors AUM: $8,381,714,741 5. US Capital Wealth Advisors AUM: $6,263,762,538 6. Houston Trust Company AUM: $5,100,000,000 7. Linscomb & Williams Inc. AUM: $4,696,563,994 8. Legacy Trust AUM: $4,000,000,000 9. Avidian Wealth Solutions AUM: $3,464,448,658 10. Paul Comstock Partners AUM: $3,365,393,181 For a more detailed list of all RIAs in Houston click here to see for free.
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

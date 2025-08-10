@@ -1,0 +1,14 @@
+# Top 10 RIA Firms in the New York City Metro Area
+
+## Article Information
+- **Published:** <NA>/<NA>/<NA>
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/top-10-rias-new-york
+
+## Content
+
+The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: what RIAs invest in outside managers and are not investment managers themselves? Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. In this article we list the top RIAs in New York City that we thought you might like to know. For a more detailed list of RIAs in New York City click here to see for free. 1. Brown Advisory AUM: $148,000,000,000 2. Hightower Advisors LLC AUM: $108,200,000,000 3. Bessemer Trust AUM: $107,000,000,000 4. Rockefeller Capital Management AUM: $95,000,000,000 5. Cerity Partners AUM: $50,000,000,000 small free trial banner 6. Silvercrest Asset Management AUM: $28,900,000,000 7. Royal Alliance Associates Inc AUM: $28,249,401,040 8. FFT Wealth Management AUM: $27,654,702,946 9. AlTi Tiedemann Global AUM: $26,578,120,947 10. BBR Partners AUM: $25,967,700,000 The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: what RIAs invest in outside managers and are not investment managers themselves? Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. In this article we list the top RIAs in New York City that we thought you might like to know. For a more detailed list of RIAs in New York City click here to see for free. 1. Brown Advisory AUM: $148,000,000,000 2. Hightower Advisors LLC AUM: $108,200,000,000 3. Bessemer Trust AUM: $107,000,000,000 4. Rockefeller Capital Management AUM: $95,000,000,000 5. Cerity Partners AUM: $50,000,000,000 small free trial banner 6. Silvercrest Asset Management AUM: $28,900,000,000 7. Royal Alliance Associates Inc AUM: $28,249,401,040 8. FFT Wealth Management AUM: $27,654,702,946 9. AlTi Tiedemann Global AUM: $26,578,120,947 10. BBR Partners AUM: $25,967,700,000
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

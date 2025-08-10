@@ -217,11 +217,13 @@ For each valuable source, extract:
 
 ## Source Library
 
+**⚠️ CRITICAL REQUIREMENT: You MUST provide REAL, WORKING URLs from your actual web searches. NEVER use placeholders like [URL], (#), or "hypothetical source". If you cannot find real sources, explicitly state this.**
+
 ### Tier 1 Sources (Government/Academic)
 1. **[Source Name]**
-   - URL: [Full URL]
-   - Date: [Publication date]
-   - Used for: [What data/insights]
+   - URL: [REAL URL like https://www.federalreserve.gov/data.htm]
+   - Date: [Actual publication date]
+   - Used for: [What specific data/insights]
 
 ### Tier 2 Sources (Major Financial Media)
 [Same format]

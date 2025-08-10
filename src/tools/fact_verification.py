@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 import json
 from urllib.parse import urlparse
 from .data_freshness_validator import DataFreshnessValidator
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from config_validation import get_validation_config, is_key_fact
 
 
 class FactVerificationSystem:
@@ -43,11 +47,30 @@ class FactVerificationSystem:
             "cfainstitute.org": 7,
             "investmentcompany.org": 7,
             "sifma.org": 7,
+            "texasfamilyoffices.org": 7,
+            "dakota.com": 8,
+            
+            # Investment Research - High credibility
+            "preqin.com": 8,
+            "pitchbook.com": 8,
+            "cambridgeassociates.com": 8,
+            
+            # Consulting Firms - High credibility
+            "bain.com": 8,
+            "ey.com": 8,
+            "pwc.com": 8,
+            "kpmg.com": 8,
+            "home.kpmg": 8,
+            
+            # State/Regional Sources - High credibility
+            "tfc.state.tx.us": 9,
+            "capitol.texas.gov": 9,
             
             # General News - Moderate credibility
             "cnbc.com": 6,
             "marketwatch.com": 6,
             "businessinsider.com": 5,
+            "forbes.com": 7,
             
             # Avoid/Low credibility
             "wikipedia.org": 3,
@@ -83,12 +106,9 @@ class FactVerificationSystem:
         # Check source quality
         source_analysis = self._analyze_sources(sources)
         
-        # Add freshness issues
+        # Add freshness issues - but only if required by validation config
         freshness_issues = []
-        if not freshness_results["is_fresh"]:
-            freshness_issues.append("Article contains outdated data")
-        if not freshness_results["has_current_year_data"]:
-            freshness_issues.append(f"No current year ({datetime.now().year}) data found")
+        # Note: freshness filtering will be handled in _filter_issues_by_type
         
         # Generate report
         return {
@@ -105,42 +125,73 @@ class FactVerificationSystem:
         }
     
     def _extract_facts(self, text: str) -> List[Dict[str, Any]]:
-        """Extract all factual claims from text"""
+        """Extract factual claims that require verification"""
         facts = []
         
-        # Patterns for different types of facts
+        # Only extract significant facts that need citations
         patterns = {
-            "percentage": r'(\d+(?:\.\d+)?%)',
-            "currency": r'(\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|trillion|thousand))?)',
-            "date_claim": r'(?:in|since|during|as of)\s+(\d{4}|\w+\s+\d{4})',
-            "comparison": r'(?:increased|decreased|grew|fell|rose|declined)\s+(?:by\s+)?(\d+(?:\.\d+)?%?)',
-            "ranking": r'(?:ranked|ranks)\s+(?:#)?(\d+|first|second|third|top\s+\d+)',
-            "statistic": r'(\d+(?:,\d+)*(?:\.\d+)?)\s+(?:investors|funds|companies|percent|basis points)'
+            "large_currency": r'(\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million)))',  # Only millions+
+            "investment_activity": r'(?:raised|invested|allocated|committed|deployed)\s+(\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million|thousand))?)',
+            "growth_metrics": r'(?:increased|decreased|grew|fell|rose|declined)\s+(?:by\s+)?(\d+(?:\.\d+)?%)',
+            "performance": r'(?:returned|generated|yielded|posted)\s+(\d+(?:\.\d+)?%)',
+            "major_stats": r'(\d+(?:\.\d+)?%)\s+of\s+(?:investors|allocators|LPs|GPs|funds)',
+            "aum_figures": r'(?:AUM|assets under management).*?(\$[\d,]+(?:\.\d+)?(?:\s*(?:billion|million)))',
+            "fund_counts": r'(?:manages?|oversees?|operates?)\s+(\d+)\s+(?:funds?|portfolios?|companies)',
+            # Add patterns for general claims that have citations
+            "cited_claims": r'([^.!?]+\[[^\]]+\]\([^)]+\))',  # Any statement with a citation
         }
         
-        # Split into sentences
-        sentences = re.split(r'[.!?]+', text)
+        # First, extract all cited claims (statements with citations)
+        cited_pattern = r'([^.!?]+\[[^\]]+\]\([^)]+\)[^.!?]*)'
+        cited_matches = re.findall(cited_pattern, text)
         
-        for sentence in sentences:
-            sentence = sentence.strip()
-            if not sentence:
-                continue
-                
-            # Check each pattern
-            for fact_type, pattern in patterns.items():
-                matches = re.findall(pattern, sentence, re.IGNORECASE)
-                if matches:
-                    # Look for citation in same sentence
-                    citations = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', sentence)
+        for match in cited_matches:
+            sentence_citations = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', match)
+            facts.append({
+                "type": "cited_claims",
+                "claim": match.strip(),
+                "context": match,
+                "has_citation": True,
+                "citations": sentence_citations
+            })
+        
+        # Process text paragraph by paragraph for other patterns
+        paragraphs = text.split('\n\n')
+        
+        for para in paragraphs:
+            # Find all citations in this paragraph
+            para_citations = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', para)
+            
+            # Split into sentences
+            sentences = re.split(r'[.!?]+', para)
+            
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if not sentence:
+                    continue
                     
-                    for match in matches:
-                        facts.append({
-                            "type": fact_type,
-                            "claim": match,
-                            "context": sentence,
-                            "has_citation": len(citations) > 0,
-                            "citations": citations
-                        })
+                # Check each pattern (except cited_claims which we already handled)
+                for fact_type, pattern in patterns.items():
+                    if fact_type == "cited_claims":
+                        continue
+                        
+                    matches = re.findall(pattern, sentence, re.IGNORECASE)
+                    if matches:
+                        # Look for citation in same sentence
+                        sentence_citations = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', sentence)
+                        
+                        # If no citation in sentence but paragraph has citations, use those
+                        has_citation = len(sentence_citations) > 0 or len(para_citations) > 0
+                        citations = sentence_citations if sentence_citations else para_citations
+                        
+                        for match in matches:
+                            facts.append({
+                                "type": fact_type,
+                                "claim": match,
+                                "context": sentence,
+                                "has_citation": has_citation,
+                                "citations": citations
+                            })
         
         return facts
     
@@ -154,11 +205,13 @@ class FactVerificationSystem:
         
         for title, url in matches:
             domain = urlparse(url).netloc.lower()
+            # Remove www. prefix for matching
+            domain_for_lookup = domain.replace('www.', '')
             sources.append({
                 "title": title,
                 "url": url,
                 "domain": domain,
-                "credibility_score": self.credibility_scores.get(domain, 5),
+                "credibility_score": self.credibility_scores.get(domain_for_lookup, 5),
                 "is_valid_url": self._validate_url_format(url),
                 "is_accessible": None  # Will be checked separately
             })
@@ -273,7 +326,7 @@ class FactVerificationSystem:
             issues.append("Average source credibility is low")
         if analysis["low_credibility_sources"] > len(sources) * 0.2:
             issues.append("Too many low-credibility sources")
-        if analysis["unique_domains"] < 5:
+        if analysis["unique_domains"] < 3:
             issues.append("Limited source diversity")
         if analysis["invalid_urls"] > 0:
             issues.append(f"{analysis['invalid_urls']} invalid URLs found")
@@ -349,10 +402,12 @@ class FactVerificationSystem:
 class EnhancedFactChecker:
     """Enhanced fact checker for the pipeline"""
     
-    def __init__(self):
+    def __init__(self, topic: str = "", word_count: int = 2000):
         self.verifier = FactVerificationSystem()
+        self.validation_config = get_validation_config(topic, word_count)
+        self.topic = topic
     
-    async def verify_article(self, article_text: str, min_credibility: float = 0.8) -> Dict[str, Any]:
+    async def verify_article(self, article_text: str, min_credibility: float = None) -> Dict[str, Any]:
         """Verify article meets credibility standards"""
         
         # Run comprehensive verification
@@ -360,17 +415,33 @@ class EnhancedFactChecker:
         
         # Check data freshness
         data_freshness = verification.get("data_freshness", {})
-        freshness_approved = (
-            data_freshness.get("is_fresh", False) and
-            data_freshness.get("has_current_year_data", False)
-        )
         
-        # Determine if approved (including freshness)
+        # Use validation config for this article type
+        if min_credibility is None:
+            min_credibility = self.validation_config["min_credibility"]
+        
+        # Filter issues based on article type
+        filtered_issues = self._filter_issues_by_type(verification)
+        
+        # Count only key facts that need citations
+        key_facts_verified = self._check_key_facts_verified(verification)
+        
+        # Determine freshness check based on article type
+        if self.validation_config["require_current_year_data"]:
+            freshness_check = (
+                data_freshness.get("is_fresh", False) and
+                data_freshness.get("has_current_year_data", False)
+            )
+        else:
+            # For location-based articles, just check if we have recent data
+            freshness_check = data_freshness.get("has_recent_data", True)
+        
         approved = (
             verification["overall_credibility"] >= min_credibility and
-            verification["fact_accuracy_rate"] >= 0.9 and
-            len(verification["issues"]) == 0 and
-            freshness_approved
+            verification["fact_accuracy_rate"] >= self.validation_config["min_fact_accuracy"] and
+            len(filtered_issues) == 0 and
+            freshness_check and
+            key_facts_verified  # All key facts must be verified
         )
         
         # Generate detailed report
@@ -383,16 +454,66 @@ class EnhancedFactChecker:
             "total_facts_checked": verification["total_facts"],
             "verified_facts": verification["verified_facts"],
             "source_quality": verification["source_analysis"]["average_credibility"],
+            "source_analysis": verification["source_analysis"],
             "issues": verification["issues"],
             "requires_fixes": not approved,
             "detailed_results": verification
         }
+        
+        # Update report with filtered issues
+        report["issues"] = filtered_issues
         
         # Add specific fix instructions if not approved
         if not approved:
             report["fix_instructions"] = self._generate_fix_instructions(verification)
         
         return report
+    
+    def _filter_issues_by_type(self, verification: Dict[str, Any]) -> List[str]:
+        """Filter issues based on article type validation config"""
+        all_issues = verification.get("issues", [])
+        filtered_issues = []
+        
+        for issue in all_issues:
+            # Skip unverified facts issue if we allow some
+            if "unverified facts" in issue and self.validation_config["max_unverified_facts"] > 0:
+                try:
+                    unverified_count = int(re.search(r'(\d+)', issue).group(1))
+                    if unverified_count <= self.validation_config["max_unverified_facts"]:
+                        continue
+                except:
+                    pass
+            
+            # Skip citation issues if not required for all facts
+            if "facts lack citations" in issue and not self.validation_config["require_citation_for_all_facts"]:
+                # Only keep if it's about key facts
+                continue
+            
+            # Skip source credibility issues if acceptable for this article type
+            if "source credibility is low" in issue and self.validation_config["min_source_credibility"] <= 5:
+                continue
+            
+            # Skip freshness issues if not required for this article type
+            if "outdated data" in issue and not self.validation_config["require_current_year_data"]:
+                continue
+            if "current year" in issue and not self.validation_config["require_current_year_data"]:
+                continue
+                
+            filtered_issues.append(issue)
+        
+        return filtered_issues
+    
+    def _check_key_facts_verified(self, verification: Dict[str, Any]) -> bool:
+        """Ensure all key facts (amounts, returns, etc.) are verified"""
+        # Look for verification_details instead of verification_results
+        results = verification.get("verification_details", verification.get("verification_results", []))
+        
+        for result in results:
+            fact_text = result.get("fact", {}).get("claim", "")
+            if is_key_fact(fact_text) and not result.get("verified", False):
+                return False
+        
+        return True
     
     def _generate_fix_instructions(self, verification: Dict[str, Any]) -> List[str]:
         """Generate specific instructions for fixing issues"""

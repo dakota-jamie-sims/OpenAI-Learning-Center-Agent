@@ -1,0 +1,14 @@
+# Top 10 RIA Firms in the Dallas Metro Area
+
+## Article Information
+- **Published:** 11/7/23
+- **Author:** Morgan Holycross
+- **Original URL:** https://www.dakota.com/resources/blog/the-10-leading-rias-in-the-dallas-metro-area
+
+## Content
+
+The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Dallas that we thought you might like to know. For a more detailed list of RIAs in Dallas, click here to see for free. 1. Retirement Advisors of America Inc AUM: $45,429,324,282 2. Avantax Wealth Management AUM: $34,340,503,208 3. BBR Partners AUM: $25,967,700,000 4. First Command Financial Planning AUM: $25,000,000,000 5. CH Investment Partners AUM: $11,617,246,000 6. Tolleson Private Wealth Management AUM: $8,181,879,724 7. CI RGT Private Wealth AUM: $5,751,140,026 8. True North Advisors, Inc. AUM: $2,871,743,854 9. Southern Wealth Management, LLP AUM: $2,871,524,001 10. Cain Watters & Associates PLLC AUM: $2,664,713,561 The RIA Channel is one of the most dynamic and fast growing channels for investment firms to sell their investment strategies to. The challenge has always been: “what RIAs invest in outside managers and are not investment managers themselves?” Through our Dakota Marketplace RIA database, we have aimed to solve that problem by curating and vetting each RIA by hand and only showing those RIAs that are true prospects for an investment firm. This saves both the investment sales team member time, but also saves the “other” RIAs that don’t allocate to other managers from getting unnecessary emails and phone calls. Below are a few RIAs in Dallas that we thought you might like to know. For a more detailed list of RIAs in Dallas, click here to see for free. 1. Retirement Advisors of America Inc AUM: $45,429,324,282 2. Avantax Wealth Management AUM: $34,340,503,208 3. BBR Partners AUM: $25,967,700,000 4. First Command Financial Planning AUM: $25,000,000,000 5. CH Investment Partners AUM: $11,617,246,000 6. Tolleson Private Wealth Management AUM: $8,181,879,724 7. CI RGT Private Wealth AUM: $5,751,140,026 8. True North Advisors, Inc. AUM: $2,871,743,854 9. Southern Wealth Management, LLP AUM: $2,871,524,001 10. Cain Watters & Associates PLLC AUM: $2,664,713,561
+
+---
+
+*This article is part of the Dakota Learning Center knowledge base.*

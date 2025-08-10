@@ -16,6 +16,7 @@ OPENAI_API_KEY=sk-...        # Your OpenAI API key
 ### Optional
 ```bash
 VECTOR_STORE_ID=vs_...       # Created by setup_vector_store.py
+                             # Current: vs_68980892144c8191a36a383ff1d5dc15
 ```
 
 ## Quality Thresholds
@@ -37,6 +38,11 @@ MIN_FACT_ACCURACY = 0.9      # 90% of facts must be verified
 
 ## Model Configuration
 
+### Available Models
+- **GPT-5**: Production model for complex tasks
+- **GPT-4.1**: Production model for efficient operations
+- **Note**: System uses Responses API (Chat Completions), NOT Assistants API
+
 ### Default Models
 ```python
 DEFAULT_MODELS = {
@@ -51,7 +57,8 @@ DEFAULT_MODELS = {
     "summary": "gpt-4",
     "social": "gpt-4",
     "evidence": "gpt-4",
-    "claims": "gpt-4-turbo-preview"
+    "claims": "gpt-4-turbo-preview",
+    "metadata": "gpt-4"  # Metadata generator agent
 }
 ```
 
@@ -233,10 +240,12 @@ MIN_CREDIBILITY = 0.85       # Higher credibility bar
 
 ### Different Models
 ```python
-# Use GPT-3.5 for cost savings
+# Use production models
 DEFAULT_MODELS = {
-    "web_researcher": "gpt-3.5-turbo",
-    "writer": "gpt-4",  # Keep GPT-4 for writing
+    "web_researcher": "gpt-5",      # Complex research tasks
+    "writer": "gpt-5",              # High-quality writing
+    "factchecker": "gpt-5",         # Critical accuracy checks
+    "metrics": "gpt-4.1",           # Efficient analysis
     # ...
 }
 ```

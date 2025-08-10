@@ -6,11 +6,19 @@ Using Chat Completions API with Vector Store Integration
 import asyncio
 import click
 import sys
+import os
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
+
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))

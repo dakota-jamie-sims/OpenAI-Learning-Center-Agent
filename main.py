@@ -1,21 +1,30 @@
 #!/usr/bin/env python3
 """
 Main entry point for Dakota Learning Center Article Generation
-Uses OpenAI Assistants API with parallel execution
+Uses OpenAI Chat Completions API with parallel execution
 """
 import asyncio
 import click
 import sys
+import os
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.panel import Panel
+
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
-from src.pipeline.async_orchestrator import AsyncOrchestrator
-from src.config_enhanced import *
+from src.pipeline.chat_orchestrator import ChatOrchestrator
+from src.config_working import *
 
 console = Console()
 
@@ -31,11 +40,30 @@ def cli():
 @click.option('--model', default=None, help='Override default model')
 @click.option('--no-validation', is_flag=True, help='Skip validation (not recommended)')
 @click.option('--debug', is_flag=True, help='Enable debug output')
-def generate(topic: str, model: str, no_validation: bool, debug: bool):
+@click.option('--words', type=int, default=None, help='Target word count (default: 2000)')
+@click.option('--quick', is_flag=True, help='Quick mode: 500-word article, fewer sources')
+def generate(topic: str, model: str, no_validation: bool, debug: bool, words: int, quick: bool):
     """Generate an article on the specified TOPIC"""
     
-    console.print(f"\n[bold blue]Dakota Learning Center Article Generator[/bold blue]")
-    console.print(f"[dim]Zero-compromise quality mode enabled[/dim]\n")
+    console.print(Panel.fit(
+        "[bold blue]Dakota Learning Center Article Generator[/bold blue]\n"
+        "[dim]Chat Completions API Version[/dim]",
+        border_style="blue"
+    ))
+    
+    # Determine word count and sources
+    if quick:
+        target_words = 500
+        min_sources = 5
+        article_type = "Quick Brief"
+    elif words:
+        target_words = words
+        min_sources = max(5, min(15, words // 200))
+        article_type = "Custom Length"
+    else:
+        target_words = MIN_WORD_COUNT
+        min_sources = MIN_SOURCES
+        article_type = "Full Article"
     
     # Show configuration
     table = Table(title="Configuration")
@@ -43,13 +71,20 @@ def generate(topic: str, model: str, no_validation: bool, debug: bool):
     table.add_column("Value", style="green")
     
     table.add_row("Topic", topic)
-    table.add_row("Min Word Count", str(MIN_WORD_COUNT))
-    table.add_row("Min Sources", str(MIN_SOURCES))
+    table.add_row("Article Type", article_type)
+    table.add_row("Target Words", f"{target_words:,}")
+    table.add_row("Min Sources", str(min_sources))
     table.add_row("Max Iterations", str(MAX_ITERATIONS))
-    table.add_row("Validation", "Disabled" if no_validation else "Enabled")
+    table.add_row("API Mode", "Chat Completions")
     
     console.print(table)
     console.print()
+    
+    # Check for API key
+    if not os.getenv("OPENAI_API_KEY"):
+        console.print("[red]❌ Error: OPENAI_API_KEY not found in environment[/red]")
+        console.print("Please add it to your .env file")
+        return
     
     # Confirm
     if not click.confirm("Proceed with article generation?"):
@@ -65,13 +100,17 @@ def generate(topic: str, model: str, no_validation: bool, debug: bool):
         task = progress.add_task("Initializing...", total=None)
         
         async def run():
-            orchestrator = AsyncOrchestrator()
+            orchestrator = ChatOrchestrator()
             
-            progress.update(task, description="Setting up assistants...")
-            await orchestrator.initialize_assistants()
+            progress.update(task, description="Setting up agents...")
+            await orchestrator.initialize_agents()
             
             progress.update(task, description="Running pipeline...")
-            results = await orchestrator.run_pipeline(topic)
+            results = await orchestrator.run_pipeline(
+                topic,
+                min_words=target_words,
+                min_sources=min_sources
+            )
             
             return results
         
@@ -88,26 +127,50 @@ def generate(topic: str, model: str, no_validation: bool, debug: bool):
         table.add_column("Location", style="yellow")
         
         table.add_row("Article", results['article_path'])
-        table.add_row("Quality Report", results['quality_report'])
-        table.add_row("Run Directory", results['run_dir'])
+        table.add_row("Metadata", results.get('metadata_path', 'metadata.md'))
         
+        if results.get('summary_path'):
+            table.add_row("Summary", results['summary_path'])
+        
+        if results.get('social_path'):
+            table.add_row("Social Media", results['social_path'])
+            
         if results.get('distribution'):
             for asset, path in results['distribution'].items():
-                table.add_row(f"{asset.title()}", path)
+                if asset not in ['summary_writer', 'social_promoter']:
+                    table.add_row(f"{asset.replace('_', ' ').title()}", path)
+        
+        table.add_row("Run Directory", results['run_dir'])
         
         console.print(table)
         
-        console.print(f"\n[dim]Generation time: {results['elapsed_time']}[/dim]")
-        console.print(f"[dim]Iterations required: {results['iterations']}[/dim]")
+        # Token usage
+        console.print(f"\n[bold]Token Usage:[/bold]")
+        console.print(f"Total tokens: [green]{results.get('total_tokens', 0):,}[/green]")
+        console.print(f"Generation time: [green]{results['elapsed_time']}[/green]")
+        console.print(f"Iterations required: [green]{results['iterations']}[/green]")
+        
+        # Show token breakdown
+        if debug and results.get('token_usage'):
+            console.print("\n[dim]Token breakdown by agent:[/dim]")
+            for agent, usage in results['token_usage'].items():
+                console.print(f"  {agent}: {usage.get('total_tokens', 0):,} tokens")
         
     else:
         console.print(f"[bold red]❌ Generation failed![/bold red]")
         console.print(f"[red]Reason: {results.get('reason', 'Unknown error')}[/red]")
         
+        if results.get('error'):
+            console.print(f"\n[red]Error: {results['error']}[/red]")
+            
         if results.get('issues'):
             console.print("\n[yellow]Issues found:[/yellow]")
             for issue in results['issues']:
                 console.print(f"  • {issue}")
+                
+        if debug and results.get('traceback'):
+            console.print("\n[dim]Traceback:[/dim]")
+            console.print(results['traceback'])
 
 
 @cli.command()
@@ -147,18 +210,22 @@ def config():
 @cli.command()
 def test():
     """Run a test article generation"""
-    test_topic = "The Impact of ESG Investing on Long-Term Portfolio Performance"
-    console.print(f"[yellow]Running test generation for: {test_topic}[/yellow]")
+    test_topic = "The Role of Factor Investing in Modern Portfolio Construction"
+    
+    console.print(f"[yellow]Running test generation[/yellow]")
+    console.print(f"Topic: {test_topic}\n")
     
     from click.testing import CliRunner
     runner = CliRunner()
-    result = runner.invoke(generate, [test_topic, '--debug'])
+    # Use quick mode for faster testing
+    result = runner.invoke(generate, [test_topic, '--quick'], input='y\n')
     
     if result.exit_code == 0:
-        console.print("[green]Test completed successfully![/green]")
+        console.print("[green]✅ Test completed successfully![/green]")
     else:
-        console.print("[red]Test failed![/red]")
-        console.print(result.output)
+        console.print("[red]❌ Test failed![/red]")
+        if result.exception:
+            console.print(f"Exception: {result.exception}")
 
 
 if __name__ == '__main__':

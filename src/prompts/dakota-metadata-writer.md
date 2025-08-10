@@ -104,11 +104,23 @@ Create a markdown document with the following sections:
 - **Lead Generation Potential**: [High/Medium/Low]
 - **Dakota Solution Alignment**: [Marketplace/Research/Both]
 
+## Related Dakota Learning Center Articles
+- **Total Related Articles**: [Count]
+- **Related Articles**:
+  1. [Article Title] - [URL]
+     - **Relevance**: [How it relates to current article]
+     - **Key Connection**: [Main overlap/synergy]
+  2. [Article Title] - [URL]
+     - **Relevance**: [How it relates to current article]
+     - **Key Connection**: [Main overlap/synergy]
+  3. [Article Title] - [URL]
+     - **Relevance**: [How it relates to current article]
+     - **Key Connection**: [Main overlap/synergy]
+
 ## Implementation Notes
 - **Key Differentiators**: [What makes this unique]
 - **Competitive Advantage**: [Dakota's edge]
 - **Follow-up Opportunities**: [Related topics]
-- **Internal Links**: [Other Dakota articles to reference]
 ```
 
 ## Data Extraction Requirements
