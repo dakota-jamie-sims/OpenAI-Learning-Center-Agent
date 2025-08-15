@@ -1,5 +1,8 @@
 import re
-from typing import Dict, List
+from typing import Dict
+
+import yaml
+from markdown_it import MarkdownIt
 
 def validate_article_template(text: str) -> Dict[str, any]:
     """Validate article follows Dakota's required template structure."""
@@ -7,17 +10,25 @@ def validate_article_template(text: str) -> Dict[str, any]:
     warnings = []
     
     # Check YAML frontmatter
-    if not text.lstrip().startswith("---"):
+    frontmatter_data = {}
+    body = text
+    stripped = text.lstrip()
+    if not stripped.startswith("---"):
         issues.append("Missing YAML frontmatter '---' at top.")
     else:
-        # Extract frontmatter
-        frontmatter_match = re.match(r'---\n(.*?)\n---', text, re.DOTALL)
-        if frontmatter_match:
-            frontmatter = frontmatter_match.group(1)
+        try:
+            _, fm, body = stripped.split('---', 2)
+            body = body.lstrip("\n")
+            try:
+                frontmatter_data = yaml.safe_load(fm) or {}
+            except yaml.YAMLError:
+                issues.append("Malformed YAML frontmatter")
             required_fields = ["title", "date", "word_count", "reading_time"]
             for field in required_fields:
-                if field not in frontmatter:
+                if field not in frontmatter_data:
                     issues.append(f"Missing required frontmatter field: {field}")
+        except ValueError:
+            issues.append("Missing closing '---' for YAML frontmatter")
     
     # Check required sections
     required_sections = [
@@ -25,14 +36,23 @@ def validate_article_template(text: str) -> Dict[str, any]:
         "Key Takeaways",
         "Conclusion",
     ]
+    md = MarkdownIt()
+    tokens = md.parse(body)
+    headings = []
+    for i, token in enumerate(tokens):
+        if token.type == 'heading_open' and i + 1 < len(tokens):
+            inline = tokens[i + 1]
+            if inline.type == 'inline':
+                headings.append(inline.content.strip().lower())
+
     for sec in required_sections:
-        if sec.lower() not in text.lower():
+        if sec.lower() not in headings:
             issues.append(f"Missing required section: {sec}")
     
     # Check forbidden sections
     disallowed = ["Introduction", "Executive Summary", "About Dakota", "Disclaimer"]
     for sec in disallowed:
-        if re.search(rf"^#*\s*{re.escape(sec)}\b", text, flags=re.IGNORECASE | re.MULTILINE):
+        if sec.lower() in headings:
             issues.append(f"Contains disallowed section: {sec}")
     
     # Check word count
