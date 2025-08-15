@@ -1,11 +1,16 @@
-import sys, asyncio
+import sys, asyncio, logging
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 # Initialize GPT-5 compatibility FIRST
-import init_gpt5
+try:
+    import init_gpt5  # noqa: F401 - imported for side effects
+except Exception as exc:  # pragma: no cover - defensive
+    logger.error("GPT-5 setup failed: %s", exc)
 
 # Now import the pipeline
 from src.pipeline.orchestrator import Pipeline
