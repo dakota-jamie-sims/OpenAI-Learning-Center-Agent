@@ -13,7 +13,12 @@ def run_dir_for_topic(base_dir: str, topic: str) -> tuple[str, str]:
     date = datetime.date.today().isoformat()
     # Create path: output/Learning Center Articles/YYYY-MM-DD-slug/
     learning_center_dir = os.path.join(base_dir, "Learning Center Articles")
-    path = os.path.join(learning_center_dir, f"{date}-{slug}")
+    base_path = os.path.join(learning_center_dir, f"{date}-{slug}")
+    path = base_path
+    suffix = 1
+    while os.path.exists(path):
+        path = f"{base_path}-{suffix}"
+        suffix += 1
     os.makedirs(path, exist_ok=True)
     return path, slug
 

@@ -17,7 +17,7 @@ async def test_system_without_api():
     """Test the validation system with a mock article"""
     
     topic = "Top Family Offices in Texas | 2025 Investment Guide"
-    run_dir, slug = run_dir_for_topic("output/Learning Center Articles", topic)
+    run_dir, slug = run_dir_for_topic("output", topic)
     article_path = os.path.join(run_dir, f"{slug[:30]}.md" if len(slug) > 30 else f"{slug}.md")
     
     # Create a mock article with proper citations
