@@ -1,8 +1,12 @@
 import sys, asyncio
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Ensure repository root is on the import path so ``src`` can be resolved
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 # Initialize GPT-5 compatibility FIRST
 import init_gpt5
