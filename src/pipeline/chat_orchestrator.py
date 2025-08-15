@@ -14,7 +14,7 @@ from openai import AsyncOpenAI
 
 from ..agents.chat_agent import ChatAgentManager, ChatAgent, TOOL_DEFINITIONS
 from ..agents.responses_agent import ResponsesAgentManager
-from ..config_working import *
+from ..config import *
 from ..utils.files import run_dir_for_topic, write_text, read_text
 from ..tools.assistant_tools import AssistantTools
 from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearchTool

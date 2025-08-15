@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 from openai import OpenAI
 import asyncio
 from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearchTool
-from ..config_enhanced import VECTOR_STORE_ID
+from ..config import VECTOR_STORE_ID
 
 
 class EnhancedTopicGenerator:

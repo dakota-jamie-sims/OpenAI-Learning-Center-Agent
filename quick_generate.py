@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.pipeline.chat_orchestrator import ChatOrchestrator
-from src.config_working import OUTPUT_DIR
+from src.config import OUTPUT_DIR
 
 
 @click.command()

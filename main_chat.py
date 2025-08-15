@@ -24,7 +24,7 @@ except ImportError:
 sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.pipeline.chat_orchestrator import ChatOrchestrator
-from src.config_enhanced import *
+from src.config import *
 from src.utils.topic_generator import generate_topic_sync, EnhancedTopicGenerator
 from openai import OpenAI
 import random

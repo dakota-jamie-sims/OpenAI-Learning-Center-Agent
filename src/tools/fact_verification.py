@@ -9,10 +9,7 @@ from datetime import datetime, timedelta
 import json
 from urllib.parse import urlparse
 from .data_freshness_validator import DataFreshnessValidator
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-from config_validation import get_validation_config, is_key_fact
+from ..config import get_validation_config, is_key_fact
 
 
 class FactVerificationSystem:

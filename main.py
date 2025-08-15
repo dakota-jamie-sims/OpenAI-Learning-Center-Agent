@@ -24,7 +24,7 @@ except ImportError:
 sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.pipeline.chat_orchestrator import ChatOrchestrator
-from src.config_working import *
+from src.config import *
 
 console = Console()
 

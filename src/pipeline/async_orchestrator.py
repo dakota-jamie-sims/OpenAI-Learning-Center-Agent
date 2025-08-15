@@ -13,7 +13,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from ..agents.base_assistant import AssistantManager, BaseAssistant
-from ..config_enhanced import *
+from ..config import *
 from ..utils.files import run_dir_for_topic, write_text, read_text
 
 

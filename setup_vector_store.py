@@ -13,7 +13,7 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 from openai import OpenAI
 from src.tools.vector_store_handler import VectorStoreHandler
-from src.config_enhanced import KNOWLEDGE_BASE_DIR
+from src.config import KNOWLEDGE_BASE_DIR
 
 
 def main():
