@@ -36,7 +36,7 @@ learning-center-agent-open-ai/
 │   ├── agents/                   # Agent implementations
 │   │   ├── researcher_agent.py
 │   │   ├── outliner_agent.py
-│   │   ├── contentWriter_agent.py
+│   │   ├── content_writer.py
 │   │   └── reviewer_agent.py
 │   ├── pipeline/                 # Orchestration
 │   │   └── orchestrator.py

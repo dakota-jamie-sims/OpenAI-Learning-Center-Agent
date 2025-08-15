@@ -10,7 +10,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from agents.researcher_agent import ResearcherAgent
 from agents.outliner_agent import OutlinerAgent
-from agents.contentWriter_agent import ContentWriterAgent
+from agents import content_writer
 from agents.reviewer_agent import ReviewerAgent
 
 class ArticlePipeline:
@@ -26,7 +26,7 @@ class ArticlePipeline:
         # Initialize agents
         self.researcher = ResearcherAgent(self.client)
         self.outliner = OutlinerAgent(self.client)
-        self.writer = ContentWriterAgent(self.client)
+        self.writer = content_writer.create()
         self.reviewer = ReviewerAgent(self.client)
         
         # Get vector store ID if available
