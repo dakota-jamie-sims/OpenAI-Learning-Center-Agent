@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 from openai import OpenAI
 import asyncio
 from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearchTool
-from ..config_enhanced import VECTOR_STORE_ID
+from ..config import settings
 
 
 class EnhancedTopicGenerator:
@@ -16,8 +16,8 @@ class EnhancedTopicGenerator:
     def __init__(self):
         self.client = OpenAI()
         self.vector_handler = VectorStoreHandler(self.client)
-        if VECTOR_STORE_ID:
-            self.vector_handler.vector_store_id = VECTOR_STORE_ID
+        if settings.VECTOR_STORE_ID:
+            self.vector_handler.vector_store_id = settings.VECTOR_STORE_ID
         self.kb_search = KnowledgeBaseSearchTool(self.vector_handler)
     
     async def analyze_knowledge_base_themes(self) -> Dict[str, Any]:

@@ -13,18 +13,11 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 
-# Load environment variables
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.pipeline.chat_orchestrator import ChatOrchestrator
-from src.config_working import *
+from src.config import settings
 
 console = Console()
 
@@ -61,8 +54,8 @@ def generate(topic: str, model: str, no_validation: bool, debug: bool, words: in
         min_sources = max(5, min(15, words // 200))
         article_type = "Custom Length"
     else:
-        target_words = MIN_WORD_COUNT
-        min_sources = MIN_SOURCES
+        target_words = settings.MIN_WORD_COUNT
+        min_sources = settings.MIN_SOURCES
         article_type = "Full Article"
     
     # Show configuration
@@ -74,7 +67,7 @@ def generate(topic: str, model: str, no_validation: bool, debug: bool, words: in
     table.add_row("Article Type", article_type)
     table.add_row("Target Words", f"{target_words:,}")
     table.add_row("Min Sources", str(min_sources))
-    table.add_row("Max Iterations", str(MAX_ITERATIONS))
+    table.add_row("Max Iterations", str(settings.MAX_ITERATIONS))
     table.add_row("API Mode", "Chat Completions")
     
     console.print(table)
@@ -189,20 +182,20 @@ def config():
     table.add_column("Value", style="green")
     
     # Quality settings
-    table.add_row("Quality", "Min Word Count", str(MIN_WORD_COUNT))
-    table.add_row("Quality", "Min Sources", str(MIN_SOURCES))
-    table.add_row("Quality", "Max Iterations", str(MAX_ITERATIONS))
+    table.add_row("Quality", "Min Word Count", str(settings.MIN_WORD_COUNT))
+    table.add_row("Quality", "Min Sources", str(settings.MIN_SOURCES))
+    table.add_row("Quality", "Max Iterations", str(settings.MAX_ITERATIONS))
     table.add_row("Quality", "Min Reading Time", f"{MIN_READING_TIME} minutes")
     
     # Research settings
-    table.add_row("Research", "Max Web Calls", str(MAX_WEB_CALLS))
-    table.add_row("Research", "Max File Calls", str(MAX_FILE_CALLS))
+    table.add_row("Research", "Max Web Calls", str(settings.MAX_WEB_CALLS))
+    table.add_row("Research", "Max File Calls", str(settings.MAX_FILE_CALLS))
     
     # Features
-    table.add_row("Features", "Evidence Tracking", "✅" if ENABLE_EVIDENCE else "❌")
-    table.add_row("Features", "Claim Checking", "✅" if ENABLE_CLAIM_CHECK else "❌")
-    table.add_row("Features", "SEO Optimization", "✅" if ENABLE_SEO else "❌")
-    table.add_row("Features", "Social Media", "✅" if ENABLE_SOCIAL else "❌")
+    table.add_row("Features", "Evidence Tracking", "✅" if settings.ENABLE_EVIDENCE else "❌")
+    table.add_row("Features", "Claim Checking", "✅" if settings.ENABLE_CLAIM_CHECK else "❌")
+    table.add_row("Features", "SEO Optimization", "✅" if settings.ENABLE_SEO else "❌")
+    table.add_row("Features", "Social Media", "✅" if settings.ENABLE_SOCIAL else "❌")
     
     console.print(table)
 

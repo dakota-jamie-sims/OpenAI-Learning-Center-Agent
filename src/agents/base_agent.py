@@ -1,6 +1,5 @@
 from agents import Agent
 from typing import Optional
-from .. import config
 import os
 from pathlib import Path
 

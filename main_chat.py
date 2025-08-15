@@ -13,18 +13,11 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 
-# Load environment variables
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.pipeline.chat_orchestrator import ChatOrchestrator
-from src.config_enhanced import *
+from src.config import settings
 from src.utils.topic_generator import generate_topic_sync, EnhancedTopicGenerator
 from openai import OpenAI
 import random
@@ -177,8 +170,8 @@ def generate(topic: str, model: str, debug: bool, no_kb: bool, words: int, quick
         min_sources = max(5, min(15, words // 200))  # 5-15 sources
         article_type = "Custom Length"
     else:
-        target_words = MIN_WORD_COUNT
-        min_sources = MIN_SOURCES
+        target_words = settings.MIN_WORD_COUNT
+        min_sources = settings.MIN_SOURCES
         article_type = "Full Article"
     
     # Show configuration
@@ -191,7 +184,7 @@ def generate(topic: str, model: str, debug: bool, no_kb: bool, words: int, quick
     table.add_row("Target Words", f"{target_words:,}")
     table.add_row("Min Sources", str(min_sources))
     table.add_row("Knowledge Base", "Disabled" if no_kb else "Vector Store")
-    table.add_row("Max Iterations", str(MAX_ITERATIONS))
+    table.add_row("Max Iterations", str(settings.MAX_ITERATIONS))
     
     console.print(table)
     console.print()
@@ -203,7 +196,7 @@ def generate(topic: str, model: str, debug: bool, no_kb: bool, words: int, quick
         return
     
     # Check for vector store
-    if not no_kb and not os.getenv("VECTOR_STORE_ID"):
+    if not no_kb and not settings.VECTOR_STORE_ID:
         console.print("[yellow]⚠️  Warning: No vector store ID found[/yellow]")
         console.print("Run [cyan]python setup_vector_store.py[/cyan] to initialize")
         if not click.confirm("Continue without knowledge base?"):
@@ -324,24 +317,24 @@ def config():
     
     # API Configuration
     table.add_row("API", "Mode", "Chat Completions")
-    table.add_row("API", "Default Model", DEFAULT_MODELS.get("writer", "gpt-4"))
-    table.add_row("API", "Vector Store", "✅" if os.getenv("VECTOR_STORE_ID") else "❌")
+    table.add_row("API", "Default Model", settings.DEFAULT_MODELS.get("writer", "gpt-4"))
+    table.add_row("API", "Vector Store", "✅" if settings.VECTOR_STORE_ID else "❌")
     
     # Quality settings
-    table.add_row("Quality", "Min Word Count", f"{MIN_WORD_COUNT:,}")
-    table.add_row("Quality", "Min Sources", str(MIN_SOURCES))
-    table.add_row("Quality", "Max Iterations", str(MAX_ITERATIONS))
+    table.add_row("Quality", "Min Word Count", f"{settings.MIN_WORD_COUNT:,}")
+    table.add_row("Quality", "Min Sources", str(settings.MIN_SOURCES))
+    table.add_row("Quality", "Max Iterations", str(settings.MAX_ITERATIONS))
     table.add_row("Quality", "Min Reading Time", f"{MIN_READING_TIME} minutes")
     
     # Research settings
-    table.add_row("Research", "Max Web Calls", str(MAX_WEB_CALLS))
-    table.add_row("Research", "Max KB Searches", str(MAX_FILE_CALLS))
+    table.add_row("Research", "Max Web Calls", str(settings.MAX_WEB_CALLS))
+    table.add_row("Research", "Max KB Searches", str(settings.MAX_FILE_CALLS))
     
     # Features
-    table.add_row("Features", "Evidence Tracking", "✅" if ENABLE_EVIDENCE else "❌")
-    table.add_row("Features", "Claim Checking", "✅" if ENABLE_CLAIM_CHECK else "❌")
-    table.add_row("Features", "SEO Optimization", "✅" if ENABLE_SEO else "❌")
-    table.add_row("Features", "Distribution Assets", "✅" if ENABLE_SOCIAL else "❌")
+    table.add_row("Features", "Evidence Tracking", "✅" if settings.ENABLE_EVIDENCE else "❌")
+    table.add_row("Features", "Claim Checking", "✅" if settings.ENABLE_CLAIM_CHECK else "❌")
+    table.add_row("Features", "SEO Optimization", "✅" if settings.ENABLE_SEO else "❌")
+    table.add_row("Features", "Distribution Assets", "✅" if settings.ENABLE_SOCIAL else "❌")
     
     # Token caps
     table.add_row("Tokens", "Synthesis Max", f"{OUTPUT_TOKEN_CAPS['synth_max_tokens']:,}")

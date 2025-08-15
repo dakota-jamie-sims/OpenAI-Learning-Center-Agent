@@ -14,7 +14,7 @@ from openai import AsyncOpenAI
 
 from ..agents.chat_agent import ChatAgentManager, ChatAgent, TOOL_DEFINITIONS
 from ..agents.responses_agent import ResponsesAgentManager
-from ..config_working import *
+from ..config import settings
 from ..utils.files import run_dir_for_topic, write_text, read_text
 from ..tools.assistant_tools import AssistantTools
 from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearchTool
@@ -182,9 +182,9 @@ class ChatOrchestrator:
         vector_store_id = os.getenv("OPENAI_VECTOR_STORE_ID") or self.vector_handler.create_or_get_vector_store()
         
         # Upload knowledge base files if vector store is new
-        if not os.getenv("VECTOR_STORE_ID"):
+        if not settings.VECTOR_STORE_ID:
             kb_files = self.vector_handler.upload_knowledge_base(
-                str(KNOWLEDGE_BASE_DIR),
+                str(settings.KNOWLEDGE_BASE_DIR),
                 max_files=100
             )
             print(f"✅ Uploaded {len(kb_files)} files to vector store")
@@ -303,7 +303,7 @@ class ChatOrchestrator:
             self.manager.create_agent_from_prompt(
                 name=config["name"],
                 prompt_file=config["prompt_file"],
-                model=DEFAULT_MODELS.get(config["name"].replace("_", ""), "gpt-4-turbo-preview"),
+                model=settings.DEFAULT_MODELS.get(config["name"].replace("_", ""), "gpt-4-turbo-preview"),
                 temperature=config.get("temperature", 0.7),
                 tools=config.get("tools", []),
                 tool_handlers=self.tool_handlers
@@ -369,7 +369,7 @@ Requirements:
 - Maintain all source attributions
 - Highlight Dakota-relevant angles
 - Focus on actionable insights
-- Maximum {OUTPUT_TOKEN_CAPS['synth_max_tokens']} tokens"""
+- Maximum {settings.OUTPUT_TOKEN_CAPS['synth_max_tokens']} tokens"""
 
         result = await self.manager.run_agent("research_synthesizer", prompt)
         
@@ -470,7 +470,7 @@ Write the complete article now. Include the "Related Dakota Learning Center Arti
         
         agent_prompts = []
         
-        if ENABLE_SEO:
+        if settings.ENABLE_SEO:
             agent_prompts.append(("seo_specialist", f"""Generate comprehensive SEO metadata for: {topic}
 
 Requirements:
@@ -482,7 +482,7 @@ Requirements:
 
 Format as markdown sections and return the content (don't save to file)"""))
         
-        if ENABLE_METRICS:
+        if settings.ENABLE_METRICS:
             agent_prompts.append(("metrics_analyzer", f"""Analyze quality metrics for article at: {article_path}
 
 Check:
@@ -546,7 +546,7 @@ Check:
 Return: APPROVED or REJECTED with specific issues listed.""")
         ]
         
-        if ENABLE_CLAIM_CHECK:
+        if settings.ENABLE_CLAIM_CHECK:
             agent_prompts.append(("claim_checker", f"""Verify all factual claims in article at: {article_path}
 
 Check:
@@ -627,7 +627,7 @@ Requirements:
         
         agent_prompts = []
         
-        if ENABLE_SUMMARY:
+        if settings.ENABLE_SUMMARY:
             agent_prompts.append(("summary_writer", 
                 f"""Create executive summary for article at: {article_path}
                 
@@ -637,7 +637,7 @@ Requirements:
 - Clear value proposition
 Save to: {summary_path}"""))
         
-        if ENABLE_SOCIAL:
+        if settings.ENABLE_SOCIAL:
             agent_prompts.append(("social_promoter",
                 f"""Create social media content for article at: {article_path}
                 
@@ -669,11 +669,11 @@ Save to: {social_path}"""))
         self.current_topic = topic
         
         # Use provided values or defaults
-        self.min_words = min_words or MIN_WORD_COUNT
-        self.min_sources = min_sources or MIN_SOURCES
+        self.min_words = min_words or settings.MIN_WORD_COUNT
+        self.min_sources = min_sources or settings.MIN_SOURCES
         
         # Setup
-        run_dir, slug = run_dir_for_topic(RUNS_DIR, topic)
+        run_dir, slug = run_dir_for_topic(settings.RUNS_DIR, topic)
         # Use short topic-based filenames
         article_filename = f"{slug[:30]}.md" if len(slug) > 30 else f"{slug}.md"
         article_path = os.path.join(run_dir, article_filename)
@@ -699,7 +699,7 @@ Save to: {social_path}"""))
             self._kb_research = research.get('kb', '')
             
             # Phase 2.5: Evidence Package (optional)
-            if ENABLE_EVIDENCE:
+            if settings.ENABLE_EVIDENCE:
                 print("\n📦 Phase 2.5: Creating evidence package...")
                 evidence_prompt = f"""Create JSON evidence package from research:
                 
@@ -734,9 +734,9 @@ Format as markdown with sections for sources, quotes, and confidence levels. Ret
             iteration_count = 0
             validation = await self.phase6_validation(article_path)
             
-            while not validation["approved"] and iteration_count < MAX_ITERATIONS:
+            while not validation["approved"] and iteration_count < settings.MAX_ITERATIONS:
                 iteration_count += 1
-                print(f"\n❌ Validation failed. Iteration {iteration_count}/{MAX_ITERATIONS}")
+                print(f"\n❌ Validation failed. Iteration {iteration_count}/{settings.MAX_ITERATIONS}")
                 print(f"Issues: {', '.join(validation['issues'][:3])}")
                 
                 await self.phase65_iteration(validation, article_path)
@@ -772,7 +772,7 @@ Format as markdown with sections for sources, quotes, and confidence levels. Ret
             
             # Collect evidence data if available
             evidence_data = ""
-            if ENABLE_EVIDENCE and hasattr(self, '_evidence_content'):
+            if settings.ENABLE_EVIDENCE and hasattr(self, '_evidence_content'):
                 evidence_data = self._evidence_content
             
             # Collect SEO data if available

@@ -13,7 +13,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from ..agents.base_assistant import AssistantManager, BaseAssistant
-from ..config_enhanced import *
+from ..config import settings
 from ..utils.files import run_dir_for_topic, write_text, read_text
 
 
@@ -31,7 +31,7 @@ class AsyncOrchestrator:
         print("🚀 Initializing assistants...")
         
         # Create vector store for knowledge base
-        kb_files = list(Path(KNOWLEDGE_BASE_DIR).rglob("*.md"))
+        kb_files = list(Path(settings.KNOWLEDGE_BASE_DIR).rglob("*.md"))
         if kb_files:
             self.manager.create_vector_store("Dakota Knowledge Base", [str(f) for f in kb_files[:50]])
         
@@ -61,7 +61,7 @@ class AsyncOrchestrator:
             self.manager.create_assistant_from_prompt(
                 name=name,
                 prompt_file=prompt_file,
-                model=DEFAULT_MODELS.get(name.replace("_", ""), "gpt-4-turbo-preview"),
+                model=settings.DEFAULT_MODELS.get(name.replace("_", ""), "gpt-4-turbo-preview"),
                 tools=tools,
                 use_vector_store=use_vector_store
             )
@@ -98,9 +98,9 @@ class AsyncOrchestrator:
         web_prompt = f"""Research topic: {topic}
         
 Budget directives:
-- Use at most {MAX_WEB_CALLS} web searches
+- Use at most {settings.MAX_WEB_CALLS} web searches
 - Focus on authoritative sources from preferred domains
-- Keep final brief under {OUTPUT_TOKEN_CAPS['synth_max_tokens']} tokens
+- Keep final brief under {settings.OUTPUT_TOKEN_CAPS['synth_max_tokens']} tokens
 
 Deliver:
 - Structured research brief with full citations
@@ -114,7 +114,7 @@ Use file search on our Dakota knowledge base to find:
 - Similar topics we've covered
 - Dakota's perspective on this area
 
-Budget: Maximum {MAX_FILE_CALLS} searches
+Budget: Maximum {settings.MAX_FILE_CALLS} searches
 Output: Structured brief with specific file references"""
 
         # Run both researchers in parallel
@@ -132,7 +132,7 @@ Output: Structured brief with specific file references"""
     
     async def phase25_evidence_packaging(self, research: Dict[str, Any], run_dir: str) -> str:
         """Phase 2.5: Create evidence package"""
-        if not ENABLE_EVIDENCE:
+        if not settings.ENABLE_EVIDENCE:
             return ""
         
         print("\n📦 Phase 2.5: Creating evidence package...")
@@ -178,7 +178,7 @@ Requirements:
 - Combine insights cohesively
 - Maintain source attribution
 - Highlight Dakota-relevant angles
-- Stay under {OUTPUT_TOKEN_CAPS['synth_max_tokens']} tokens"""
+- Stay under {settings.OUTPUT_TOKEN_CAPS['synth_max_tokens']} tokens"""
 
         result = await self.run_assistant_async("research_synthesizer", prompt)
         return result["result"]
@@ -192,8 +192,8 @@ Requirements:
 Topic: {topic}
 
 CRITICAL REQUIREMENTS:
-- Minimum {MIN_WORD_COUNT} words (currently set to {MIN_WORD_COUNT})
-- Minimum {MIN_SOURCES} inline citations with full URLs
+- Minimum {settings.MIN_WORD_COUNT} words (currently set to {settings.MIN_WORD_COUNT})
+- Minimum {settings.MIN_SOURCES} inline citations with full URLs
 - Follow the EXACT template in your instructions
 - Include all required sections: {', '.join(REQUIRED_SECTIONS)}
 - Exclude forbidden sections: {', '.join(FORBIDDEN_SECTIONS)}
@@ -218,7 +218,7 @@ Remember: This must be publication-ready with zero compromises on quality."""
         
         tasks = []
         
-        if ENABLE_SEO:
+        if settings.ENABLE_SEO:
             seo_prompt = f"""Generate comprehensive SEO metadata for article about: {topic}
             
 Include:
@@ -229,12 +229,12 @@ Include:
 - Schema markup recommendations"""
             tasks.append(("seo", self.run_assistant_async("seo_specialist", seo_prompt)))
         
-        if ENABLE_METRICS:
+        if settings.ENABLE_METRICS:
             metrics_prompt = f"""Analyze article quality metrics for: {article_path}
             
 Check:
-- Word count vs minimum ({MIN_WORD_COUNT})
-- Source count vs minimum ({MIN_SOURCES})
+- Word count vs minimum ({settings.MIN_WORD_COUNT})
+- Source count vs minimum ({settings.MIN_SOURCES})
 - Required sections presence
 - Readability scores
 - Passive voice percentage"""
@@ -256,8 +256,8 @@ Check:
         fact_check_prompt = f"""Perform comprehensive fact-checking:
 
 1. Verify article meets ALL requirements:
-   - Minimum {MIN_WORD_COUNT} words
-   - Minimum {MIN_SOURCES} sources
+   - Minimum {settings.MIN_WORD_COUNT} words
+   - Minimum {settings.MIN_SOURCES} sources
    - All required sections present
    - No forbidden sections
 
@@ -275,7 +275,7 @@ Return APPROVED or REJECTED with specific issues."""
 
         tasks = [self.run_assistant_async("fact_checker", fact_check_prompt)]
         
-        if ENABLE_CLAIM_CHECK:
+        if settings.ENABLE_CLAIM_CHECK:
             claim_prompt = f"""Verify all factual claims in the article.
             Check for:
             - Unsupported statements
@@ -329,7 +329,7 @@ Make all necessary corrections and ensure the article meets ALL requirements."""
         
         tasks = []
         
-        if ENABLE_SUMMARY:
+        if settings.ENABLE_SUMMARY:
             summary_prompt = f"""Create executive summary for article at: {article_path}
             
 Requirements:
@@ -339,7 +339,7 @@ Requirements:
 - Professional tone"""
             tasks.append(("summary", self.run_assistant_async("summary_writer", summary_prompt)))
         
-        if ENABLE_SOCIAL:
+        if settings.ENABLE_SOCIAL:
             social_prompt = f"""Create social media content for article at: {article_path}
             
 Include:
@@ -368,7 +368,7 @@ Include:
         start_time = time.time()
         
         # Setup
-        run_dir, slug = run_dir_for_topic(RUNS_DIR, topic)
+        run_dir, slug = run_dir_for_topic(settings.RUNS_DIR, topic)
         article_path = os.path.join(run_dir, f"{slug}-article.md")
         metadata_path = os.path.join(run_dir, f"{slug}-metadata.json")
         
@@ -400,9 +400,9 @@ Include:
             iteration_count = 0
             validation = await self.phase6_validation(article_path, metadata_path)
             
-            while not validation["approved"] and iteration_count < MAX_ITERATIONS:
+            while not validation["approved"] and iteration_count < settings.MAX_ITERATIONS:
                 iteration_count += 1
-                print(f"\n❌ Article rejected. Iteration {iteration_count}/{MAX_ITERATIONS}")
+                print(f"\n❌ Article rejected. Iteration {iteration_count}/{settings.MAX_ITERATIONS}")
                 print(f"Issues: {', '.join(validation['issues'][:3])}")
                 
                 await self.phase65_iteration(validation, article_path, metadata_path)
@@ -483,7 +483,7 @@ Include:
 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Metrics Summary
-- **Word Count**: {word_count} (minimum: {MIN_WORD_COUNT})
+- **Word Count**: {word_count} (minimum: {settings.MIN_WORD_COUNT})
 - **Iterations Required**: {iterations}
 - **Final Status**: {"✅ APPROVED" if validation['approved'] else "❌ REJECTED"}
 
@@ -504,7 +504,7 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 {enhancements.get('metrics', 'Not performed')[:500]}...
 
 ## Compliance Checklist
-- [{"✅" if word_count >= MIN_WORD_COUNT else "❌"}] Minimum word count ({MIN_WORD_COUNT})
+- [{"✅" if word_count >= settings.MIN_WORD_COUNT else "❌"}] Minimum word count ({settings.MIN_WORD_COUNT})
 - [{"✅" if validation['approved'] else "❌"}] All sources verified
 - [{"✅" if validation['approved'] else "❌"}] Required sections present
 - [{"✅" if validation['approved'] else "❌"}] No forbidden sections

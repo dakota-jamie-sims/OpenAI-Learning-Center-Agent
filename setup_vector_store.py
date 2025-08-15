@@ -6,19 +6,18 @@ Run this once to create and populate the vector store
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
+
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
 from openai import OpenAI
 from src.tools.vector_store_handler import VectorStoreHandler
-from src.config_enhanced import KNOWLEDGE_BASE_DIR
+from src.config import settings
 
 
 def main():
     """Initialize vector store with knowledge base files"""
-    load_dotenv()
     
     # Check for API key
     api_key = os.getenv("OPENAI_API_KEY")
@@ -35,7 +34,7 @@ def main():
     handler = VectorStoreHandler(client)
     
     # Check if vector store already exists
-    existing_id = os.getenv("VECTOR_STORE_ID")
+    existing_id = settings.VECTOR_STORE_ID
     if existing_id:
         print(f"ℹ️  Found existing vector store ID: {existing_id}")
         response = input("Do you want to create a new vector store? (y/N): ")
@@ -48,9 +47,9 @@ def main():
     vector_store_id = handler.create_or_get_vector_store("Dakota Knowledge Base")
     
     # Check knowledge base directory
-    kb_path = Path(KNOWLEDGE_BASE_DIR)
+    kb_path = Path(settings.KNOWLEDGE_BASE_DIR)
     if not kb_path.exists():
-        print(f"❌ Error: Knowledge base directory not found: {KNOWLEDGE_BASE_DIR}")
+        print(f"❌ Error: Knowledge base directory not found: {settings.KNOWLEDGE_BASE_DIR}")
         return
     
     # Count files
@@ -63,7 +62,7 @@ def main():
     
     # Upload files
     print(f"\n📤 Uploading files to vector store...")
-    uploaded = handler.upload_knowledge_base(str(KNOWLEDGE_BASE_DIR), max_files=100)
+    uploaded = handler.upload_knowledge_base(settings.KNOWLEDGE_BASE_DIR, max_files=100)
     
     print(f"\n✅ Successfully uploaded {len(uploaded)} files")
     print(f"✅ Vector Store ID: {vector_store_id}")

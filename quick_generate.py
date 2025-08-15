@@ -12,12 +12,8 @@ import click
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
-# Load environment variables
-from dotenv import load_dotenv
-load_dotenv()
-
 from src.pipeline.chat_orchestrator import ChatOrchestrator
-from src.config_working import OUTPUT_DIR
+from src.config import settings
 
 
 @click.command()
@@ -39,7 +35,7 @@ def generate(topic: str, words: int, sources: int):
             orchestrator = ChatOrchestrator()
             
             # Skip KB initialization if no vector store
-            if not os.getenv("VECTOR_STORE_ID"):
+            if not settings.VECTOR_STORE_ID:
                 print("⚠️  No vector store found, skipping KB search")
                 # Monkey patch to skip KB
                 orchestrator._handle_kb_search = lambda *args, **kwargs: {"error": "KB disabled"}

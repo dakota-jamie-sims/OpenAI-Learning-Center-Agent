@@ -1,6 +1,6 @@
 import asyncio, os, re
 from agents import Runner
-from ..config import RUNS_DIR, OUTPUT_TOKEN_CAPS, MAX_WEB_CALLS, MAX_FILE_CALLS, ENABLE_EVIDENCE, ENABLE_CLAIM_CHECK, ENABLE_SEO, ENABLE_METRICS, ENABLE_SUMMARY, ENABLE_SOCIAL, FACT_CHECK_MANDATORY, MAX_ITERATIONS, MIN_WORD_COUNT, MIN_SOURCES
+from ..config import settings
 from ..utils.files import run_dir_for_topic, write_text, read_text
 from ..agents import web_researcher, kb_researcher, research_synthesizer, content_writer, seo_specialist, fact_checker, summary_writer, social_promoter, iteration_manager, metrics_analyzer, evidence_packager, claim_checker
 from ..tools.function_tools import write_file, read_file, list_directory, validate_article, verify_urls
@@ -10,7 +10,7 @@ URL_RE = re.compile(r"https?://[^\s)>\]]+", re.IGNORECASE)
 class Pipeline:
     def __init__(self, topic: str):
         self.topic = topic
-        self.run_dir, self.slug = run_dir_for_topic(RUNS_DIR, topic)
+        self.run_dir, self.slug = run_dir_for_topic(settings.RUNS_DIR, topic)
         self.prefix = self.slug
         self.article_path = os.path.join(self.run_dir, f"{self.prefix}-article.md")
         self.summary_path = os.path.join(self.run_dir, f"{self.prefix}-summary.md")
@@ -19,13 +19,13 @@ class Pipeline:
         self.proof_path = os.path.join(self.run_dir, "proof_pack.json")
 
     async def phase2_parallel_research(self) -> dict:
-        caps = OUTPUT_TOKEN_CAPS
+        caps = settings.OUTPUT_TOKEN_CAPS
         w = web_researcher.create()
         k = kb_researcher.create()
         web_prompt = f"""Research topic: {self.topic}
 
 Budget directives:
-- Use at most {MAX_WEB_CALLS} web-search tool calls. De-duplicate queries and reuse results.
+- Use at most {settings.MAX_WEB_CALLS} web-search tool calls. De-duplicate queries and reuse results.
 - Keep the final brief concise but complete (<= {caps['synth_max_tokens']} tokens).
 
 Deliver:
@@ -34,7 +34,7 @@ Deliver:
         kb_prompt = f"""Use File Search to gather our internal context for: {self.topic}.
 
 Budget directives:
-- Use at most {MAX_FILE_CALLS} file-search calls; prioritize relevant chunks.
+- Use at most {settings.MAX_FILE_CALLS} file-search calls; prioritize relevant chunks.
 - Keep your final brief compact (<= {caps['synth_max_tokens']} tokens).
 
 Deliver:
@@ -46,7 +46,7 @@ Deliver:
         return {"web": str(web_res.final_output), "kb": str(kb_res.final_output)}
 
     async def phase25_evidence_packager(self, briefs: dict) -> str:
-        if not ENABLE_EVIDENCE:
+        if not settings.ENABLE_EVIDENCE:
             return ""
         agent = evidence_packager.create()
         agent.tools.extend([write_file])
@@ -72,7 +72,7 @@ Inputs:
         return self.proof_path
 
     async def phase3_synthesis(self, briefs: dict) -> str:
-        caps = OUTPUT_TOKEN_CAPS
+        caps = settings.OUTPUT_TOKEN_CAPS
         agent = research_synthesizer.create()
         prompt = f"""Synthesize the following research into a unified brief for writing.
 Budget directive: keep the synthesis <= {caps['synth_max_tokens']} tokens.
@@ -87,7 +87,7 @@ Budget directive: keep the synthesis <= {caps['synth_max_tokens']} tokens.
         return str(res.final_output)
 
     async def phase4_content(self, synthesis: str) -> str:
-        caps = OUTPUT_TOKEN_CAPS
+        caps = settings.OUTPUT_TOKEN_CAPS
         agent = content_writer.create()
         agent.tools.extend([write_file])
         prompt = f"""Write a comprehensive Dakota Learning Center article following your MANDATORY template.
@@ -115,18 +115,18 @@ Remember: The article MUST be at least 1,750 words with proper YAML frontmatter 
         return self.article_path
 
     async def phase5_parallel_analysis(self) -> dict:
-        caps = OUTPUT_TOKEN_CAPS
+        caps = settings.OUTPUT_TOKEN_CAPS
         results = {}
         tasks = []
 
-        if ENABLE_METRICS:
+        if settings.ENABLE_METRICS:
             m = metrics_analyzer.create()
             prompt_m = f"""Analyze objective quality metrics for:
 {self.article_path}
 Budget: <= {caps['metrics_max_tokens']} tokens. Return counts and issues only."""
             tasks.append(("metrics", Runner.run(m, prompt_m)))
 
-        if ENABLE_SEO:
+        if settings.ENABLE_SEO:
             s = seo_specialist.create()
             s.tools.extend([write_file])
             prompt_s = f"""Generate SEO metadata and related links for topic: {self.topic}.
@@ -142,7 +142,7 @@ Then include a short summary of what you wrote in your final answer."""
         return results
 
     async def phase6_validation(self) -> dict:
-        caps = OUTPUT_TOKEN_CAPS
+        caps = settings.OUTPUT_TOKEN_CAPS
         # Fact-Checker
         fc = fact_checker.create()
         fc.tools.extend([read_file, validate_article, verify_urls])
@@ -170,7 +170,7 @@ Inputs:
 
         tasks = [Runner.run(fc, prompt_fc)]
         # Claim Checker (optional)
-        if ENABLE_CLAIM_CHECK:
+        if settings.ENABLE_CLAIM_CHECK:
             cc = claim_checker.create()
             prompt_cc = f"""Run the claim checker per your prompt. JSON only.
 Draft path: {self.article_path}"""
@@ -178,7 +178,7 @@ Draft path: {self.article_path}"""
 
         results = await asyncio.gather(*tasks)
         fc_text = str(results[0].final_output)
-        cc_text = str(results[1].final_output) if ENABLE_CLAIM_CHECK and len(results) > 1 else ""
+        cc_text = str(results[1].final_output) if settings.ENABLE_CLAIM_CHECK and len(results) > 1 else ""
 
         fc_ok = "✅ APPROVED" in fc_text or "APPROVED" in fc_text.upper()
         cc_ok = ("APPROVE" in cc_text.upper()) if cc_text else True
@@ -221,16 +221,16 @@ Then stop.
         return str(res.final_output)
 
     async def phase7_distribution(self) -> dict:
-        caps = OUTPUT_TOKEN_CAPS
+        caps = settings.OUTPUT_TOKEN_CAPS
         results = {}
         tasks = []
 
-        if ENABLE_SUMMARY:
+        if settings.ENABLE_SUMMARY:
             sw = summary_writer.create()
             sw.tools.extend([write_file])
             tasks.append(("summary", Runner.run(sw, f"Create a concise executive summary (<= {caps['summary_max_tokens']} tokens). Write to: {self.summary_path}")))
 
-        if ENABLE_SOCIAL:
+        if settings.ENABLE_SOCIAL:
             sp = social_promoter.create()
             sp.tools.extend([write_file])
             tasks.append(("social", Runner.run(sp, f"Create a social post set (<= {caps['social_max_tokens']} tokens). Write to: {self.social_path}")))
@@ -247,7 +247,7 @@ Then stop.
         briefs = await self.phase2_parallel_research()
         
         # Phase 2.5: Evidence Packaging
-        if ENABLE_EVIDENCE:
+        if settings.ENABLE_EVIDENCE:
             print("\n📦 Phase 2.5: Creating evidence package...")
             await self.phase25_evidence_packager(briefs)
         
@@ -269,9 +269,9 @@ Then stop.
         
         # Handle rejections with iteration
         iteration_count = 0
-        while qc["decision"] == "REJECTED" and iteration_count < MAX_ITERATIONS:
+        while qc["decision"] == "REJECTED" and iteration_count < settings.MAX_ITERATIONS:
             iteration_count += 1
-            print(f"\n❌ Article REJECTED. Starting iteration {iteration_count}/{MAX_ITERATIONS}...")
+            print(f"\n❌ Article REJECTED. Starting iteration {iteration_count}/{settings.MAX_ITERATIONS}...")
             print(f"Issues found: {', '.join(qc['issues'][:3])}...")
             
             # Phase 6.5: Fix issues
@@ -283,7 +283,7 @@ Then stop.
         
         # Final check - if still rejected after max iterations, stop
         if qc["decision"] == "REJECTED":
-            print(f"\n❌ Article still REJECTED after {MAX_ITERATIONS} iterations. Stopping.")
+            print(f"\n❌ Article still REJECTED after {settings.MAX_ITERATIONS} iterations. Stopping.")
             return {
                 "run_dir": self.run_dir,
                 "status": "FAILED",
