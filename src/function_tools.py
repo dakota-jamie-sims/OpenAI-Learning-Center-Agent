@@ -1,7 +1,7 @@
 from agents import function_tool
 from typing import List
 from ..utils.files import write_text, read_text, list_dir
-from .validators import validate_article_template, count_sources
+from .tools.validators import validate_article_template, count_sources
 from .link_checker import check_urls, get_url_verification_summary
 
 @function_tool
