@@ -21,6 +21,7 @@ from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearch
 from ..tools.fact_verification import EnhancedFactChecker
 from ..tools.source_validator import SourceValidator
 from openai import OpenAI
+from ..utils.logging import get_logger
 
 
 class ChatOrchestrator:
@@ -43,10 +44,11 @@ class ChatOrchestrator:
         
         # Initialize source validator
         self.source_validator = SourceValidator()
-        
+
         self.tool_handlers = self._setup_tool_handlers()
         self.token_usage = {}
         self.current_topic = None
+        self.logger = get_logger(__name__)
         
     def _setup_tool_handlers(self) -> Dict[str, Any]:
         """Setup tool handlers for function calling"""
@@ -174,10 +176,10 @@ class ChatOrchestrator:
     
     async def initialize_agents(self):
         """Initialize all agents for the pipeline"""
-        print("🚀 Initializing Chat Completion agents...")
-        
+        self.logger.info("Initializing Chat Completion agents...", extra={"phase": "INIT"})
+
         # Initialize vector store for knowledge base
-        print("📚 Setting up knowledge base vector store...")
+        self.logger.info("Setting up knowledge base vector store...", extra={"phase": "INIT"})
         # Use the OPENAI_VECTOR_STORE_ID if available
         vector_store_id = os.getenv("OPENAI_VECTOR_STORE_ID") or self.vector_handler.create_or_get_vector_store()
         
@@ -187,7 +189,9 @@ class ChatOrchestrator:
                 str(KNOWLEDGE_BASE_DIR),
                 max_files=100
             )
-            print(f"✅ Uploaded {len(kb_files)} files to vector store")
+            self.logger.info(
+                f"Uploaded {len(kb_files)} files to vector store", extra={"phase": "INIT"}
+            )
         
         # Set the vector store ID on the handler
         self.vector_handler.vector_store_id = vector_store_id
@@ -309,18 +313,18 @@ class ChatOrchestrator:
                 tool_handlers=self.tool_handlers
             )
         
-        print("✅ All agents initialized")
+        self.logger.info("All agents initialized", extra={"phase": "INIT"})
     
     async def phase2_parallel_research(self, topic: str) -> Dict[str, Any]:
         """Phase 2: Parallel research"""
-        print("\n🔍 Phase 2: Parallel research...")
-        
+        self.logger.info("🔍 Phase 2: Parallel research...", extra={"phase": "PHASE_2"})
+
         # Run web research using Responses API with real web search
-        print("  🌐 Running web research with Responses API...")
+        self.logger.info("🌐 Running web research with Responses API...", extra={"phase": "PHASE_2"})
         web_research_task = self.responses_manager.run_web_research(topic)
         
         # Run KB research using Chat Completions API
-        print("  📚 Running knowledge base research...")
+        self.logger.info("📚 Running knowledge base research...", extra={"phase": "PHASE_2"})
         kb_prompt = f"""Research topic: {topic}
 
 Search our Dakota knowledge base for:
@@ -354,7 +358,7 @@ Deliver a structured brief with specific references to Dakota materials."""
     
     async def phase3_synthesis(self, research: Dict[str, Any]) -> str:
         """Phase 3: Synthesize research"""
-        print("\n🔗 Phase 3: Synthesizing research...")
+        self.logger.info("🔗 Phase 3: Synthesizing research...", extra={"phase": "PHASE_3"})
         
         prompt = f"""Synthesize the following research into a comprehensive brief:
 
@@ -383,7 +387,10 @@ Requirements:
                          "[URL]" in synthesis or 
                          "(#)" in synthesis or
                          "## Source Library" not in synthesis):
-            print("⚠️  Synthesis missing real sources, adding fallback sources...")
+            self.logger.warning(
+                "⚠️  Synthesis missing real sources, adding fallback sources...",
+                extra={"phase": "PHASE_3"},
+            )
             
             # Generate fallback sources based on topic
             fallback_sources = self.source_validator.generate_fallback_sources(
@@ -415,7 +422,7 @@ Requirements:
     
     async def phase4_content_creation(self, topic: str, synthesis: str, article_path: str) -> str:
         """Phase 4: Write the article"""
-        print("\n✍️  Phase 4: Writing article...")
+        self.logger.info("✍️  Phase 4: Writing article...", extra={"phase": "PHASE_4"})
         
         prompt = f"""Write a comprehensive Dakota Learning Center article.
 
@@ -455,18 +462,24 @@ Write the complete article now. Include the "Related Dakota Learning Center Arti
             
             # Check for placeholder URLs
             if "hypothetical" in content.lower() or "[URL]" in content or "(#)" in content:
-                print("⚠️  Detected placeholder URLs, attempting to fix...")
+                self.logger.warning(
+                    "⚠️  Detected placeholder URLs, attempting to fix...",
+                    extra={"phase": "PHASE_4"},
+                )
                 fixed_content, replacements = self.source_validator.fix_source_urls(content)
                 
                 if replacements:
-                    print(f"✅ Fixed {len(replacements)} placeholder URLs")
+                    self.logger.info(
+                        f"✅ Fixed {len(replacements)} placeholder URLs",
+                        extra={"phase": "PHASE_4"},
+                    )
                     write_text(article_path, fixed_content)
                     
         return article_path
     
     async def phase5_parallel_enhancement(self, article_path: str, topic: str, run_dir: str) -> Dict[str, Any]:
         """Phase 5: Parallel enhancement"""
-        print("\n📊 Phase 5: Parallel enhancement...")
+        self.logger.info("📊 Phase 5: Parallel enhancement...", extra={"phase": "PHASE_5"})
         
         agent_prompts = []
         
@@ -509,13 +522,13 @@ Check:
     
     async def phase6_validation(self, article_path: str) -> Dict[str, Any]:
         """Phase 6: Comprehensive validation with enhanced fact-checking"""
-        print("\n✅ Phase 6: Comprehensive validation...")
+        self.logger.info("✅ Phase 6: Comprehensive validation...", extra={"phase": "PHASE_6"})
         
         # Read article for fact verification
         article_content = read_text(article_path) if os.path.exists(article_path) else ""
         
         # Run enhanced fact verification first
-        print("🔍 Running enhanced fact verification...")
+        self.logger.info("🔍 Running enhanced fact verification...", extra={"phase": "PHASE_6"})
         fact_verification = await self.fact_checker.verify_article(article_content)
         
         # If fact verification fails, no need to run other checks
@@ -589,7 +602,7 @@ Return: APPROVED or REJECTED with issues."""))
     
     async def phase65_iteration(self, validation: Dict[str, Any], article_path: str) -> str:
         """Phase 6.5: Fix issues"""
-        print("\n🔧 Fixing issues...")
+        self.logger.info("🔧 Fixing issues...", extra={"phase": "PHASE_6_5"})
         
         prompt = f"""Fix ALL issues in the article at: {article_path}
 
@@ -619,7 +632,7 @@ Requirements:
     
     async def phase7_distribution(self, article_path: str, run_dir: str) -> Dict[str, Any]:
         """Phase 7: Create distribution assets"""
-        print("\n📢 Phase 7: Creating distribution assets...")
+        self.logger.info("📢 Phase 7: Creating distribution assets...", extra={"phase": "PHASE_7"})
         
         # Define output paths
         summary_path = os.path.join(run_dir, "summary.md")
@@ -700,7 +713,7 @@ Save to: {social_path}"""))
             
             # Phase 2.5: Evidence Package (optional)
             if ENABLE_EVIDENCE:
-                print("\n📦 Phase 2.5: Creating evidence package...")
+                self.logger.info("📦 Phase 2.5: Creating evidence package...", extra={"phase": "PHASE_2_5"})
                 evidence_prompt = f"""Create JSON evidence package from research:
                 
 [WEB RESEARCH]
@@ -736,8 +749,14 @@ Format as markdown with sections for sources, quotes, and confidence levels. Ret
             
             while not validation["approved"] and iteration_count < MAX_ITERATIONS:
                 iteration_count += 1
-                print(f"\n❌ Validation failed. Iteration {iteration_count}/{MAX_ITERATIONS}")
-                print(f"Issues: {', '.join(validation['issues'][:3])}")
+                self.logger.warning(
+                    f"❌ Validation failed. Iteration {iteration_count}/{MAX_ITERATIONS}",
+                    extra={"phase": "PHASE_6"},
+                )
+                self.logger.warning(
+                    f"Issues: {', '.join(validation['issues'][:3])}",
+                    extra={"phase": "PHASE_6"},
+                )
                 
                 await self.phase65_iteration(validation, article_path)
                 validation = await self.phase6_validation(article_path)
@@ -751,13 +770,13 @@ Format as markdown with sections for sources, quotes, and confidence levels. Ret
                     "token_usage": self.token_usage
                 }
             
-            print("\n✅ Article APPROVED!")
+            self.logger.info("✅ Article APPROVED!", extra={"phase": "PHASE_6"})
             
             # Phase 7: Distribution
             distribution = await self.phase7_distribution(article_path, run_dir)
             
             # Phase 8: Generate comprehensive metadata
-            print("\n📊 Phase 8: Generating comprehensive metadata...")
+            self.logger.info("📊 Phase 8: Generating comprehensive metadata...", extra={"phase": "PHASE_8"})
             
             # Calculate elapsed time
             elapsed = time.time() - start_time
@@ -1001,19 +1020,20 @@ async def main():
     
     topic = "The Evolution of Passive Investing and Its Impact on Market Efficiency"
     
-    print(f"🚀 Starting article generation using Chat Completions API")
-    print(f"📝 Topic: {topic}\n")
+    logger = get_logger(__name__)
+    logger.info("Starting article generation using Chat Completions API", extra={"phase": "START"})
+    logger.info(f"Topic: {topic}", extra={"phase": "START"})
     
     results = await orchestrator.run_pipeline(topic)
     
-    print(f"\n📊 Results:")
-    print(f"Status: {results['status']}")
+    logger.info("Results:", extra={"phase": "RESULT"})
+    logger.info(f"Status: {results['status']}", extra={"phase": "RESULT"})
     if results['status'] == 'SUCCESS':
-        print(f"Article: {results['article_path']}")
-        print(f"Total tokens: {results['total_tokens']:,}")
-        print(f"Time: {results['elapsed_time']}")
+        logger.info(f"Article: {results['article_path']}", extra={"phase": "RESULT"})
+        logger.info(f"Total tokens: {results['total_tokens']:,}", extra={"phase": "RESULT"})
+        logger.info(f"Time: {results['elapsed_time']}", extra={"phase": "RESULT"})
     else:
-        print(f"Error: {results.get('error', 'Unknown')}")
+        logger.error(f"Error: {results.get('error', 'Unknown')}", extra={"phase": "RESULT"})
 
 
 if __name__ == "__main__":

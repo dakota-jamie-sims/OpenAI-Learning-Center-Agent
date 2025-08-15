@@ -8,6 +8,7 @@ from pathlib import Path
 from openai import OpenAI
 from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
+from utils.logging import get_logger
 
 # Load environment variables
 load_dotenv()
@@ -19,11 +20,12 @@ class SimpleOrchestrator:
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.output_dir = Path("output/Learning Center Articles")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.logger = get_logger(__name__)
         
     def generate_article(self, topic: str, word_count: int = 1500) -> Dict[str, Any]:
         """Generate a complete article with all required components"""
         
-        print(f"\n🚀 Generating article about: {topic}")
+        self.logger.info(f"Generating article about: {topic}", extra={"phase": "START"})
         
         # Create output directory
         date_str = datetime.now().strftime("%Y-%m-%d")
@@ -32,7 +34,7 @@ class SimpleOrchestrator:
         article_dir.mkdir(exist_ok=True)
         
         # Step 1: Generate article with sources
-        print("📝 Writing article...")
+        self.logger.info("Writing article...", extra={"phase": "WRITE"})
         article_prompt = f"""Write a comprehensive article for Dakota's Learning Center about: {topic}
 
 Requirements:
@@ -106,10 +108,10 @@ Dakota Marketplace provides real-time intelligence on 15,000+ institutional inve
         article_content = response.choices[0].message.content
         article_path = article_dir / "article.md"
         article_path.write_text(article_content)
-        print(f"✅ Article saved to: {article_path}")
+        self.logger.info(f"Article saved to: {article_path}", extra={"phase": "WRITE"})
         
         # Step 2: Generate executive summary
-        print("📋 Creating executive summary...")
+        self.logger.info("Creating executive summary...", extra={"phase": "SUMMARY"})
         summary_prompt = f"""Create a data-driven executive summary for institutional investors based on this article:
 
 {article_content}
@@ -169,10 +171,10 @@ type: executive_summary
         
         summary_path = article_dir / "summary.md"
         summary_path.write_text(response.choices[0].message.content)
-        print("✅ Summary saved")
+        self.logger.info("Summary saved", extra={"phase": "SUMMARY"})
         
         # Step 3: Generate social media content
-        print("📱 Creating social media content...")
+        self.logger.info("Creating social media content...", extra={"phase": "SOCIAL"})
         social_prompt = f"""Create social media content for this Dakota Learning Center article. Extract the KEY STATISTICS and insights from the full article to make compelling social posts.
 
 Full article for reference:
@@ -228,10 +230,10 @@ article: {topic}
         
         social_path = article_dir / "social.md"
         social_path.write_text(social_content)
-        print("✅ Social content saved")
+        self.logger.info("Social content saved", extra={"phase": "SOCIAL"})
         
         # Step 4: Generate metadata
-        print("📊 Creating metadata...")
+        self.logger.info("Creating metadata...", extra={"phase": "METADATA"})
         
         # Extract title from article if available
         article_title = topic  # default
@@ -311,9 +313,12 @@ type: metadata
         
         metadata_path = article_dir / "metadata.md"
         metadata_path.write_text(metadata_content)
-        print("✅ Metadata saved")
+        self.logger.info("Metadata saved", extra={"phase": "METADATA"})
         
-        print(f"\n✨ SUCCESS! Complete content package generated in:\n   {article_dir}\n")
+        self.logger.info(
+            f"✨ SUCCESS! Complete content package generated in: {article_dir}",
+            extra={"phase": "END"},
+        )
         
         return {
             "status": "success",
@@ -330,9 +335,9 @@ type: metadata
 def main():
     """Run the simple orchestrator"""
     import sys
-    
+
     if len(sys.argv) < 2:
-        print("Usage: python simple_orchestrator.py 'Your Article Topic'")
+        logger.info("Usage: python simple_orchestrator.py 'Your Article Topic'", extra={"phase": "INFO"})
         sys.exit(1)
         
     topic = sys.argv[1]
@@ -342,11 +347,11 @@ def main():
     result = orchestrator.generate_article(topic, word_count)
     
     if result["status"] == "success":
-        print("\nGenerated files:")
+        logger.info("Generated files:", extra={"phase": "RESULT"})
         for file_type, path in result["files"].items():
-            print(f"  - {file_type}: {path}")
+            logger.info(f"  - {file_type}: {path}", extra={"phase": "RESULT"})
     else:
-        print(f"\nError: {result.get('error', 'Unknown error')}")
+        logger.error(f"Error: {result.get('error', 'Unknown error')}", extra={"phase": "RESULT"})
 
 
 if __name__ == "__main__":

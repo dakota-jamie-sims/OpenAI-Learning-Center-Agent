@@ -12,6 +12,7 @@ from agents.researcher_agent import ResearcherAgent
 from agents.outliner_agent import OutlinerAgent
 from agents.contentWriter_agent import ContentWriterAgent
 from agents.reviewer_agent import ReviewerAgent
+from utils.logging import get_logger
 
 class ArticlePipeline:
     """Orchestrates the article creation pipeline using all agents"""
@@ -31,6 +32,8 @@ class ArticlePipeline:
         
         # Get vector store ID if available
         self.vector_store_id = os.getenv("VECTOR_STORE_ID")
+
+        self.logger = get_logger(__name__)
     
     def create_article(self, topic: str, target_audience: str = "institutional investors",
                       article_type: str = "educational", max_iterations: int = 3) -> Dict[str, Any]:
@@ -56,7 +59,7 @@ class ArticlePipeline:
         
         try:
             # Stage 1: Research
-            print(f"🔍 Researching topic: {topic}")
+            self.logger.info(f"Researching topic: {topic}", extra={"phase": "RESEARCH"})
             research_results = self.researcher.research(
                 topic=topic,
                 use_kb=True,
@@ -69,7 +72,7 @@ class ArticlePipeline:
                 return {"error": f"Research failed: {research_results['error']}"}
             
             # Stage 2: Outline
-            print("📝 Creating outline...")
+            self.logger.info("Creating outline...", extra={"phase": "OUTLINE"})
             outline_results = self.outliner.create_outline(
                 topic=topic,
                 research_data=research_results,
@@ -82,7 +85,7 @@ class ArticlePipeline:
                 return {"error": f"Outline creation failed: {outline_results['error']}"}
             
             # Stage 3: Write Article
-            print("✍️  Writing article...")
+            self.logger.info("Writing article...", extra={"phase": "WRITING"})
             article_results = self.writer.write_article(
                 topic=topic,
                 outline=outline_results,
@@ -97,12 +100,15 @@ class ArticlePipeline:
             # Stage 4: Review and Iterate
             iteration_count = 0
             while iteration_count < max_iterations:
-                print(f"🔍 Reviewing article (iteration {iteration_count + 1})...")
+                self.logger.info(
+                    f"Reviewing article (iteration {iteration_count + 1})...",
+                    extra={"phase": "REVIEW"},
+                )
                 review_results = self.reviewer.review_article(article_results)
                 pipeline_results["stages"][f"review_{iteration_count + 1}"] = review_results
                 
                 if review_results.get("approval_status"):
-                    print("✅ Article approved!")
+                    self.logger.info("Article approved!", extra={"phase": "REVIEW"})
                     break
                 
                 # Get improvement suggestions
@@ -112,7 +118,10 @@ class ArticlePipeline:
                     break
                 
                 # Apply improvements (simplified - in production, this would be more sophisticated)
-                print(f"📝 Applying improvements: {', '.join(suggestions[:2])}...")
+                self.logger.info(
+                    f"Applying improvements: {', '.join(suggestions[:2])}...",
+                    extra={"phase": "REVISION"},
+                )
                 
                 # For now, we'll just expand sections if the article is too short
                 if any("Expand" in s for s in suggestions):
@@ -169,25 +178,29 @@ def main():
     topic = "The Benefits of Index Fund Investing for Long-Term Wealth Building"
     
     # Create article
-    print(f"\n🚀 Starting article creation for: {topic}\n")
+    logger = get_logger(__name__)
+    logger.info(f"Starting article creation for: {topic}", extra={"phase": "START"})
     results = pipeline.create_article(topic)
     
     if results.get("error"):
-        print(f"\n❌ Error: {results['error']}")
+        logger.error(f"Error: {results['error']}", extra={"phase": "ERROR"})
         return
     
     # Save article
     filepath = pipeline.save_article(results)
-    print(f"\n✅ Article saved to: {filepath}")
+    logger.info(f"Article saved to: {filepath}", extra={"phase": "SAVE"})
     
     # Print summary
     metadata = results.get('metadata', {})
-    print(f"\n📊 Article Summary:")
-    print(f"   - Word Count: {metadata.get('word_count', 'Unknown')}")
-    print(f"   - Reading Time: {metadata.get('reading_time', 'Unknown')}")
-    print(f"   - Sources: {metadata.get('sources_count', 'Unknown')}")
-    print(f"   - Sections: {len(metadata.get('sections', []))}")
-    print(f"   - Approved: {'Yes' if metadata.get('approved') else 'No'}")
+    logger.info("Article Summary:", extra={"phase": "SUMMARY"})
+    logger.info(f"Word Count: {metadata.get('word_count', 'Unknown')}", extra={"phase": "SUMMARY"})
+    logger.info(f"Reading Time: {metadata.get('reading_time', 'Unknown')}", extra={"phase": "SUMMARY"})
+    logger.info(f"Sources: {metadata.get('sources_count', 'Unknown')}", extra={"phase": "SUMMARY"})
+    logger.info(f"Sections: {len(metadata.get('sections', []))}", extra={"phase": "SUMMARY"})
+    logger.info(
+        f"Approved: {'Yes' if metadata.get('approved') else 'No'}",
+        extra={"phase": "SUMMARY"},
+    )
 
 
 if __name__ == "__main__":

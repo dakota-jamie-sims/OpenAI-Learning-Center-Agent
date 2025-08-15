@@ -4,8 +4,11 @@ from ..config import RUNS_DIR, OUTPUT_TOKEN_CAPS, MAX_WEB_CALLS, MAX_FILE_CALLS,
 from ..utils.files import run_dir_for_topic, write_text, read_text
 from ..agents import web_researcher, kb_researcher, research_synthesizer, content_writer, seo_specialist, fact_checker, summary_writer, social_promoter, iteration_manager, metrics_analyzer, evidence_packager, claim_checker
 from ..tools.function_tools import write_file, read_file, list_directory, validate_article, verify_urls
+from ..utils.logging import get_logger
 
 URL_RE = re.compile(r"https?://[^\s)>\]]+", re.IGNORECASE)
+
+logger = get_logger(__name__)
 
 class Pipeline:
     def __init__(self, topic: str):
@@ -243,47 +246,59 @@ Then stop.
 
     async def run_all(self) -> dict:
         # Phase 2: Parallel Research
-        print("\n🔍 Phase 2: Starting parallel research...")
+        logger.info("🔍 Phase 2: Starting parallel research...", extra={"phase": "PHASE_2"})
         briefs = await self.phase2_parallel_research()
         
         # Phase 2.5: Evidence Packaging
         if ENABLE_EVIDENCE:
-            print("\n📦 Phase 2.5: Creating evidence package...")
+            logger.info("📦 Phase 2.5: Creating evidence package...", extra={"phase": "PHASE_2_5"})
             await self.phase25_evidence_packager(briefs)
         
         # Phase 3: Synthesis
-        print("\n🔗 Phase 3: Synthesizing research...")
+        logger.info("🔗 Phase 3: Synthesizing research...", extra={"phase": "PHASE_3"})
         synthesis = await self.phase3_synthesis(briefs)
         
         # Phase 4: Content Creation
-        print("\n✍️  Phase 4: Writing article...")
+        logger.info("✍️  Phase 4: Writing article...", extra={"phase": "PHASE_4"})
         await self.phase4_content(synthesis)
         
         # Phase 5: Parallel Enhancement
-        print("\n📊 Phase 5: Running parallel analysis...")
+        logger.info("📊 Phase 5: Running parallel analysis...", extra={"phase": "PHASE_5"})
         _ = await self.phase5_parallel_analysis()
         
         # Phase 6: MANDATORY Fact-Checking
-        print("\n✅ Phase 6: MANDATORY fact-checking...")
+        logger.info("✅ Phase 6: MANDATORY fact-checking...", extra={"phase": "PHASE_6"})
         qc = await self.phase6_validation()
         
         # Handle rejections with iteration
         iteration_count = 0
         while qc["decision"] == "REJECTED" and iteration_count < MAX_ITERATIONS:
             iteration_count += 1
-            print(f"\n❌ Article REJECTED. Starting iteration {iteration_count}/{MAX_ITERATIONS}...")
-            print(f"Issues found: {', '.join(qc['issues'][:3])}...")
+            logger.warning(
+                f"❌ Article REJECTED. Starting iteration {iteration_count}/{MAX_ITERATIONS}...",
+                extra={"phase": "PHASE_6"},
+            )
+            logger.warning(
+                f"Issues found: {', '.join(qc['issues'][:3])}...",
+                extra={"phase": "PHASE_6"},
+            )
             
             # Phase 6.5: Fix issues
             await self.phase65_iteration(qc)
             
             # Re-validate
-            print(f"\n🔄 Re-validating after iteration {iteration_count}...")
+            logger.info(
+                f"🔄 Re-validating after iteration {iteration_count}...",
+                extra={"phase": "PHASE_6"},
+            )
             qc = await self.phase6_validation()
         
         # Final check - if still rejected after max iterations, stop
         if qc["decision"] == "REJECTED":
-            print(f"\n❌ Article still REJECTED after {MAX_ITERATIONS} iterations. Stopping.")
+            logger.error(
+                f"❌ Article still REJECTED after {MAX_ITERATIONS} iterations. Stopping.",
+                extra={"phase": "PHASE_6"},
+            )
             return {
                 "run_dir": self.run_dir,
                 "status": "FAILED",
@@ -292,10 +307,10 @@ Then stop.
                 "validation": qc
             }
         
-        print("\n✅ Article APPROVED! Proceeding to distribution...")
+        logger.info("✅ Article APPROVED! Proceeding to distribution...", extra={"phase": "PHASE_6"})
         
         # Phase 7: Distribution (only if approved)
-        print("\n📢 Phase 7: Creating distribution content...")
+        logger.info("📢 Phase 7: Creating distribution content...", extra={"phase": "PHASE_7"})
         dist = await self.phase7_distribution()
 
         return {

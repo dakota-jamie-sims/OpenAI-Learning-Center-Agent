@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from ..agents.base_assistant import AssistantManager, BaseAssistant
 from ..config_enhanced import *
 from ..utils.files import run_dir_for_topic, write_text, read_text
+from ..utils.logging import get_logger
 
 
 class AsyncOrchestrator:
@@ -25,10 +26,11 @@ class AsyncOrchestrator:
         self.sync_client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
         self.manager = AssistantManager(self.sync_client)
         self.executor = ThreadPoolExecutor(max_workers=10)
+        self.logger = get_logger(__name__)
         
     async def initialize_assistants(self):
         """Create all assistants with proper tools"""
-        print("🚀 Initializing assistants...")
+        self.logger.info("Initializing assistants...", extra={"phase": "INIT"})
         
         # Create vector store for knowledge base
         kb_files = list(Path(KNOWLEDGE_BASE_DIR).rglob("*.md"))
@@ -66,7 +68,7 @@ class AsyncOrchestrator:
                 use_vector_store=use_vector_store
             )
         
-        print("✅ All assistants initialized")
+        self.logger.info("All assistants initialized", extra={"phase": "INIT"})
     
     async def run_assistant_async(self, assistant_name: str, prompt: str) -> Dict[str, Any]:
         """Run an assistant asynchronously"""
@@ -93,7 +95,7 @@ class AsyncOrchestrator:
     
     async def phase2_parallel_research(self, topic: str) -> Dict[str, Any]:
         """Phase 2: Parallel research with web and KB"""
-        print("\n🔍 Phase 2: Starting parallel research...")
+        self.logger.info("🔍 Phase 2: Starting parallel research...", extra={"phase": "PHASE_2"})
         
         web_prompt = f"""Research topic: {topic}
         
@@ -135,7 +137,7 @@ Output: Structured brief with specific file references"""
         if not ENABLE_EVIDENCE:
             return ""
         
-        print("\n📦 Phase 2.5: Creating evidence package...")
+        self.logger.info("📦 Phase 2.5: Creating evidence package...", extra={"phase": "PHASE_2_5"})
         
         prompt = f"""Create a JSON evidence package with:
         
@@ -164,7 +166,7 @@ Output pure JSON only."""
     
     async def phase3_synthesis(self, research: Dict[str, Any]) -> str:
         """Phase 3: Synthesize research"""
-        print("\n🔗 Phase 3: Synthesizing research...")
+        self.logger.info("🔗 Phase 3: Synthesizing research...", extra={"phase": "PHASE_3"})
         
         prompt = f"""Synthesize research into a unified brief for article writing.
 
@@ -185,7 +187,7 @@ Requirements:
     
     async def phase4_content_creation(self, topic: str, synthesis: str, proof_path: str, article_path: str) -> str:
         """Phase 4: Write the article"""
-        print("\n✍️  Phase 4: Writing article...")
+        self.logger.info("✍️  Phase 4: Writing article...", extra={"phase": "PHASE_4"})
         
         prompt = f"""Write a comprehensive Dakota Learning Center article.
 
@@ -214,7 +216,7 @@ Remember: This must be publication-ready with zero compromises on quality."""
     
     async def phase5_parallel_enhancement(self, article_path: str, topic: str, run_dir: str) -> Dict[str, Any]:
         """Phase 5: Parallel enhancement (SEO, metrics)"""
-        print("\n📊 Phase 5: Running parallel enhancement...")
+        self.logger.info("📊 Phase 5: Running parallel enhancement...", extra={"phase": "PHASE_5"})
         
         tasks = []
         
@@ -248,7 +250,7 @@ Check:
     
     async def phase6_validation(self, article_path: str, metadata_path: str) -> Dict[str, Any]:
         """Phase 6: Comprehensive validation"""
-        print("\n✅ Phase 6: Running comprehensive validation...")
+        self.logger.info("✅ Phase 6: Running comprehensive validation...", extra={"phase": "PHASE_6"})
         
         article_content = read_text(article_path) if os.path.exists(article_path) else ""
         
@@ -302,7 +304,7 @@ Article: {article_path}"""
     
     async def phase65_iteration(self, validation_report: Dict[str, Any], article_path: str, metadata_path: str) -> str:
         """Phase 6.5: Fix identified issues"""
-        print("\n🔧 Phase 6.5: Fixing identified issues...")
+        self.logger.info("🔧 Phase 6.5: Fixing identified issues...", extra={"phase": "PHASE_6_5"})
         
         prompt = f"""Fix ALL identified issues in the article.
 
@@ -325,7 +327,7 @@ Make all necessary corrections and ensure the article meets ALL requirements."""
     
     async def phase7_distribution(self, article_path: str, run_dir: str) -> Dict[str, Any]:
         """Phase 7: Create distribution assets"""
-        print("\n📢 Phase 7: Creating distribution assets...")
+        self.logger.info("📢 Phase 7: Creating distribution assets...", extra={"phase": "PHASE_7"})
         
         tasks = []
         
@@ -402,8 +404,14 @@ Include:
             
             while not validation["approved"] and iteration_count < MAX_ITERATIONS:
                 iteration_count += 1
-                print(f"\n❌ Article rejected. Iteration {iteration_count}/{MAX_ITERATIONS}")
-                print(f"Issues: {', '.join(validation['issues'][:3])}")
+                self.logger.warning(
+                    f"❌ Article rejected. Iteration {iteration_count}/{MAX_ITERATIONS}",
+                    extra={"phase": "PHASE_6"},
+                )
+                self.logger.warning(
+                    f"Issues: {', '.join(validation['issues'][:3])}",
+                    extra={"phase": "PHASE_6"},
+                )
                 
                 await self.phase65_iteration(validation, article_path, metadata_path)
                 validation = await self.phase6_validation(article_path, metadata_path)
@@ -416,7 +424,7 @@ Include:
                     "run_dir": run_dir
                 }
             
-            print("\n✅ Article APPROVED!")
+            self.logger.info("✅ Article APPROVED!", extra={"phase": "PHASE_6"})
             
             # Phase 7: Distribution
             distribution = await self.phase7_distribution(article_path, run_dir)
@@ -524,18 +532,19 @@ async def main():
     
     topic = "The Role of Alternative Investments in Modern Portfolio Theory"
     
-    print(f"🚀 Starting article generation for: {topic}\n")
+    logger = get_logger(__name__)
+    logger.info(f"Starting article generation for: {topic}", extra={"phase": "START"})
     results = await orchestrator.run_pipeline(topic)
-    
-    print(f"\n📊 Pipeline Results:")
-    print(f"Status: {results['status']}")
+
+    logger.info("Pipeline Results:", extra={"phase": "RESULT"})
+    logger.info(f"Status: {results['status']}", extra={"phase": "RESULT"})
     if results['status'] == 'SUCCESS':
-        print(f"Article: {results['article_path']}")
-        print(f"Quality Report: {results['quality_report']}")
-        print(f"Time: {results['elapsed_time']}")
+        logger.info(f"Article: {results['article_path']}", extra={"phase": "RESULT"})
+        logger.info(f"Quality Report: {results['quality_report']}", extra={"phase": "RESULT"})
+        logger.info(f"Time: {results['elapsed_time']}", extra={"phase": "RESULT"})
     else:
-        print(f"Error: {results.get('error', 'Unknown error')}")
-        print(f"Issues: {results.get('issues', [])}")
+        logger.error(f"Error: {results.get('error', 'Unknown error')}", extra={"phase": "RESULT"})
+        logger.error(f"Issues: {results.get('issues', [])}", extra={"phase": "RESULT"})
 
 
 if __name__ == "__main__":
