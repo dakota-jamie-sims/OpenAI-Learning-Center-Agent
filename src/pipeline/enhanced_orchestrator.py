@@ -107,9 +107,13 @@ class EnhancedOrchestrator(BaseOrchestrator):
     
     async def _gather_knowledge_base(self, topic: str) -> str:
         """Gather knowledge base insights asynchronously"""
-        # For now, return placeholder since vector search still needs assistants API
-        await asyncio.sleep(0.1)  # Simulate async work
-        return "Knowledge base insights would be gathered here"
+        # Run in executor to avoid blocking
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: self.search_knowledge_base(topic, max_results=10)
+        )
+        return result
     
     async def _gather_web_research(self, topic: str) -> str:
         """Gather web research asynchronously"""

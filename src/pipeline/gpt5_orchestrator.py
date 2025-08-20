@@ -10,19 +10,17 @@ from typing import Dict, Any
 from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from src.services.openai_responses_client import ResponsesClient
-from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
+from src.pipeline.base_orchestrator import BaseOrchestrator
+from src.config import DEFAULT_MODELS
 
 load_dotenv()
 
 
-class GPT5Orchestrator:
+class GPT5Orchestrator(BaseOrchestrator):
     """Orchestrator using GPT-5 with Responses API"""
     
     def __init__(self):
-        self.client = ResponsesClient()
-        self.output_dir = Path(OUTPUT_BASE_DIR)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        super().__init__()
         
     def generate_article(self, topic: str, word_count: int = 1500) -> dict:
         """Generate article using GPT-5 with responses API"""
@@ -31,15 +29,19 @@ class GPT5Orchestrator:
         print(f"📊 Target word count: {word_count}")
         
         # Create output directory
-        timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
-        safe_topic = "".join(c for c in topic if c.isalnum() or c in " -_").strip()
-        article_dir = self.output_dir / f"{timestamp}-{safe_topic[:50]}"
-        article_dir.mkdir(parents=True, exist_ok=True)
+        article_dir = self.create_output_directory(topic)
         
         try:
+            # Search knowledge base first
+            print("\n📚 Searching knowledge base...")
+            kb_insights = self.search_knowledge_base(topic, max_results=10)
+            
             # Generate the main article content
             print("\n📝 Generating article content...")
             article_prompt = f"""Write a comprehensive article about: {topic}
+
+Knowledge Base Insights:
+{kb_insights}
 
 Requirements:
 - Target length: {word_count} words

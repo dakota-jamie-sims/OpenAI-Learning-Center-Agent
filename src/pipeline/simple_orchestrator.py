@@ -46,7 +46,7 @@ class SimpleOrchestrator:
             assistant = self.client.beta.assistants.create(
                 name="KB Search Assistant",
                 instructions="You are a helpful assistant that searches through Dakota's knowledge base for relevant content.",
-                model="gpt-5-mini",
+                model="gpt-4-turbo",
                 tools=[{"type": "file_search"}],
                 tool_resources={
                     "file_search": {

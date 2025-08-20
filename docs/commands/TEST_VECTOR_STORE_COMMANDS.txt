@@ -1,0 +1,14 @@
+TEST VECTOR STORE INTEGRATION
+============================
+
+Run this command to test if your system is properly integrated with the vector store:
+
+cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
+./venv/bin/python test_vector_store_integration.py
+
+This will:
+1. Verify vector store access
+2. Show file counts and status
+3. Test search functionality with sample queries
+4. Check if orchestrators are configured for vector store
+5. Confirm integration is working properly

@@ -1,0 +1,15 @@
+UPLOAD ALL KNOWLEDGE BASE FILES TO VECTOR STORE
+==============================================
+
+Copy and paste these commands into your terminal:
+
+cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
+./venv/bin/python -m pip install openai python-dotenv
+./venv/bin/python scripts/upload_all_to_vector_store.py
+
+Notes:
+- This will upload all 397 markdown files from data/knowledge_base/
+- The script will ask for confirmation before starting
+- Upload will take several minutes to complete
+- Progress will be shown for each file
+- Vector store ID is already configured in your .env file

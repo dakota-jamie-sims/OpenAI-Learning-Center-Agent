@@ -106,8 +106,7 @@ class StrictOrchestrator(BaseOrchestrator):
     
     def _search_knowledge_base(self, topic: str) -> str:
         """Search knowledge base with validation"""
-        # Simplified for now - would use assistants API
-        return f"Knowledge base insights for {topic}"
+        return self.search_knowledge_base(topic, max_results=10)
     
     def _perform_web_research(self, topic: str) -> str:
         """Perform thorough web research"""

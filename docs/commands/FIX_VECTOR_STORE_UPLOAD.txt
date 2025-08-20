@@ -1,0 +1,12 @@
+FIX FOR VECTOR STORE UPLOAD ERROR
+=================================
+
+The error "'Beta' object has no attribute 'vector_stores'" means you need to update the OpenAI library.
+
+Run these commands to fix it:
+
+cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
+./venv/bin/python -m pip install --upgrade openai
+./venv/bin/python scripts/upload_all_to_vector_store.py
+
+The vector_stores API requires OpenAI SDK version 1.0 or higher.
