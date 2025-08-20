@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""
-Simple article generator that just works
-"""
-from src.pipeline.simple_orchestrator import SimpleOrchestrator
+"""Simple article generator that just works"""
 import sys
+
+from learning_center_agent.pipeline.simple_orchestrator import SimpleOrchestrator
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

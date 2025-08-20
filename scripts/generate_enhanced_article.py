@@ -4,7 +4,10 @@ Enhanced article generator with all features and 100% reliability
 """
 import asyncio
 import sys
-from src.pipeline.enhanced_orchestrator import EnhancedOrchestrator
+
+from learning_center_agent.pipeline.enhanced_orchestrator import (
+    EnhancedOrchestrator,
+)
 
 
 async def main():

@@ -9,8 +9,8 @@ import json
 import uuid
 from dataclasses import dataclass, asdict
 
-from src.services.openai_responses_client import ResponsesClient
-from src.config import DEFAULT_MODELS
+from learning_center_agent.services.openai_responses_client import ResponsesClient
+from learning_center_agent.config import DEFAULT_MODELS
 
 
 class MessageType(Enum):

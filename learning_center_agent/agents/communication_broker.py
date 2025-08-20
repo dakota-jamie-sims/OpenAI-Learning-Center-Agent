@@ -9,7 +9,11 @@ import json
 from datetime import datetime
 import logging
 
-from src.agents.multi_agent_base import AgentMessage, MessageType, BaseAgent
+from learning_center_agent.agents.multi_agent_base import (
+    AgentMessage,
+    MessageType,
+    BaseAgent,
+)
 
 
 class CommunicationBroker:

@@ -4,11 +4,11 @@ Test the full production system with all agents
 """
 import asyncio
 import os
-import sys
-sys.path.append('src')
 
 from dotenv import load_dotenv
-from src.pipeline.chat_orchestrator import ChatOrchestrator
+from learning_center_agent.pipeline.simple_orchestrator import (
+    SimpleOrchestrator,
+)
 
 load_dotenv()
 
@@ -34,7 +34,7 @@ async def test_full_system():
     print("="*60)
     
     # Initialize orchestrator with relaxed validation for testing
-    orchestrator = ChatOrchestrator(
+    orchestrator = SimpleOrchestrator(
         min_words=500,  # Lower for testing
         min_sources=3,   # Lower for testing
         max_iterations=2  # Fewer iterations

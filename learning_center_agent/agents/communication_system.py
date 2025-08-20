@@ -11,7 +11,12 @@ import json
 import uuid
 from enum import Enum
 
-from src.agents.multi_agent_base import AgentMessage, MessageType, BaseAgent, AgentStatus
+from learning_center_agent.agents.multi_agent_base import (
+    AgentMessage,
+    MessageType,
+    BaseAgent,
+    AgentStatus,
+)
 
 
 class MessagePriority(Enum):

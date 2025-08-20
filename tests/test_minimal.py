@@ -3,13 +3,7 @@
 Minimal test to verify chat completions API works
 """
 import os
-import sys
-from pathlib import Path
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent / "src"))
-
-# Load environment variables
 from dotenv import load_dotenv
 load_dotenv()
 

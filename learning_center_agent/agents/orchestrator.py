@@ -6,11 +6,21 @@ from datetime import datetime
 import json
 import asyncio
 
-from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus, MessageType
-from src.agents.team_leads import ResearchTeamLead, WritingTeamLead, QualityTeamLead, PublishingTeamLead
-from src.agents.communication_broker import create_communication_broker
-from src.config import DEFAULT_MODELS, RESEARCH_CONFIG
-from src.models import ArticleRequest, ArticleResponse, MetadataGeneration
+from learning_center_agent.agents.multi_agent_base import (
+    AgentMessage,
+    AgentStatus,
+    BaseAgent,
+    MessageType,
+)
+from learning_center_agent.agents.team_leads import (
+    ResearchTeamLead,
+    WritingTeamLead,
+    QualityTeamLead,
+    PublishingTeamLead,
+)
+from learning_center_agent.agents.communication_broker import create_communication_broker
+from learning_center_agent.config import DEFAULT_MODELS, RESEARCH_CONFIG
+from learning_center_agent.models import ArticleRequest, ArticleResponse, MetadataGeneration
 
 
 class OrchestratorAgent(BaseAgent):

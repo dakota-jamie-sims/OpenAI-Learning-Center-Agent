@@ -2,16 +2,12 @@
 """
 Test Full System Integration with Vector Store
 """
-import os
-import sys
-from pathlib import Path
 import asyncio
 import json
+import os
 from datetime import datetime
-from dotenv import load_dotenv
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -26,7 +22,9 @@ def test_orchestrators():
     # Test Simple Orchestrator
     print("1. Testing Simple Orchestrator...")
     try:
-        from src.pipeline.simple_orchestrator import SimpleOrchestrator
+        from learning_center_agent.pipeline.simple_orchestrator import (
+            SimpleOrchestrator,
+        )
         simple = SimpleOrchestrator()
         kb_result = simple.search_knowledge_base(test_topic, max_results=3)
         if kb_result and "No Dakota knowledge base" not in kb_result:
@@ -42,7 +40,9 @@ def test_orchestrators():
     # Test Enhanced Orchestrator
     print("\n2. Testing Enhanced Orchestrator...")
     try:
-        from src.pipeline.enhanced_orchestrator import EnhancedOrchestrator
+        from learning_center_agent.pipeline.enhanced_orchestrator import (
+            EnhancedOrchestrator,
+        )
         enhanced = EnhancedOrchestrator()
         kb_result = enhanced.search_knowledge_base(test_topic, max_results=3)
         if kb_result and "No Dakota knowledge base" not in kb_result:
@@ -58,7 +58,9 @@ def test_orchestrators():
     # Test Strict Orchestrator
     print("\n3. Testing Strict Orchestrator...")
     try:
-        from src.pipeline.strict_orchestrator import StrictOrchestrator
+        from learning_center_agent.pipeline.strict_orchestrator import (
+            StrictOrchestrator,
+        )
         strict = StrictOrchestrator()
         kb_result = strict.search_knowledge_base(test_topic, max_results=3)
         if kb_result and "No Dakota knowledge base" not in kb_result:
@@ -74,7 +76,9 @@ def test_orchestrators():
     # Test GPT-5 Orchestrator
     print("\n4. Testing GPT-5 Orchestrator...")
     try:
-        from src.pipeline.gpt5_orchestrator import GPT5Orchestrator
+        from learning_center_agent.pipeline.gpt5_orchestrator import (
+            GPT5Orchestrator,
+        )
         gpt5 = GPT5Orchestrator()
         kb_result = gpt5.search_knowledge_base(test_topic, max_results=3)
         if kb_result and "No Dakota knowledge base" not in kb_result:
@@ -94,8 +98,11 @@ def test_multi_agent_system():
     print("\n\n=== Testing Multi-Agent System ===\n")
     
     try:
-        from src.agents.research_agents import KnowledgeBaseAgent
-        from src.agents.multi_agent_base import AgentMessage, MessageType
+        from learning_center_agent.agents.research_agents import KnowledgeBaseAgent
+        from learning_center_agent.agents.multi_agent_base import (
+            AgentMessage,
+            MessageType,
+        )
         
         # Test KB Agent
         print("Testing KnowledgeBaseAgent...")
@@ -132,7 +139,7 @@ def test_kb_searcher():
     print("\n\n=== Testing KnowledgeBaseSearcher Service ===\n")
     
     try:
-        from src.services.kb_search import KnowledgeBaseSearcher
+        from learning_center_agent.services.kb_search import KnowledgeBaseSearcher
         
         searcher = KnowledgeBaseSearcher()
         

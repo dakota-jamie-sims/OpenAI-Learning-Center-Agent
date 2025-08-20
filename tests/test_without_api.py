@@ -3,15 +3,12 @@
 Test the system without OpenAI API calls
 Creates a mock article with proper sources to verify the system works
 """
-import os
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent / "src"))
-
-from src.utils.files import run_dir_for_topic, write_text
-from src.tools.fact_verification import EnhancedFactChecker
 import asyncio
+import os
 from datetime import datetime
+
+from learning_center_agent.tools.fact_verification import EnhancedFactChecker
+from learning_center_agent.utils.files import run_dir_for_topic, write_text
 
 async def test_system_without_api():
     """Test the validation system with a mock article"""

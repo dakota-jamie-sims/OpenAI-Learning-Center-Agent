@@ -8,7 +8,7 @@ import re
 def ensure_output_dir(base_dir: str = None) -> Path:
     """Ensure output directory exists and return Path object"""
     if base_dir is None:
-        from src.config import OUTPUT_BASE_DIR
+        from learning_center_agent.config import OUTPUT_BASE_DIR
         base_dir = OUTPUT_BASE_DIR
     
     output_path = Path(base_dir)

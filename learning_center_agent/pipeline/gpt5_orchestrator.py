@@ -3,15 +3,13 @@ GPT-5 Orchestrator using Responses API
 Simplified implementation focusing on core functionality
 """
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 from dotenv import load_dotenv
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from src.pipeline.base_orchestrator import BaseOrchestrator
-from src.config import DEFAULT_MODELS
+from learning_center_agent.pipeline.base_orchestrator import BaseOrchestrator
+from learning_center_agent.config import DEFAULT_MODELS
 
 load_dotenv()
 

@@ -3,15 +3,14 @@
 Complete article generator - combines simple reliability with all features
 This version actually works and includes everything
 """
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.pipeline.simple_orchestrator import SimpleOrchestrator
 import json
+import os
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
+
+from learning_center_agent.pipeline.simple_orchestrator import SimpleOrchestrator
 
 
 class CompleteOrchestrator(SimpleOrchestrator):

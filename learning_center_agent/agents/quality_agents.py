@@ -6,8 +6,12 @@ import re
 import json
 from datetime import datetime
 
-from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus
-from src.config import DEFAULT_MODELS, MIN_WORD_COUNT, MIN_SOURCES
+from learning_center_agent.agents.multi_agent_base import (
+    AgentMessage,
+    AgentStatus,
+    BaseAgent,
+)
+from learning_center_agent.config import DEFAULT_MODELS, MIN_WORD_COUNT, MIN_SOURCES
 
 
 class FactCheckerAgent(BaseAgent):

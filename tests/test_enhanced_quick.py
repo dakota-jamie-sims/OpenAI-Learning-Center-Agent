@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Quick test of enhanced orchestrator"""
 import asyncio
-from src.pipeline.enhanced_orchestrator import EnhancedOrchestrator
+
+from learning_center_agent.pipeline.enhanced_orchestrator import (
+    EnhancedOrchestrator,
+)
 
 async def test():
     try:

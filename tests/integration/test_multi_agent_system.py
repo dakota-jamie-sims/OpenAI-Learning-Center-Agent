@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""
-Test script for the Multi-Agent System
-"""
-import sys
+"""Test script for the Multi-Agent System"""
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.pipeline.multi_agent_orchestrator import MultiAgentPipelineOrchestrator
+from learning_center_agent.pipeline.multi_agent_orchestrator import (
+    MultiAgentPipelineOrchestrator,
+)
 
 
 def test_multi_agent_system():
@@ -82,10 +80,13 @@ def test_agent_coordination():
     print("🔄 AGENT COORDINATION TEST")
     print("="*70)
     
-    from src.agents.multi_agent_base import AgentMessage, MessageType
-    from src.agents.research_agents import WebResearchAgent
-    from src.agents.writing_agents import ContentWriterAgent
-    from src.agents.quality_agents import FactCheckerAgent
+    from learning_center_agent.agents.multi_agent_base import (
+        AgentMessage,
+        MessageType,
+    )
+    from learning_center_agent.agents.research_agents import WebResearchAgent
+    from learning_center_agent.agents.writing_agents import ContentWriterAgent
+    from learning_center_agent.agents.quality_agents import FactCheckerAgent
     from datetime import datetime
     
     # Create agents

@@ -6,8 +6,13 @@ from typing import Dict, Any, List
 from datetime import datetime
 from pathlib import Path
 
-from src.pipeline.base_orchestrator import BaseOrchestrator
-from src.config import DEFAULT_MODELS, MIN_WORD_COUNT, MIN_SOURCES, REQUIRE_DAKOTA_URLS
+from learning_center_agent.pipeline.base_orchestrator import BaseOrchestrator
+from learning_center_agent.config import (
+    DEFAULT_MODELS,
+    MIN_WORD_COUNT,
+    MIN_SOURCES,
+    REQUIRE_DAKOTA_URLS,
+)
 
 
 class StrictOrchestrator(BaseOrchestrator):
