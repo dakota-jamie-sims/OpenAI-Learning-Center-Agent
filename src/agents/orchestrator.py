@@ -108,7 +108,7 @@ class OrchestratorAgent(BaseAgent):
         pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.current_pipeline = {
             "id": pipeline_id,
-            "request": request.dict() if hasattr(request, 'dict') else request,
+            "request": request.model_dump() if hasattr(request, "model_dump") else request,
             "status": "in_progress",
             "phases": {},
             "start_time": datetime.now().isoformat()
@@ -500,11 +500,11 @@ def create_article_with_multi_agent_system(request: ArticleRequest) -> ArticleRe
         metadata_dict.setdefault("related_topics", [])
         metadata_dict.setdefault("seo_title", metadata_dict.get("title", ""))
         metadata_dict.setdefault("publication_date", datetime.now().strftime("%Y-%m-%d"))
-        
+
         return ArticleResponse(
             success=True,
             article=response.payload["article"],
-            metadata=MetadataGeneration(**metadata_dict),
+            metadata=MetadataGeneration.model_validate(metadata_dict),
             quality_metrics={
                 "quality_score": response.payload.get("quality_score", 0),
                 "phases_completed": response.payload.get("phases_completed", []),
