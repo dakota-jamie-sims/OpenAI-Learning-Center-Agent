@@ -5,20 +5,82 @@ Provides search functionality for the Dakota knowledge base using vector store
 import os
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
-import json
 import time
 
 class KnowledgeBaseSearcher:
     """Handles knowledge base searches using OpenAI's vector store"""
-    
-    def __init__(self, client: Optional[OpenAI] = None):
+
+    def __init__(
+        self,
+        client: Optional[OpenAI] = None,
+        max_wait_time: Optional[int] = None,
+        retry_count: Optional[int] = None,
+    ):
         self.client = client or OpenAI()
         self.vector_store_id = os.getenv("VECTOR_STORE_ID") or os.getenv("OPENAI_VECTOR_STORE_ID")
-        
+
         if not self.vector_store_id:
             raise ValueError("No vector store ID found in environment variables")
+
+        self.max_wait_time = (
+            max_wait_time
+            if max_wait_time is not None
+            else int(os.getenv("KB_SEARCH_MAX_WAIT_TIME", "30"))
+        )
+        self.retry_count = (
+            retry_count
+            if retry_count is not None
+            else int(os.getenv("KB_SEARCH_RETRY_COUNT", "60"))
+        )
+
+        self.assistant = self.client.beta.assistants.create(
+            name="KB Search Assistant",
+            model="gpt-4-turbo",
+            instructions=(
+                "You are a knowledge base search assistant. "
+                "Search for relevant information and provide accurate results with proper citations."
+            ),
+            tools=[{"type": "file_search"}],
+            tool_resources={"file_search": {"vector_store_ids": [self.vector_store_id]}},
+        )
+
+    def __del__(self):
+        if hasattr(self, "assistant"):
+            try:
+                self.client.beta.assistants.delete(assistant_id=self.assistant.id)
+            except Exception:
+                pass
+
+    def _wait_for_run_completion(
+        self,
+        thread_id: str,
+        run_id: str,
+        max_wait_time: Optional[int] = None,
+        retry_count: Optional[int] = None,
+    ):
+        max_wait = max_wait_time or self.max_wait_time
+        retries = retry_count or self.retry_count
+        poll_interval = max_wait / retries if retries else max_wait
+        start = time.time()
+        attempts = 0
+        while (time.time() - start) < max_wait and attempts < retries:
+            run = self.client.beta.threads.runs.retrieve(
+                thread_id=thread_id, run_id=run_id
+            )
+            if run.status not in ["queued", "in_progress"]:
+                return run
+            time.sleep(poll_interval)
+            attempts += 1
+        raise TimeoutError(f"Run did not complete within {max_wait} seconds")
     
-    def search(self, query: str, max_results: int = 5, include_metadata: bool = True) -> Dict[str, Any]:
+    def search(
+        self,
+        query: str,
+        max_results: int = 5,
+        include_metadata: bool = True,
+        max_wait_time: Optional[int] = None,
+        retry_count: Optional[int] = None,
+    ) -> Dict[str, Any]:
         """
         Search the knowledge base for relevant content
         
@@ -31,19 +93,6 @@ class KnowledgeBaseSearcher:
             Dictionary containing search results and metadata
         """
         try:
-            # Create a temporary assistant with file search capability
-            assistant = self.client.beta.assistants.create(
-                name="KB Search Assistant",
-                model="gpt-4-turbo",
-                instructions="You are a knowledge base search assistant. Search for relevant information and provide accurate results with proper citations.",
-                tools=[{"type": "file_search"}],
-                tool_resources={
-                    "file_search": {
-                        "vector_store_ids": [self.vector_store_id]
-                    }
-                }
-            )
-            
             # Create thread and message
             thread = self.client.beta.threads.create()
             
@@ -65,19 +114,22 @@ Focus on the most recent and relevant information."""
             
             # Run the assistant
             run = self.client.beta.threads.runs.create(
-                thread_id=thread.id,
-                assistant_id=assistant.id
+                thread_id=thread.id, assistant_id=self.assistant.id
             )
-            
-            # Wait for completion
-            while run.status in ['queued', 'in_progress']:
-                time.sleep(0.5)
-                run = self.client.beta.threads.runs.retrieve(
-                    thread_id=thread.id,
-                    run_id=run.id
+
+            try:
+                run = self._wait_for_run_completion(
+                    thread.id, run.id, max_wait_time, retry_count
                 )
+            except TimeoutError:
+                return {
+                    "success": False,
+                    "query": query,
+                    "error": f"Search timed out after {max_wait_time or self.max_wait_time} seconds",
+                    "status": "timeout",
+                }
             
-            if run.status == 'completed':
+            if run.status == "completed":
                 # Get the response
                 messages = self.client.beta.threads.messages.list(thread_id=thread.id)
                 response = messages.data[0].content[0].text.value
@@ -112,11 +164,8 @@ Focus on the most recent and relevant information."""
                     "success": False,
                     "query": query,
                     "error": f"Search failed with status: {run.status}",
-                    "status": run.status
+                    "status": run.status,
                 }
-            
-            # Cleanup
-            self.client.beta.assistants.delete(assistant_id=assistant.id)
             
             return result
             
@@ -200,3 +249,4 @@ def search_knowledge_base(query: str, max_results: int = 5) -> str:
         return result["results"]
     else:
         return f"Search failed: {result.get('error', 'Unknown error')}"
+
