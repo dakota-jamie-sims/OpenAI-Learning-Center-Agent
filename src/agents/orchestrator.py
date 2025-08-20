@@ -475,10 +475,29 @@ def create_article_with_multi_agent_system(request: ArticleRequest) -> ArticleRe
     response = orchestrator.process_message(message)
     
     if response.payload.get("success", False):
+        # Map fields that might have different names
+        metadata_dict = response.payload["metadata"].copy()
+        
+        # Handle field name variations
+        if "target_keywords" in metadata_dict and "keywords" not in metadata_dict:
+            metadata_dict["keywords"] = metadata_dict.pop("target_keywords")
+        if "meta_description" in metadata_dict and "seo_description" not in metadata_dict:
+            metadata_dict["seo_description"] = metadata_dict.pop("meta_description")
+        
+        # Ensure required fields have defaults
+        metadata_dict.setdefault("description", metadata_dict.get("seo_description", ""))
+        metadata_dict.setdefault("category", "Investment Insights")
+        metadata_dict.setdefault("target_audience", "institutional investors")
+        metadata_dict.setdefault("read_time_minutes", 7)
+        metadata_dict.setdefault("key_takeaways", [])
+        metadata_dict.setdefault("related_topics", [])
+        metadata_dict.setdefault("seo_title", metadata_dict.get("title", ""))
+        metadata_dict.setdefault("publication_date", datetime.now().strftime("%Y-%m-%d"))
+        
         return ArticleResponse(
             success=True,
             article=response.payload["article"],
-            metadata=MetadataGeneration(**response.payload["metadata"]),
+            metadata=MetadataGeneration(**metadata_dict),
             quality_metrics={
                 "quality_score": response.payload.get("quality_score", 0),
                 "phases_completed": response.payload.get("phases_completed", []),
@@ -491,9 +510,16 @@ def create_article_with_multi_agent_system(request: ArticleRequest) -> ArticleRe
             article="",
             metadata=MetadataGeneration(
                 title="Generation Failed",
-                meta_description="Article generation failed",
+                description="Article generation failed",
+                keywords=[],
+                category="Error",
+                target_audience="N/A",
+                read_time_minutes=0,
                 key_takeaways=[],
-                target_keywords=[]
+                related_topics=[],
+                seo_title="Generation Failed",
+                seo_description="Article generation failed",
+                publication_date=datetime.now().strftime("%Y-%m-%d")
             ),
             error=response.payload.get("error", "Unknown error")
         )

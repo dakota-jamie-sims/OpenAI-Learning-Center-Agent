@@ -1,8 +1,15 @@
 TEST ARTICLE GENERATION WITH VECTOR STORE
 ========================================
 
-Test the complete system by generating an article:
+Test the complete system by generating an article.
 
+FIRST TIME SETUP (if dependencies not installed)
+------------------------------------------------
+cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
+./venv/bin/python -m pip install -r requirements.txt
+
+OPTION 1: Using virtual environment Python directly (recommended)
+-----------------------------------------------------------------
 cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
 
 # Test with Simple Orchestrator
@@ -13,6 +20,21 @@ cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/
 
 # Test with Multi-Agent System
 ./venv/bin/python scripts/generate_multi_agent_article.py --topic "private equity secondaries market 2025 trends"
+
+
+OPTION 2: Activating virtual environment first
+----------------------------------------------
+cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
+source venv/bin/activate
+
+# Test with Simple Orchestrator
+python3 scripts/generate_article.py --topic "private equity secondaries market 2025 trends" --orchestrator simple
+
+# Test with Enhanced Orchestrator  
+python3 scripts/generate_enhanced_article.py --topic "private equity secondaries market 2025 trends"
+
+# Test with Multi-Agent System
+python3 scripts/generate_multi_agent_article.py --topic "private equity secondaries market 2025 trends"
 
 The system will now:
 1. Search the Dakota knowledge base (397 files)

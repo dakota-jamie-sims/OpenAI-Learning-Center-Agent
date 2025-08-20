@@ -1811,7 +1811,7 @@ Return SEO-optimized version and recommendations."""
             "optimized_content": content,  # In production, would apply optimizations
             "seo_data": {
                 "title_tag": self._extract_title_tag(seo_analysis),
-                "meta_description": self._extract_meta_description(seo_analysis),
+                "seo_description": self._extract_meta_description(seo_analysis),
                 "url_slug": self._generate_url_slug(metadata.get('title', '')),
                 "keyword_density": self._calculate_keyword_density(content, metadata.get('keywords', []))
             },
