@@ -182,39 +182,22 @@ class OrchestratorAgent(BaseAgent):
     async def _phase_research(self, request: ArticleRequest) -> Dict[str, Any]:
         """Research phase coordination"""
         self.update_status(AgentStatus.WORKING, "Coordinating research phase")
-        
-        # Send research request to research team lead
-        research_msg = self.send_message(
-            to_agent=self.research_lead.agent_id,
-            task="comprehensive_research",
-            payload={
-                "topic": request.topic,
-                "audience": request.audience,
-                "tone": request.tone,
-                "requirements": {
-                    "min_sources": RESEARCH_CONFIG["min_sources"],
-                    "data_freshness": RESEARCH_CONFIG.get("max_data_age_days", 180)
-                }
-            }
+        research_payload = {
+            "topic": request.topic,
+            "audience": request.audience,
+            "tone": request.tone,
+            "requirements": {
+                "min_sources": RESEARCH_CONFIG["min_sources"],
+                "data_freshness": RESEARCH_CONFIG.get("max_data_age_days", 180),
+            },
+        }
+        research_result = await self.research_lead.coordinate_comprehensive_research(
+            research_payload
         )
-        
-        # Queue message
-        self.broker.send_message(research_msg)
-        
-        # Wait for response (in real implementation would be async)
-        await asyncio.sleep(0.5)  # Simulate processing time
-        
-        # Process response
-        response = self.research_lead.receive_message(research_msg)
-        
-        if response:
-            print(f"Research response received: {response.payload.get('success', False)}")
-            if not response.payload.get('success', False):
-                print(f"Research error: {response.payload.get('error', 'Unknown error')}")
-            return response.payload
-        else:
-            print("No response from research team")
-            return {"success": False, "error": "No response from research team"}
+        print(f"Research response received: {research_result.get('success', False)}")
+        if not research_result.get("success", False):
+            print(f"Research error: {research_result.get('error', 'Unknown error')}")
+        return research_result
     
     async def _phase_writing(self, request: ArticleRequest, research_data: Dict[str, Any]) -> Dict[str, Any]:
         """Writing phase coordination"""

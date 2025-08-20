@@ -10,7 +10,11 @@ import uuid
 from dataclasses import dataclass, asdict
 
 from src.services.openai_responses_client import ResponsesClient
-from src.config import DEFAULT_MODELS
+from src.config import DEFAULT_MODELS, CACHE_SIZE, CACHE_TTL
+from src.utils.cache import Cache
+
+# Shared cache for LLM queries
+llm_cache = Cache(maxsize=CACHE_SIZE, ttl=CACHE_TTL)
 
 
 class MessageType(Enum):
@@ -211,26 +215,39 @@ class BaseAgent(ABC):
             parent_message_id=original_message.message_id
         )
     
-    def query_llm(self, prompt: str, reasoning_effort: str = "medium", 
+    def query_llm(self, prompt: str, reasoning_effort: str = "medium",
                   verbosity: str = "medium", **kwargs) -> str:
         """Query the LLM with the agent's specialized model"""
+        cache_key = (
+            self.model,
+            prompt,
+            reasoning_effort,
+            verbosity,
+            tuple(sorted(kwargs.items())),
+        )
+        cached = llm_cache.get(cache_key)
+        if cached is not None:
+            return cached
         try:
             response = self.responses_client.create_response(
                 model=self.model,
-                input_text=prompt,  # ResponsesClient expects input_text
+                input_text=prompt,
                 reasoning_effort=reasoning_effort,
                 verbosity=verbosity,
-                **kwargs
+                **kwargs,
             )
-            # Extract text content from response
             if hasattr(response, 'output') and hasattr(response.output, 'message'):
                 if hasattr(response.output.message, 'content'):
-                    return response.output.message.content
-            # Fallback for different response structures
+                    text = response.output.message.content
+                    llm_cache.set(cache_key, text)
+                    return text
             if hasattr(response, 'choices') and response.choices:
-                return response.choices[0].message.content
-            # If we can't extract content, return the whole response as string
-            return str(response)
+                text = response.choices[0].message.content
+                llm_cache.set(cache_key, text)
+                return text
+            text = str(response)
+            llm_cache.set(cache_key, text)
+            return text
         except Exception as e:
             print(f"LLM query error in {self.agent_id}: {str(e)}")
             return f"Error: {str(e)}"

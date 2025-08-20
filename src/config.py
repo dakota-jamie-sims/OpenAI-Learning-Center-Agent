@@ -5,6 +5,10 @@ load_dotenv()
 # Vector Store id for File Search (optional)
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID", "").strip() or None
 
+# Caching configuration
+CACHE_SIZE = int(os.getenv("CACHE_SIZE", "128"))
+CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
+
 # Default models (best-for-cost mix; override via .env)
 DEFAULT_MODELS = {
     "default": os.getenv("DEFAULT_MODEL", "gpt-5"),

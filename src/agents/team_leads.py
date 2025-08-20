@@ -61,9 +61,9 @@ class ResearchTeamLead(BaseAgent):
         """Process research coordination request"""
         task = message.task
         payload = message.payload
-        
+
         if task == "comprehensive_research":
-            result = self._coordinate_comprehensive_research(payload)
+            result = asyncio.run(self.coordinate_comprehensive_research(payload))
         elif task == "validate_article":
             result = self._coordinate_article_validation(payload)
         elif task == "find_sources":
@@ -75,87 +75,65 @@ class ResearchTeamLead(BaseAgent):
         
         return self._create_response(message, result)
     
-    def _coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Coordinate comprehensive research across all sub-agents"""
+    async def coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Coordinate comprehensive research across all sub-agents concurrently"""
         topic = payload.get("topic", "")
         requirements = payload.get("requirements", {})
-        
+
         print(f"ResearchTeamLead: Starting research for topic: {topic}")
         self.update_status(AgentStatus.WORKING, f"Researching: {topic}")
-        
-        # Phase 1: Parallel research
-        research_tasks = []
-        
-        # Web research
-        web_msg = self.delegate_task(
-            "web_researcher",
-            "research_topic",
-            {"query": topic}
+
+        web_msg = self.delegate_task("web_researcher", "research_topic", {"query": topic})
+        kb_msg = self.delegate_task("kb_researcher", "search_kb", {"query": topic})
+        dakota_msg = self.delegate_task("kb_researcher", "find_dakota_insights", {"query": topic})
+
+        web_task = asyncio.to_thread(self.web_researcher.receive_message, web_msg)
+        kb_task = asyncio.to_thread(self.kb_researcher.receive_message, kb_msg)
+        dakota_task = asyncio.to_thread(self.kb_researcher.receive_message, dakota_msg)
+        web_response, kb_response, dakota_response = await asyncio.gather(
+            web_task, kb_task, dakota_task
         )
-        web_response = self.web_researcher.receive_message(web_msg)
-        
-        # Knowledge base search
-        kb_msg = self.delegate_task(
-            "kb_researcher",
-            "search_kb",
-            {"query": topic}
-        )
-        kb_response = self.kb_researcher.receive_message(kb_msg)
-        
-        # Get Dakota insights
-        dakota_msg = self.delegate_task(
-            "kb_researcher",
-            "find_dakota_insights",
-            {"query": topic}
-        )
-        dakota_response = self.kb_researcher.receive_message(dakota_msg)
-        
-        # Phase 2: Validate findings
+
         all_content = {
             "web_research": web_response.payload,
             "kb_insights": kb_response.payload,
-            "dakota_insights": dakota_response.payload
+            "dakota_insights": dakota_response.payload,
         }
-        
+
         validation_msg = self.delegate_task(
-            "data_validator",
-            "validate_facts",
-            {"content": json.dumps(all_content)}
+            "data_validator", "validate_facts", {"content": json.dumps(all_content)}
         )
-        validation_response = self.data_validator.receive_message(validation_msg)
-        
-        # Phase 3: Find additional sources if needed
+        validation_response = await asyncio.to_thread(
+            self.data_validator.receive_message, validation_msg
+        )
+
         sources_collected = self._extract_all_sources(all_content)
-        
+
         if len(sources_collected) < requirements.get("min_sources", 10):
             source_msg = self.delegate_task(
-                "web_researcher",
-                "find_sources",
-                {"query": topic}
+                "web_researcher", "find_sources", {"query": topic}
             )
-            source_response = self.web_researcher.receive_message(source_msg)
+            source_response = await asyncio.to_thread(
+                self.web_researcher.receive_message, source_msg
+            )
             sources_collected.extend(source_response.payload.get("sources", []))
-        
-        # Phase 4: Synthesize findings
+
         synthesis = self._synthesize_findings(
-            topic,
-            all_content,
-            validation_response.payload,
-            sources_collected
+            topic, all_content, validation_response.payload, sources_collected
         )
-        
+
         self.update_status(AgentStatus.COMPLETED, "Research complete")
-        
+
         return {
             "success": True,
             "topic": topic,
             "synthesis": synthesis,
             "raw_research": all_content,
             "validation": validation_response.payload,
-            "sources": sources_collected[:requirements.get("max_sources", 20)],
+            "sources": sources_collected[: requirements.get("max_sources", 20)],
             "research_quality_score": self._calculate_research_quality(
                 all_content, validation_response.payload
-            )
+            ),
         }
     
     def _coordinate_article_validation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
