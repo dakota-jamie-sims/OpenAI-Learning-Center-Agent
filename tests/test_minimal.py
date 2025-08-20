@@ -1,62 +1,85 @@
 #!/usr/bin/env python3
-"""Minimal test to check if file writing works."""
-
-import os
-
-# Test basic file writing
-test_content = """---
-title: Test Article
-date: 2025-08-09
-word_count: 100
-reading_time: 1 minute
----
-
-# Test Article
-
-This is a test article to check if file writing works properly.
-
-## Key Insights at a Glance
-- Test insight 1
-- Test insight 2
-
-## Main Content
-Some content here.
-
-## Key Takeaways
-- Test takeaway
-
-## Conclusion
-Test conclusion.
 """
+Minimal test to verify chat completions API works
+"""
+import os
+import sys
+from pathlib import Path
 
-try:
-    # Test 1: Write to current directory
-    with open("test_write.md", "w") as f:
-        f.write(test_content)
-    print("✓ Successfully wrote test_write.md")
+# Add src to path
+sys.path.append(str(Path(__file__).parent / "src"))
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+from openai import OpenAI
+
+
+def test_openai_connection():
+    """Test basic OpenAI connection"""
+    print("Testing OpenAI Connection...")
     
-    # Test 2: Check if file exists
-    if os.path.exists("test_write.md"):
-        print("✓ File exists")
-        with open("test_write.md", "r") as f:
-            content = f.read()
-        print(f"✓ File contains {len(content)} characters")
-        os.remove("test_write.md")
-        print("✓ File removed")
-    
-    # Test 3: Test write function from utils
-    from src.utils.files import write_text
-    write_text("test_utils.md", test_content)
-    print("✓ Utils write_text works")
-    
-    if os.path.exists("test_utils.md"):
-        print("✓ Utils file created")
-        os.remove("test_utils.md")
+    try:
+        client = OpenAI()
         
-except Exception as e:
-    print(f"✗ Error: {e}")
-    import traceback
-    traceback.print_exc()
+        # Simple test
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "user", "content": "Say 'Hello, Dakota Learning Center!' in 5 words or less"}
+            ],
+            max_tokens=20
+        )
+        
+        result = response.choices[0].message.content
+        print(f"✅ Success! Response: {result}")
+        print(f"Model used: {response.model}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
 
-print(f"\nCurrent directory: {os.getcwd()}")
-print(f"Directory writable: {os.access('.', os.W_OK)}")
+
+def test_vector_store():
+    """Test vector store access"""
+    print("\nTesting Vector Store...")
+    
+    vector_store_id = os.getenv("VECTOR_STORE_ID")
+    if not vector_store_id:
+        print("⚠️  No VECTOR_STORE_ID found in environment")
+        return False
+        
+    try:
+        client = OpenAI()
+        
+        # Try to retrieve the vector store
+        vector_store = client.beta.vector_stores.retrieve(vector_store_id)
+        print(f"✅ Vector store found: {vector_store.name}")
+        print(f"   File counts: {vector_store.file_counts}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error accessing vector store: {str(e)}")
+        return False
+
+
+if __name__ == "__main__":
+    print("=" * 50)
+    print("Dakota Learning Center - System Test")
+    print("=" * 50)
+    
+    # Test 1: OpenAI Connection
+    openai_ok = test_openai_connection()
+    
+    # Test 2: Vector Store
+    vector_ok = test_vector_store()
+    
+    print("\n" + "=" * 50)
+    print("Test Summary:")
+    print(f"OpenAI Connection: {'✅ PASS' if openai_ok else '❌ FAIL'}")
+    print(f"Vector Store: {'✅ PASS' if vector_ok else '❌ FAIL'}")
+    print("=" * 50)

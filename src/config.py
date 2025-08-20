@@ -7,23 +7,23 @@ VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID", "").strip() or None
 
 # Default models (best-for-cost mix; override via .env)
 DEFAULT_MODELS = {
-    "orchestrator": os.getenv("ORCHESTRATOR_MODEL", "gpt-4.1"),
-    "web_researcher": os.getenv("WEB_RESEARCHER_MODEL", "gpt-4.1"),
-    "kb_researcher": os.getenv("KB_RESEARCHER_MODEL", "gpt-4.1-mini"),
-    "synthesizer": os.getenv("SYNTHESIZER_MODEL", "gpt-4.1"),
-    "writer": os.getenv("WRITER_MODEL", "gpt-4.1"),
-    "seo": os.getenv("SEO_MODEL", "gpt-4.1-mini"),
-    "fact_checker": os.getenv("FACT_CHECKER_MODEL", "gpt-4.1"),
-    "summary": os.getenv("SUMMARY_MODEL", "gpt-4.1-mini"),
-    "social": os.getenv("SOCIAL_MODEL", "gpt-4.1-mini"),
-    "iteration": os.getenv("ITERATION_MODEL", "gpt-4.1"),
-    "metrics": os.getenv("METRICS_MODEL", "gpt-4.1-mini"),
-    "evidence": os.getenv("EVIDENCE_MODEL", "gpt-4.1"),
-    "claim_checker": os.getenv("CLAIM_CHECKER_MODEL", "gpt-4.1-mini"),
+    "orchestrator": os.getenv("ORCHESTRATOR_MODEL", "gpt-5"),
+    "web_researcher": os.getenv("WEB_RESEARCHER_MODEL", "gpt-5"),
+    "kb_researcher": os.getenv("KB_RESEARCHER_MODEL", "gpt-5-mini"),
+    "synthesizer": os.getenv("SYNTHESIZER_MODEL", "gpt-5"),
+    "writer": os.getenv("WRITER_MODEL", "gpt-5"),
+    "seo": os.getenv("SEO_MODEL", "gpt-5-nano"),
+    "fact_checker": os.getenv("FACT_CHECKER_MODEL", "gpt-5"),
+    "summary": os.getenv("SUMMARY_MODEL", "gpt-5-mini"),
+    "social": os.getenv("SOCIAL_MODEL", "gpt-5-nano"),
+    "iteration": os.getenv("ITERATION_MODEL", "gpt-5"),
+    "metrics": os.getenv("METRICS_MODEL", "gpt-5-mini"),
+    "evidence": os.getenv("EVIDENCE_MODEL", "gpt-5"),
+    "claim_checker": os.getenv("CLAIM_CHECKER_MODEL", "gpt-5-mini"),
 }
 
 # Output directories
-OUTPUT_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "Dakota Learning Center Articles"))
+OUTPUT_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "output", "articles"))
 RUNS_DIR = OUTPUT_BASE_DIR  # For compatibility
 os.makedirs(OUTPUT_BASE_DIR, exist_ok=True)
 

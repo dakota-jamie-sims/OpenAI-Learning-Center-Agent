@@ -1,0 +1,69 @@
+# Automatic Context System Aliases
+
+# Run any script with automatic context updates
+auto() {
+    python scripts/utilities/auto_wrapper.py "$@"
+}
+
+# Quick context update after manual operations
+update_context() {
+    ./scripts/utilities/update_context.sh "$@"
+}
+
+# Start background context monitor
+monitor_context() {
+    echo "Starting context monitor in background..."
+    python scripts/utilities/context_monitor.py &
+    echo "Monitor PID: $!"
+    echo "Use 'kill $!' to stop monitoring"
+}
+
+# Generate article with auto-context
+auto_generate() {
+    echo "Running article generation with automatic context updates..."
+    auto scripts/generate_complete_article.py "$@"
+}
+
+# Generate enhanced article with auto-context
+auto_enhanced() {
+    echo "Running enhanced article generation with automatic context updates..."
+    auto scripts/generate_enhanced_article.py "$@"
+}
+
+# Generate strict article with auto-context
+auto_strict() {
+    echo "Running strict article generation with automatic context updates..."
+    auto scripts/generate_strict_article.py "$@"
+}
+
+# Generate article with GPT-5 and responses API
+auto_gpt5() {
+    echo "Running GPT-5 article generation with responses API..."
+    auto scripts/generate_gpt5_article.py "$@"
+}
+
+# Quick status update
+status_update() {
+    local operation="${1:-custom}"
+    local description="${2:-Status update}"
+    shift 2
+    ./scripts/utilities/update_context.sh "$operation" "$description" --auto-commit "$@"
+}
+
+# View recent context
+view_context() {
+    echo "=== Recent TODOs ==="
+    if [ -f "context/TODO.md" ]; then
+        grep -A 5 "In Progress" context/TODO.md
+    else
+        echo "No TODO.md found"
+    fi
+    echo -e "\n=== Recent Journal ==="
+    if [ -f "context/JOURNAL.md" ]; then
+        tail -20 context/JOURNAL.md
+    else
+        echo "No JOURNAL.md found"
+    fi
+    echo -e "\n=== Latest Status ==="
+    ls -lt context/status_*.txt 2>/dev/null | head -3 || echo "No status files found"
+}

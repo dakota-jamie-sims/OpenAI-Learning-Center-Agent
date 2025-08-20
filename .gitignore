@@ -22,10 +22,14 @@ ENV/
 
 # Output and temporary files
 runs/
-output/articles/*.md
+output/articles/
 *.log
 *.tmp
 temp/
+
+# Context system generated files
+context/status_*.txt
+context/JOURNAL.md
 
 # Package files
 *.egg-info/
