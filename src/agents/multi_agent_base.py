@@ -215,13 +215,22 @@ class BaseAgent(ABC):
                   verbosity: str = "medium", **kwargs) -> str:
         """Query the LLM with the agent's specialized model"""
         try:
-            return self.responses_client.create_response(
-                prompt=prompt,  # Changed from input_text
+            response = self.responses_client.create_response(
                 model=self.model,
+                input_text=prompt,  # ResponsesClient expects input_text
                 reasoning_effort=reasoning_effort,
                 verbosity=verbosity,
                 **kwargs
             )
+            # Extract text content from response
+            if hasattr(response, 'output') and hasattr(response.output, 'message'):
+                if hasattr(response.output.message, 'content'):
+                    return response.output.message.content
+            # Fallback for different response structures
+            if hasattr(response, 'choices') and response.choices:
+                return response.choices[0].message.content
+            # If we can't extract content, return the whole response as string
+            return str(response)
         except Exception as e:
             print(f"LLM query error in {self.agent_id}: {str(e)}")
             return f"Error: {str(e)}"
