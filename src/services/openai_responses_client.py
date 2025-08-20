@@ -1,21 +1,33 @@
+"""OpenAI Responses API Client for GPT-5.
+
+This module wraps the OpenAI Responses API and provides a convenient interface
+with additional safety checks. In particular it handles optional parameters such
+as ``temperature`` which are not supported by all models.
 """
-OpenAI Responses API Client for GPT-5
-Uses the new responses API which supports reasoning chains and better tool handling
-"""
+
 import os
 from typing import Dict, Any, Optional, List
+
 from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+def supports_temperature(model: str) -> bool:
+    """Return ``True`` if the given model supports the ``temperature`` parameter."""
+    # Reasoning models (prefixed with o1, o3, o4, etc.) currently do not support
+    # temperature adjustments.
+    reasoning_prefixes = ("o1", "o3", "o4")
+    return not model.lower().startswith(reasoning_prefixes)
+
+
 class ResponsesClient:
-    """Wrapper for OpenAI Responses API with GPT-5 support"""
-    
-    def __init__(self):
+    """Wrapper for OpenAI Responses API with GPT-5 support."""
+
+    def __init__(self) -> None:
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.previous_response_id = None
+        self.previous_response_id: Optional[str] = None
     
     def create_response(
         self,
@@ -25,7 +37,7 @@ class ResponsesClient:
         verbosity: str = "medium",
         tools: Optional[List[Dict]] = None,
         tool_choice: Optional[Dict] = None,
-        temperature: float = 0.7,
+        temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         **kwargs
     ) -> Dict[str, Any]:
@@ -39,7 +51,7 @@ class ResponsesClient:
             verbosity: low, medium, high
             tools: Optional list of tools
             tool_choice: Optional tool choice configuration
-            temperature: Temperature for sampling
+            temperature: Temperature for sampling (if supported)
             max_tokens: Maximum tokens to generate
             **kwargs: Additional parameters
             
@@ -62,7 +74,7 @@ class ResponsesClient:
             request_data["previous_response_id"] = self.previous_response_id
         
         # Add optional parameters
-        if temperature is not None:
+        if temperature is not None and supports_temperature(model):
             request_data["temperature"] = temperature
             
         if max_tokens:
@@ -78,7 +90,20 @@ class ResponsesClient:
         request_data.update(kwargs)
         
         # Make the API call
-        response = self.client.responses.create(**request_data)
+        try:
+            response = self.client.responses.create(**request_data)
+        except Exception as e:
+            # Some models may not support the temperature parameter. If the API
+            # complains about an unsupported "temperature" argument, remove it
+            # and retry once.
+            if (
+                "Unsupported parameter: 'temperature'" in str(e)
+                and "temperature" in request_data
+            ):
+                request_data.pop("temperature", None)
+                response = self.client.responses.create(**request_data)
+            else:
+                raise
         
         # Store response ID for next turn
         if hasattr(response, 'id'):
@@ -91,7 +116,7 @@ class ResponsesClient:
         model: str,
         prompt: str,
         max_tokens: Optional[int] = None,
-        temperature: float = 0.7
+        temperature: Optional[float] = None,
     ) -> str:
         """
         Simple helper for basic text generation
@@ -104,7 +129,7 @@ class ResponsesClient:
             reasoning_effort="minimal",
             verbosity="medium",
             temperature=temperature,
-            max_tokens=max_tokens
+            max_tokens=max_tokens,
         )
         
         # Extract text from response
@@ -119,3 +144,4 @@ class ResponsesClient:
     def reset_conversation(self):
         """Reset the conversation by clearing previous response ID"""
         self.previous_response_id = None
+

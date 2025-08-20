@@ -12,7 +12,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.tools.vector_store_handler import VectorStoreHandler
-from src.services.openai_responses_client import ResponsesClient
+from src.services.openai_responses_client import ResponsesClient, supports_temperature
 from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
 
 load_dotenv()
@@ -115,7 +115,7 @@ Return a detailed summary with specific data points and source citations."""
                 input_text=search_prompt,
                 reasoning_effort="medium",
                 verbosity="high",
-                temperature=0.7
+                temperature=0.7 if supports_temperature(DEFAULT_MODELS["web_researcher"]) else None,
             )
             
             return self._extract_text(response)
@@ -152,7 +152,7 @@ Return JSON with:
                 input_text=fact_check_prompt,
                 reasoning_effort="medium",
                 verbosity="low",
-                temperature=0.3
+                temperature=0.3 if supports_temperature(DEFAULT_MODELS["fact_checker"]) else None,
             )
             
             result_text = self._extract_text(response)
@@ -248,8 +248,8 @@ Structure with clear sections, data-driven insights, and a compelling narrative.
                 input_text=article_prompt,
                 reasoning_effort="medium",
                 verbosity="high",
-                temperature=0.7,
-                max_tokens=4000
+                temperature=0.7 if supports_temperature(DEFAULT_MODELS["writer"]) else None,
+                max_tokens=4000,
             )
             
             article_content = self._extract_text(response)
@@ -341,7 +341,7 @@ Requirements:
             input_text=summary_prompt,
             reasoning_effort="low",
             verbosity="medium",
-            temperature=0.5
+            temperature=0.5 if supports_temperature(DEFAULT_MODELS["summary"]) else None,
         )
         
         return f"""---
@@ -369,7 +369,7 @@ Use actual data points and statistics from the article."""
             input_text=social_prompt,
             reasoning_effort="minimal",
             verbosity="medium",
-            temperature=0.7
+            temperature=0.7 if supports_temperature(DEFAULT_MODELS["social"]) else None,
         )
         
         return f"""---
@@ -398,7 +398,7 @@ Create JSON metadata with:
             input_text=metadata_prompt,
             reasoning_effort="minimal",
             verbosity="low",
-            temperature=0.3
+            temperature=0.3 if supports_temperature(DEFAULT_MODELS["metrics"]) else None,
         )
         
         metadata_text = self._extract_text(response)

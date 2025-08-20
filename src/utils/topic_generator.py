@@ -8,6 +8,7 @@ from openai import OpenAI
 import asyncio
 from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearchTool
 from ..config_enhanced import VECTOR_STORE_ID
+from ..services.openai_responses_client import supports_temperature
 
 
 class EnhancedTopicGenerator:
@@ -82,8 +83,8 @@ Format: Just the topic title, no explanation."""
             response = self.client.chat.completions.create(
                 model="gpt-4.1",  # Using your specified model
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.8,
-                max_tokens=50
+                temperature=0.8 if supports_temperature("gpt-4.1") else None,
+                max_tokens=50,
             )
             
             topic = response.choices[0].message.content.strip().strip('"')
@@ -97,8 +98,8 @@ Format: Just the topic title, no explanation."""
                 response = self.client.chat.completions.create(
                     model="gpt-4.1",
                     messages=[{"role": "user", "content": prompt}],
-                    temperature=0.9,
-                    max_tokens=50
+                    temperature=0.9 if supports_temperature("gpt-4.1") else None,
+                    max_tokens=50,
                 )
                 topic = response.choices[0].message.content.strip().strip('"')
             

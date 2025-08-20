@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.pipeline.base_orchestrator import BaseOrchestrator
 from src.config import DEFAULT_MODELS
+from src.services.openai_responses_client import supports_temperature
 
 load_dotenv()
 
@@ -59,13 +60,13 @@ Format the article with proper markdown formatting including:
 - Emphasis on key statistics and insights"""
 
             # Use GPT-5 with medium reasoning for quality content
-            response = self.client.create_response(
+            response = self.responses_client.create_response(
                 model=DEFAULT_MODELS["writer"],
                 input_text=article_prompt,
                 reasoning_effort="medium",
                 verbosity="high",  # High verbosity for comprehensive articles
-                temperature=0.7,
-                max_tokens=4000
+                temperature=0.7 if supports_temperature(DEFAULT_MODELS["writer"]) else None,
+                max_tokens=4000,
             )
             
             # Extract the article content
@@ -146,12 +147,12 @@ Generate JSON metadata with:
 - target_audience: primary audience description
 """
         
-        response = self.client.create_response(
+        response = self.responses_client.create_response(
             model=DEFAULT_MODELS["metrics"],
             input_text=metadata_prompt,
             reasoning_effort="minimal",
             verbosity="low",
-            temperature=0.3
+            temperature=0.3 if supports_temperature(DEFAULT_MODELS["metrics"]) else None,
         )
         
         # Parse the response
@@ -192,15 +193,17 @@ Generate:
 
 Format as markdown with clear sections."""
         
-        response = self.client.create_response(
+        response = self.responses_client.create_response(
             model=DEFAULT_MODELS["seo"],
             input_text=seo_prompt,
             reasoning_effort="minimal",
             verbosity="medium",
-            temperature=0.5
+            temperature=0.5 if supports_temperature(DEFAULT_MODELS["seo"]) else None,
         )
         
         return self._extract_text_from_response(response)
+
+
     
     def _generate_summary(self, article_content: str) -> str:
         """Generate executive summary"""
@@ -216,12 +219,12 @@ Generate a concise summary that includes:
 
 Keep it under 300 words, focused on actionable insights for institutional investors."""
         
-        response = self.client.create_response(
+        response = self.responses_client.create_response(
             model=DEFAULT_MODELS["summary"],
             input_text=summary_prompt,
             reasoning_effort="low",
             verbosity="medium",
-            temperature=0.5
+            temperature=0.5 if supports_temperature(DEFAULT_MODELS["summary"]) else None,
         )
         
         return self._extract_text_from_response(response)
