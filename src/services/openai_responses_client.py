@@ -6,16 +6,20 @@ import os
 from typing import Dict, Any, Optional, List
 from openai import OpenAI
 from dotenv import load_dotenv
+from src.utils.logging import get_logger
 
 load_dotenv()
+
+logger = get_logger(__name__)
 
 
 class ResponsesClient:
     """Wrapper for OpenAI Responses API with GPT-5 support"""
-    
+
     def __init__(self):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.previous_response_id = None
+        logger.debug("ResponsesClient initialized")
     
     def create_response(
         self,
@@ -46,6 +50,7 @@ class ResponsesClient:
         Returns:
             Response dictionary
         """
+        logger.debug("Creating response with model %s", model)
         request_data = {
             "model": model,
             "input": input_text,
@@ -79,6 +84,7 @@ class ResponsesClient:
         
         # Make the API call
         response = self.client.responses.create(**request_data)
+        logger.debug("Response received")
         
         # Store response ID for next turn
         if hasattr(response, 'id'):
@@ -98,6 +104,7 @@ class ResponsesClient:
         
         Returns just the text content
         """
+        logger.debug("Creating simple response with model %s", model)
         response = self.create_response(
             model=model,
             input_text=prompt,
@@ -119,3 +126,4 @@ class ResponsesClient:
     def reset_conversation(self):
         """Reset the conversation by clearing previous response ID"""
         self.previous_response_id = None
+        logger.debug("Conversation reset")

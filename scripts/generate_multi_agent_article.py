@@ -12,6 +12,10 @@ import json
 
 from src.pipeline.multi_agent_orchestrator import generate_article_multi_agent
 from src.config import MIN_WORD_COUNT, OUTPUT_BASE_DIR
+from src.utils.logging import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def main():
@@ -39,78 +43,87 @@ def main():
     
     args = parser.parse_args()
     
-    print(f"\n{'='*60}")
-    print("🤖 MULTI-AGENT ARTICLE GENERATION")
-    print(f"{'='*60}")
-    print(f"Topic: {args.topic}")
-    print(f"Target: {args.word_count} words")
-    print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"{'='*60}")
+    logger.info("\n%s", '='*60)
+    logger.info("🤖 MULTI-AGENT ARTICLE GENERATION")
+    logger.info("%s", '='*60)
+    logger.info("Topic: %s", args.topic)
+    logger.info("Target: %s words", args.word_count)
+    logger.info("Time: %s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    logger.info("%s", '='*60)
     
     try:
         # Generate article
         result = generate_article_multi_agent(args.topic, args.word_count)
         
         if result.get("success"):
-            print(f"\n✅ Article generated successfully!")
-            
+            logger.info("\n✅ Article generated successfully!")
+
             # Display results
-            print(f"\n📊 Results:")
-            print(f"   Word Count: {result['metrics']['word_count']}")
-            print(f"   Quality Score: {result['metrics']['quality_score']:.1f}/10")
-            print(f"   Generation Time: {result['metrics']['generation_time']:.1f} minutes")
-            
+            logger.info("\n📊 Results:")
+            logger.info("   Word Count: %s", result['metrics']['word_count'])
+            logger.info(
+                "   Quality Score: %.1f/10", result['metrics']['quality_score']
+            )
+            logger.info(
+                "   Generation Time: %.1f minutes",
+                result['metrics']['generation_time'],
+            )
+
             # Display files
-            print(f"\n📁 Output Files:")
+            logger.info("\n📁 Output Files:")
             for file_type, file_path in result['files'].items():
-                print(f"   {file_type}: {file_path}")
-            
+                logger.info("   %s: %s", file_type, file_path)
+
             # Display agent involvement
-            print(f"\n🤖 Agent Involvement:")
+            logger.info("\n🤖 Agent Involvement:")
             for agent_type, count in result['metrics']['agents_involved'].items():
-                print(f"   {agent_type}: {count} agents")
-            
+                logger.info("   %s: %s agents", agent_type, count)
+
             # Quality summary
             if 'quality_report' in result:
                 quality = result['quality_report']
-                print(f"\n✅ Quality Assessment:")
-                print(f"   Overall Score: {quality.get('overall_quality_score', 0):.1f}/10")
-                print(f"   Grade: {quality.get('quality_grade', 'N/A')}")
-                print(f"   Ready for Publication: {quality.get('ready_for_publication', False)}")
-                
+                logger.info("\n✅ Quality Assessment:")
+                logger.info(
+                    "   Overall Score: %.1f/10",
+                    quality.get('overall_quality_score', 0),
+                )
+                logger.info("   Grade: %s", quality.get('quality_grade', 'N/A'))
+                logger.info(
+                    "   Ready for Publication: %s",
+                    quality.get('ready_for_publication', False),
+                )
+
                 if quality.get('recommendations'):
-                    print(f"\n💡 Top Recommendations:")
+                    logger.info("\n💡 Top Recommendations:")
                     for i, rec in enumerate(quality['recommendations'][:3], 1):
-                        print(f"   {i}. {rec}")
-            
+                        logger.info("   %s. %s", i, rec)
+
             # Preview
-            print(f"\n📄 Article Preview:")
-            print(f"{'-'*60}")
-            print(result['article'][:500] + "...")
-            print(f"{'-'*60}")
-            
-            print(f"\n✨ Article saved to: {result['output_directory']}")
-            print(f"\n🎉 Success! View your article at:")
-            print(f"   {result['files']['article']}")
-            
+            logger.info("\n📄 Article Preview:")
+            logger.info("%s", '-'*60)
+            logger.info("%s...", result['article'][:500])
+            logger.info("%s", '-'*60)
+
+            logger.info("\n✨ Article saved to: %s", result['output_directory'])
+            logger.info("\n🎉 Success! View your article at:")
+            logger.info("   %s", result['files']['article'])
+
         else:
-            print(f"\n❌ Article generation failed!")
-            print(f"   Error: {result.get('error', 'Unknown error')}")
-            print(f"   Phase: {result.get('phase_failed', 'Unknown')}")
-            
+            logger.error("\n❌ Article generation failed!")
+            logger.error("   Error: %s", result.get('error', 'Unknown error'))
+            logger.error("   Phase: %s", result.get('phase_failed', 'Unknown'))
+
             if 'details' in result:
-                print(f"\n🔍 Error Details:")
-                print(json.dumps(result['details'], indent=2))
-            
+                logger.error("\n🔍 Error Details:")
+                logger.error(json.dumps(result['details'], indent=2))
+
             sys.exit(1)
             
     except KeyboardInterrupt:
-        print("\n\n⚠️ Generation interrupted by user")
+        logger.warning("\n\n⚠️ Generation interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.exception("\n❌ Error: %s", str(e))
         sys.exit(1)
 
 

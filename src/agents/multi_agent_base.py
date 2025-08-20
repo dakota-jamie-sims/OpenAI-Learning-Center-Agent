@@ -11,6 +11,10 @@ from dataclasses import dataclass, asdict
 
 from src.services.openai_responses_client import ResponsesClient
 from src.config import DEFAULT_MODELS
+from src.utils.logging import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class MessageType(Enum):
@@ -232,7 +236,7 @@ class BaseAgent(ABC):
             # If we can't extract content, return the whole response as string
             return str(response)
         except Exception as e:
-            print(f"LLM query error in {self.agent_id}: {str(e)}")
+            logger.error("LLM query error in %s: %s", self.agent_id, str(e))
             return f"Error: {str(e)}"
     
     def get_conversation_history(self, limit: int = 10) -> List[Dict[str, Any]]:

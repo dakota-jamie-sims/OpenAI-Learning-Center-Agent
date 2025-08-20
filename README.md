@@ -26,6 +26,11 @@ An automated system for generating high-quality learning center articles using O
    python scripts/generate_complete_article.py --topic "private equity trends"
    ```
 
+5. (Optional) Configure logging level:
+   ```bash
+   export LOG_LEVEL=DEBUG  # INFO by default
+   ```
+
 ## Project Structure
 
 ```
@@ -55,6 +60,12 @@ An automated system for generating high-quality learning center articles using O
 - **Dakota-Specific Knowledge**: Integrated Dakota Way methodology
 - **Quality Assurance**: Built-in validation and iteration
 - **Parallel Processing**: Efficient multi-step generation
+
+## Logging
+
+Logging uses the helper in `src/utils/logging.py`. Set the `LOG_LEVEL` environment
+variable (`DEBUG`, `INFO`, etc.) to control verbosity. Use `LOG_FORMAT=json` for
+JSON-formatted logs.
 
 ## Documentation
 
