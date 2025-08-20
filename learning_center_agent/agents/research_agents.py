@@ -6,10 +6,14 @@ import json
 import re
 from datetime import datetime
 
-from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus
-from src.config import DEFAULT_MODELS, MIN_SOURCES
-from src.services.web_search import search_web
-from src.services.kb_search import KnowledgeBaseSearcher
+from learning_center_agent.agents.multi_agent_base import (
+    AgentMessage,
+    AgentStatus,
+    BaseAgent,
+)
+from learning_center_agent.config import DEFAULT_MODELS, MIN_SOURCES
+from learning_center_agent.services.web_search import search_web
+from learning_center_agent.services.kb_search import KnowledgeBaseSearcher
 
 
 class WebResearchAgent(BaseAgent):

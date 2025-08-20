@@ -3,8 +3,6 @@
 Test production system with real API and knowledge base
 """
 import os
-import sys
-sys.path.append('src')
 
 from dotenv import load_dotenv
 from openai import OpenAI

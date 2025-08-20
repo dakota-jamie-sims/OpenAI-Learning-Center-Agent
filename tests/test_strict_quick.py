@@ -12,7 +12,8 @@ def test_strict_features():
     
     # Test 1: URL verification
     print("\n1. Testing URL verification:")
-    from src.pipeline.strict_orchestrator import StrictOrchestrator
+    from learning_center_agent.pipeline.strict_orchestrator import StrictOrchestrator
+
     orch = StrictOrchestrator()
     
     # Test real URL

@@ -2,16 +2,15 @@
 """
 Test script for the multi-agent article generation system
 """
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-
 import argparse
-from datetime import datetime
 import json
+import sys
+from datetime import datetime
 
-from src.pipeline.multi_agent_orchestrator import get_multi_agent_orchestrator
-from src.config import MIN_WORD_COUNT
+from learning_center_agent.config import MIN_WORD_COUNT
+from learning_center_agent.pipeline.multi_agent_orchestrator import (
+    get_multi_agent_orchestrator,
+)
 
 
 def test_article_generation(topic: str, word_count: int):

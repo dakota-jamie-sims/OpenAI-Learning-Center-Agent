@@ -3,8 +3,6 @@
 Simple article generation test without strict validation
 """
 import os
-import sys
-sys.path.append('src')
 
 from dotenv import load_dotenv
 from openai import OpenAI

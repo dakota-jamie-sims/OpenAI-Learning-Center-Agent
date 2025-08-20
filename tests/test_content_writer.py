@@ -2,9 +2,10 @@
 """Test the content writer agent directly to debug article generation issues."""
 
 import asyncio
+
 from agents import Runner
-from src.agents import content_writer
-from src.tools.function_tools import write_file
+from learning_center_agent.agents import content_writer
+from learning_center_agent.tools.function_tools import write_file
 
 async def test_content_writer():
     """Test the content writer with a focused prompt."""

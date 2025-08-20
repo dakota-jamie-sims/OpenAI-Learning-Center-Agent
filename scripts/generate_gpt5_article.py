@@ -4,11 +4,9 @@ Generate article using GPT-5 with Responses API
 Simple, clean implementation
 """
 import sys
-import os
 import argparse
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.pipeline.gpt5_orchestrator import GPT5Orchestrator
+from learning_center_agent.pipeline.gpt5_orchestrator import GPT5Orchestrator
 
 
 def main():

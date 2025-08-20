@@ -8,10 +8,13 @@ import asyncio
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from src.agents.orchestrator import OrchestratorAgent, create_article_with_multi_agent_system
-from src.models import ArticleRequest, ArticleResponse, MetadataGeneration
-from src.config import OUTPUT_DIR, ARTICLE_CONFIG
-from src.utils import ensure_output_dir, format_article_filename
+from learning_center_agent.agents.orchestrator import (
+    OrchestratorAgent,
+    create_article_with_multi_agent_system,
+)
+from learning_center_agent.models import ArticleRequest, ArticleResponse, MetadataGeneration
+from learning_center_agent.config import OUTPUT_DIR, ARTICLE_CONFIG
+from learning_center_agent.utils import ensure_output_dir, format_article_filename
 
 
 class MultiAgentPipelineOrchestrator:
@@ -149,7 +152,10 @@ class MultiAgentPipelineOrchestrator:
     
     def get_system_status(self) -> Dict[str, Any]:
         """Get status of the multi-agent system"""
-        from src.agents.multi_agent_base import AgentMessage, MessageType
+        from learning_center_agent.agents.multi_agent_base import (
+            AgentMessage,
+            MessageType,
+        )
         
         # Create status request message
         status_msg = AgentMessage(
@@ -167,7 +173,10 @@ class MultiAgentPipelineOrchestrator:
     
     def review_pipeline(self) -> Dict[str, Any]:
         """Review current pipeline execution"""
-        from src.agents.multi_agent_base import AgentMessage, MessageType
+        from learning_center_agent.agents.multi_agent_base import (
+            AgentMessage,
+            MessageType,
+        )
         
         review_msg = AgentMessage(
             from_agent="pipeline",

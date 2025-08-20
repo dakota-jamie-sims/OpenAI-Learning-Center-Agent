@@ -7,7 +7,7 @@ import json
 from typing import Dict, Any, List
 import re
 
-from src.config import OUTPUT_BASE_DIR
+from learning_center_agent.config import OUTPUT_BASE_DIR
 
 
 def sanitize_filename(filename: str) -> str:

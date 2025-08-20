@@ -8,12 +8,10 @@ from pathlib import Path
 from openai import OpenAI
 from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
-import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from src.tools.vector_store_handler import VectorStoreHandler
-from src.services.openai_responses_client import ResponsesClient
-from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
+from learning_center_agent.tools.vector_store_handler import VectorStoreHandler
+from learning_center_agent.services.openai_responses_client import ResponsesClient
+from learning_center_agent.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
 
 load_dotenv()
 

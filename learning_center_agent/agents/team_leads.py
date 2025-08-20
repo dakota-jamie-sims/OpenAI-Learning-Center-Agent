@@ -6,11 +6,28 @@ import asyncio
 from datetime import datetime
 import json
 
-from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus, MessageType
-from src.agents.research_agents import WebResearchAgent, KnowledgeBaseAgent, DataValidationAgent
-from src.agents.writing_agents import ContentWriterAgent, StyleEditorAgent, CitationAgent
-from src.agents.quality_agents import FactCheckerAgent, ComplianceAgent, QualityAssuranceAgent
-from src.config import DEFAULT_MODELS
+from learning_center_agent.agents.multi_agent_base import (
+    AgentMessage,
+    AgentStatus,
+    BaseAgent,
+    MessageType,
+)
+from learning_center_agent.agents.research_agents import (
+    KnowledgeBaseAgent,
+    DataValidationAgent,
+    WebResearchAgent,
+)
+from learning_center_agent.agents.writing_agents import (
+    CitationAgent,
+    ContentWriterAgent,
+    StyleEditorAgent,
+)
+from learning_center_agent.agents.quality_agents import (
+    ComplianceAgent,
+    FactCheckerAgent,
+    QualityAssuranceAgent,
+)
+from learning_center_agent.config import DEFAULT_MODELS
 
 
 class ResearchTeamLead(BaseAgent):
@@ -1175,7 +1192,11 @@ class QualityTeamLead(BaseAgent):
         self.model = DEFAULT_MODELS.get("orchestrator", "gpt-5")
         
         # Import quality agents dynamically to avoid circular imports
-        from src.agents.quality_agents import FactCheckerAgent, ComplianceAgent, QualityAssuranceAgent
+        from learning_center_agent.agents.quality_agents import (
+            ComplianceAgent,
+            FactCheckerAgent,
+            QualityAssuranceAgent,
+        )
         
         # Initialize sub-agents
         self.fact_checker = FactCheckerAgent()

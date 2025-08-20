@@ -4,7 +4,8 @@ Generate article with STRICT fact verification
 Ensures 100% accuracy while maintaining reliability
 """
 import sys
-from src.pipeline.strict_orchestrator import StrictOrchestrator
+
+from learning_center_agent.pipeline.strict_orchestrator import StrictOrchestrator
 
 def main():
     """Generate a strictly fact-checked article"""

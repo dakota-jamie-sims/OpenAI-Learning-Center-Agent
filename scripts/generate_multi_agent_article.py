@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""
-Generate an article using the multi-agent system
-"""
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-
+"""Generate an article using the multi-agent system"""
 import argparse
-from datetime import datetime
 import json
+import sys
+from datetime import datetime
 
-from src.pipeline.multi_agent_orchestrator import generate_article_multi_agent
-from src.config import MIN_WORD_COUNT, OUTPUT_BASE_DIR
+from learning_center_agent.config import MIN_WORD_COUNT, OUTPUT_BASE_DIR
+from learning_center_agent.pipeline.multi_agent_orchestrator import (
+    generate_article_multi_agent,
+)
 
 
 def main():

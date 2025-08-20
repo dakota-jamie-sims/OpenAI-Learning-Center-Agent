@@ -4,17 +4,11 @@ Simple test script for Chat Completions orchestrator
 """
 import asyncio
 import os
-import sys
-from pathlib import Path
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent / "src"))
-
-# Load environment variables
 from dotenv import load_dotenv
-load_dotenv()
+from learning_center_agent.pipeline.simple_orchestrator import SimpleOrchestrator
 
-from src.pipeline.chat_orchestrator import ChatOrchestrator
+load_dotenv()
 
 
 async def test_chat_orchestrator():
@@ -36,7 +30,7 @@ async def test_chat_orchestrator():
     
     try:
         # Create orchestrator
-        orchestrator = ChatOrchestrator()
+        orchestrator = SimpleOrchestrator()
         
         print("1️⃣ Initializing agents...")
         await orchestrator.initialize_agents()
