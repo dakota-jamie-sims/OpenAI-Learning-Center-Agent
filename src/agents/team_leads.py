@@ -93,6 +93,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         web_response = self.web_researcher.receive_message(web_msg)
+        if not web_response.payload.get("success", True):
+            return web_response.payload
         
         # Knowledge base search
         kb_msg = self.delegate_task(
@@ -101,6 +103,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         kb_response = self.kb_researcher.receive_message(kb_msg)
+        if not kb_response.payload.get("success", True):
+            return kb_response.payload
         
         # Get Dakota insights
         dakota_msg = self.delegate_task(
@@ -109,6 +113,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         dakota_response = self.kb_researcher.receive_message(dakota_msg)
+        if not dakota_response.payload.get("success", True):
+            return dakota_response.payload
         
         # Phase 2: Validate findings
         all_content = {
@@ -123,6 +129,8 @@ class ResearchTeamLead(BaseAgent):
             {"content": json.dumps(all_content)}
         )
         validation_response = self.data_validator.receive_message(validation_msg)
+        if not validation_response.payload.get("success", True):
+            return validation_response.payload
         
         # Phase 3: Find additional sources if needed
         sources_collected = self._extract_all_sources(all_content)
@@ -134,6 +142,8 @@ class ResearchTeamLead(BaseAgent):
                 {"query": topic}
             )
             source_response = self.web_researcher.receive_message(source_msg)
+            if not source_response.payload.get("success", True):
+                return source_response.payload
             sources_collected.extend(source_response.payload.get("sources", []))
         
         # Phase 4: Synthesize findings
@@ -677,6 +687,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         outline_response = self.content_writer.receive_message(outline_msg)
+        if not outline_response.payload.get("success", True):
+            return outline_response.payload
         
         # Phase 2: Write article
         write_msg = self.delegate_task(
@@ -691,7 +703,7 @@ class WritingTeamLead(BaseAgent):
             }
         )
         write_response = self.content_writer.receive_message(write_msg)
-        
+
         if not write_response.payload.get("success"):
             return write_response.payload
         
@@ -708,7 +720,9 @@ class WritingTeamLead(BaseAgent):
             }
         )
         citation_response = self.citation_agent.receive_message(citation_msg)
-        
+        if not citation_response.payload.get("success", True):
+            return citation_response.payload
+
         article_with_citations = citation_response.payload.get("cited_content", article)
         
         # Phase 4: Style editing
@@ -726,7 +740,9 @@ class WritingTeamLead(BaseAgent):
             }
         )
         style_response = self.style_editor.receive_message(style_msg)
-        
+        if not style_response.payload.get("success", True):
+            return style_response.payload
+
         final_article = style_response.payload.get("edited_content", article_with_citations)
         
         # Phase 5: Final polish
@@ -739,7 +755,9 @@ class WritingTeamLead(BaseAgent):
             }
         )
         polish_response = self.style_editor.receive_message(polish_msg)
-        
+        if not polish_response.payload.get("success", True):
+            return polish_response.payload
+
         polished_article = polish_response.payload.get("polished_content", final_article)
         
         self.update_status(AgentStatus.COMPLETED, "Article writing complete")

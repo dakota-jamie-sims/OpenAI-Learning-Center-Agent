@@ -306,6 +306,8 @@ class KnowledgeBaseAgent(BaseAgent):
         try:
             # Perform KB search
             results = self.kb_searcher.search(query)
+            if isinstance(results, dict) and not results.get("success", True):
+                return {"success": False, "error": results.get("error", "KB search failed"), "query": query}
             
             # Analyze results
             analysis_prompt = f"""Analyze these Dakota knowledge base results for: {query}
@@ -348,6 +350,8 @@ Focus on institutional investor needs."""
         # Search for Dakota-specific content
         dakota_query = f"{query} Dakota perspective institutional investors"
         results = self.kb_searcher.search(dakota_query)
+        if isinstance(results, dict) and not results.get("success", True):
+            return {"success": False, "error": results.get("error", "KB search failed"), "query": query}
         
         # Extract Dakota insights
         insight_prompt = f"""Extract Dakota-specific insights for: {query}

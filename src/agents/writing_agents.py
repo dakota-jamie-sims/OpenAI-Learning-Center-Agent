@@ -73,6 +73,14 @@ class ContentWriterAgent(BaseAgent):
         research = payload.get("research", {})
         sources = payload.get("sources", [])
         requirements = payload.get("requirements", {})
+
+        # Ensure research succeeded before proceeding
+        if isinstance(research, dict) and not research.get("success", True):
+            return {
+                "success": False,
+                "error": "Research phase failed",
+                "details": research,
+            }
         
         # Create article structure
         outline = self._create_detailed_outline(topic, research, word_count)
