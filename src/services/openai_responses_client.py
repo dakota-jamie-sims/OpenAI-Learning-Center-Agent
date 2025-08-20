@@ -1,21 +1,97 @@
-"""
-OpenAI Responses API Client for GPT-5
-Uses the new responses API which supports reasoning chains and better tool handling
+"""OpenAI Responses API Client for GPT-5.
+
+This module now wraps all API calls with a retry mechanism and exposes
+retry information to callers. A ``timeout`` can also be specified and is
+propagated to the underlying :class:`openai.OpenAI` client.
 """
 import os
-from typing import Dict, Any, Optional, List
-from openai import OpenAI
+import logging
+from typing import Dict, Any, Optional, List, Tuple
+
 from dotenv import load_dotenv
+from openai import (
+    OpenAI,
+    APIError,
+    APIConnectionError,
+    RateLimitError,
+    APITimeoutError,
+)
+from tenacity import (
+    Retrying,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 load_dotenv()
 
 
+logger = logging.getLogger(__name__)
+
+
+# Exceptions that should trigger a retry
+RETRY_EXCEPTIONS = (
+    APIError,
+    APIConnectionError,
+    RateLimitError,
+    APITimeoutError,
+)
+
+
+class TransientOpenAIError(RuntimeError):
+    """Error raised when transient failures persist after retries."""
+
+
+class PermanentOpenAIError(RuntimeError):
+    """Error raised for non-retryable OpenAI failures."""
+
+
 class ResponsesClient:
     """Wrapper for OpenAI Responses API with GPT-5 support"""
-    
-    def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+    def __init__(self, timeout: Optional[float] = None, max_retries: int = 3):
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=timeout)
         self.previous_response_id = None
+        self.timeout = timeout
+        self.max_retries = max_retries
+
+    def _with_retry(
+        self, func, timeout: Optional[float] = None, **kwargs
+    ) -> Tuple[Any, int]:
+        """Execute an API call with retries.
+
+        Returns the result and the number of retry attempts performed.
+        Raises :class:`TransientOpenAIError` for retryable failures and
+        :class:`PermanentOpenAIError` for non-retryable ones.
+        """
+        retryer = Retrying(
+            reraise=True,
+            stop=stop_after_attempt(self.max_retries),
+            wait=wait_exponential(min=1, max=10, multiplier=1),
+            retry=retry_if_exception_type(RETRY_EXCEPTIONS),
+            before_sleep=lambda rs: logger.warning(
+                "Retrying OpenAI API call (%s/%s) after error: %s",
+                rs.attempt_number,
+                self.max_retries,
+                rs.outcome.exception(),
+            ),
+        )
+
+        try:
+            result = retryer.call(func, timeout=timeout, **kwargs)
+            attempts = retryer.statistics.get("attempt_number", 1) - 1
+            return result, attempts
+        except RETRY_EXCEPTIONS as e:
+            attempts = retryer.statistics.get("attempt_number", 1)
+            logger.error(
+                "OpenAI transient error after %d attempts: %s", attempts, e
+            )
+            raise TransientOpenAIError(
+                f"Transient OpenAI error after {attempts} attempts: {e}"
+            ) from e
+        except Exception as e:  # Non-retryable
+            logger.error("OpenAI permanent error: %s", e)
+            raise PermanentOpenAIError(str(e)) from e
     
     def create_response(
         self,
@@ -27,6 +103,7 @@ class ResponsesClient:
         tool_choice: Optional[Dict] = None,
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
+        timeout: Optional[float] = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -74,12 +151,19 @@ class ResponsesClient:
         if tool_choice:
             request_data["tool_choice"] = tool_choice
         
-        # Add any additional kwargs
+        # Add any additional kwargs (excluding timeout)
         request_data.update(kwargs)
-        
-        # Make the API call
-        response = self.client.responses.create(**request_data)
-        
+
+        timeout = timeout or self.timeout
+
+        # Make the API call with retries
+        response, attempts = self._with_retry(
+            self.client.responses.create, timeout=timeout, **request_data
+        )
+
+        # Surface retry attempts to caller
+        setattr(response, "retry_attempts", attempts)
+
         # Store response ID for next turn
         if hasattr(response, 'id'):
             self.previous_response_id = response.id
@@ -91,7 +175,8 @@ class ResponsesClient:
         model: str,
         prompt: str,
         max_tokens: Optional[int] = None,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        timeout: Optional[float] = None,
     ) -> str:
         """
         Simple helper for basic text generation
@@ -104,7 +189,8 @@ class ResponsesClient:
             reasoning_effort="minimal",
             verbosity="medium",
             temperature=temperature,
-            max_tokens=max_tokens
+            max_tokens=max_tokens,
+            timeout=timeout,
         )
         
         # Extract text from response
