@@ -80,6 +80,7 @@ class ResearchTeamLead(BaseAgent):
         topic = payload.get("topic", "")
         requirements = payload.get("requirements", {})
         
+        print(f"ResearchTeamLead: Starting research for topic: {topic}")
         self.update_status(AgentStatus.WORKING, f"Researching: {topic}")
         
         # Phase 1: Parallel research

@@ -22,15 +22,18 @@ class ArticleRequest:
 @dataclass
 class ArticleResponse:
     """Response model for generated articles"""
-    article_content: str
-    word_count: int
-    metadata: Optional[Dict[str, Any]] = None
+    success: bool
+    article: str  # Changed from article_content to match usage
+    metadata: Optional['MetadataGeneration'] = None  # Forward reference
+    word_count: Optional[int] = None
     summary: Optional[str] = None
     social_posts: Optional[Dict[str, str]] = None
     fact_check_results: Optional[Dict[str, Any]] = None
     sources: Optional[List[Dict[str, str]]] = None
     generation_time: Optional[float] = None
     output_directory: Optional[str] = None
+    error: Optional[str] = None
+    quality_metrics: Optional[Dict[str, Any]] = None
     
 
 @dataclass

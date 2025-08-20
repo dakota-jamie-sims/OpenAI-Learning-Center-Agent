@@ -214,13 +214,17 @@ class BaseAgent(ABC):
     def query_llm(self, prompt: str, reasoning_effort: str = "medium", 
                   verbosity: str = "medium", **kwargs) -> str:
         """Query the LLM with the agent's specialized model"""
-        return self.responses_client.create_response(
-            model=self.model,
-            input_text=prompt,
-            reasoning_effort=reasoning_effort,
-            verbosity=verbosity,
-            **kwargs
-        )
+        try:
+            return self.responses_client.create_response(
+                prompt=prompt,  # Changed from input_text
+                model=self.model,
+                reasoning_effort=reasoning_effort,
+                verbosity=verbosity,
+                **kwargs
+            )
+        except Exception as e:
+            print(f"LLM query error in {self.agent_id}: {str(e)}")
+            return f"Error: {str(e)}"
     
     def get_conversation_history(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent conversation history"""

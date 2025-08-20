@@ -207,7 +207,14 @@ class OrchestratorAgent(BaseAgent):
         # Process response
         response = self.research_lead.receive_message(research_msg)
         
-        return response.payload if response else {"success": False, "error": "No response from research team"}
+        if response:
+            print(f"Research response received: {response.payload.get('success', False)}")
+            if not response.payload.get('success', False):
+                print(f"Research error: {response.payload.get('error', 'Unknown error')}")
+            return response.payload
+        else:
+            print("No response from research team")
+            return {"success": False, "error": "No response from research team"}
     
     async def _phase_writing(self, request: ArticleRequest, research_data: Dict[str, Any]) -> Dict[str, Any]:
         """Writing phase coordination"""
