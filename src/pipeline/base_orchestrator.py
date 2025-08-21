@@ -48,15 +48,28 @@ class BaseOrchestrator:
         else:
             return f"Knowledge base search failed: {result.get('error', 'Unknown error')}"
     
-    def create_response(self, prompt: str, model: Optional[str] = None, 
-                       reasoning_effort: str = "medium", verbosity: str = "medium") -> str:
-        """Create a response using the Responses API"""
-        return self.responses_client.create_response(
-            prompt=prompt,
+    def create_response(
+        self,
+        prompt: str,
+        model: Optional[str] = None,
+        reasoning_effort: str = "medium",
+        verbosity: str = "medium",
+    ) -> Any:
+        """Create a response using the Responses API.
+
+        Returns the full response object with an additional ``output_text``
+        attribute containing any extracted text content.
+        """
+        response = self.responses_client.create_response(
             model=model or DEFAULT_MODELS["default"],
+            input_text=prompt,
             reasoning_effort=reasoning_effort,
-            verbosity=verbosity
+            verbosity=verbosity,
         )
+
+        # Extract text for convenience and attach to the response object
+        setattr(response, "output_text", self._extract_text(response))
+        return response
     
     def create_output_directory(self, topic: str) -> Path:
         """Create output directory for article"""
@@ -99,17 +112,19 @@ Create JSON metadata including:
             prompt,
             model=DEFAULT_MODELS.get("metadata", DEFAULT_MODELS["default"]),
             reasoning_effort="low",
-            verbosity="low"
+            verbosity="low",
         )
-        
+
+        response_text = getattr(response, "output_text", self._extract_text(response))
+
         # Clean up response to ensure valid JSON
-        response = response.strip()
-        if response.startswith("```json"):
-            response = response[7:]
-        if response.endswith("```"):
-            response = response[:-3]
-        
-        return response
+        response_text = response_text.strip()
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+
+        return response_text
     
     def fact_check_article(self, article_content: str) -> Dict[str, Any]:
         """Fact check the article content"""
@@ -137,21 +152,37 @@ Return as JSON with structure:
             prompt,
             model=DEFAULT_MODELS.get("fact_checker", DEFAULT_MODELS["default"]),
             reasoning_effort="high",
-            verbosity="medium"
+            verbosity="medium",
         )
-        
+
+        response_text = getattr(response, "output_text", self._extract_text(response))
+
         try:
             # Clean and parse JSON
-            response = response.strip()
-            if response.startswith("```json"):
-                response = response[7:]
-            if response.endswith("```"):
-                response = response[:-3]
-            
-            return json.loads(response)
-        except:
+            response_text = response_text.strip()
+            if response_text.startswith("```json"):
+                response_text = response_text[7:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+
+            return json.loads(response_text)
+        except Exception:
             return {
                 "accuracy_score": 0,
                 "error": "Failed to parse fact-check response",
-                "raw_response": response
+                "raw_response": response_text,
             }
+
+    def _extract_text(self, response: Any) -> str:
+        """Extract text content from a Responses API response."""
+        if hasattr(response, "content") and response.content:
+            if isinstance(response.content, list) and len(response.content) > 0:
+                texts = []
+                for item in response.content:
+                    if hasattr(item, "text"):
+                        texts.append(item.text)
+                return "\n\n".join(texts)
+            elif hasattr(response.content, "text"):
+                return response.content.text
+        return str(response)
+
