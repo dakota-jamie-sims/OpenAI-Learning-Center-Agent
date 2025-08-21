@@ -55,9 +55,14 @@ class CommunicationBroker:
     
     def send_message(self, message: AgentMessage) -> None:
         """Queue a message for delivery"""
+        if not isinstance(message, AgentMessage):
+            raise TypeError("send_message expects an AgentMessage instance")
+
         with self.lock:
             self.message_queue.append(message)
-            self.logger.debug(f"Queued message: {message.message_id} from {message.from_agent} to {message.to_agent}")
+            self.logger.debug(
+                f"Queued message: {message.message_id} from {message.from_agent} to {message.to_agent}"
+            )
     
     async def start(self) -> None:
         """Start the message broker"""
@@ -120,24 +125,32 @@ class CommunicationBroker:
         
         # Deliver message to target agent
         response = target_agent.receive_message(message)
-        if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task):
+
+        if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task) or isinstance(response, asyncio.Future):
             response = await response
 
         if isinstance(response, AgentMessage):
             self.send_message(response)
+        elif response is not None:
+            self.logger.warning(
+                "Non-AgentMessage response returned from %s", target_agent.agent_id
+            )
     
     async def _handle_response(self, message: AgentMessage) -> None:
         """Handle response messages"""
         target_agent = self.agents.get(message.to_agent)
         
         if target_agent:
-            # Just deliver the response
             response = target_agent.receive_message(message)
-            if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task):
+            if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task) or isinstance(response, asyncio.Future):
                 response = await response
 
             if isinstance(response, AgentMessage):
                 self.send_message(response)
+            elif response is not None:
+                self.logger.warning(
+                    "Non-AgentMessage response returned from %s", target_agent.agent_id
+                )
         else:
             self.logger.warning(f"Response target agent not found: {message.to_agent}")
     
@@ -160,7 +173,7 @@ class CommunicationBroker:
                 agent = self.agents.get(agent_id)
                 if agent:
                     response = agent.receive_message(message)
-                    if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task):
+                    if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task) or isinstance(response, asyncio.Future):
                         response = await response
 
                     if isinstance(response, AgentMessage):
@@ -267,3 +280,4 @@ def create_communication_broker(async_mode: bool = True) -> CommunicationBroker:
         return AsyncCommunicationBroker()
     else:
         return CommunicationBroker()
+
