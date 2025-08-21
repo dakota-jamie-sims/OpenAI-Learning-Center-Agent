@@ -124,10 +124,22 @@ class OrchestratorAgent(BaseAgent):
             # Phase 1: Research
             research_result = await self._phase_research(request)
             self.current_pipeline["phases"]["research"] = research_result
-            
+            if not isinstance(research_result, dict):
+                logger.error(
+                    "Research phase returned invalid result type: "
+                    f"{type(research_result).__name__}"
+                )
+                return self._pipeline_failed(
+                    "Research phase failed: invalid result format",
+                    {"result": research_result},
+                )
+
             if not research_result.get("success", False):
+                logger.error(
+                    f"Research phase unsuccessful: {research_result.get('error', 'Unknown error')}"
+                )
                 return self._pipeline_failed("Research phase failed", research_result)
-            
+
             # Phase 2: Writing
             writing_result = await self._phase_writing(request, research_result)
             self.current_pipeline["phases"]["writing"] = writing_result
@@ -157,22 +169,27 @@ class OrchestratorAgent(BaseAgent):
                 request
             )
             self.current_pipeline["phases"]["publishing"] = publishing_result
-            
+
+            if not publishing_result.get("success", False):
+                return self._pipeline_failed("Publishing phase failed", publishing_result)
+
             # Stop broker
             self.broker.stop()
-            
+
             # Complete pipeline
             self.current_pipeline["status"] = "completed"
             self.current_pipeline["end_time"] = datetime.now().isoformat()
             self.pipeline_history.append(self.current_pipeline)
-            
+
             self.update_status(AgentStatus.COMPLETED, "Article generation complete")
-            
+
+            publication_package = publishing_result.get("publication_package", {})
+
             return {
                 "success": True,
                 "pipeline_id": pipeline_id,
-                "article": publishing_result["final_article"],
-                "metadata": publishing_result["metadata"],
+                "article": publication_package.get("article", ""),
+                "metadata": publication_package.get("metadata", {}),
                 "quality_score": quality_result.get("overall_quality_score", 0),
                 "phases_completed": list(self.current_pipeline["phases"].keys()),
                 "total_time": self._calculate_pipeline_duration()
@@ -318,7 +335,7 @@ class OrchestratorAgent(BaseAgent):
         # Send to publishing team lead
         publishing_msg = self.send_message(
             to_agent=self.publishing_lead.agent_id,
-            task="prepare_for_publication",
+            task="prepare_publication",
             payload={
                 "article": article,
                 "metadata": {
@@ -336,7 +353,7 @@ class OrchestratorAgent(BaseAgent):
         await asyncio.sleep(0.5)
         
         response = self.publishing_lead.receive_message(publishing_msg)
-        
+
         return response.payload if response else {"success": False, "error": "No response from publishing team"}
     
     def _review_current_pipeline(self) -> Dict[str, Any]:
@@ -491,27 +508,35 @@ def create_article_with_multi_agent_system(request: ArticleRequest) -> ArticleRe
     
     if response.payload.get("success", False):
         # Map fields that might have different names
-        metadata_dict = response.payload["metadata"].copy()
-        
+        metadata_dict = response.payload.get("metadata", {}).copy()
+
         # Handle field name variations
         if "target_keywords" in metadata_dict and "keywords" not in metadata_dict:
             metadata_dict["keywords"] = metadata_dict.pop("target_keywords")
         if "meta_description" in metadata_dict and "seo_description" not in metadata_dict:
             metadata_dict["seo_description"] = metadata_dict.pop("meta_description")
-        
-        # Ensure required fields have defaults
+
+        required_fields = ["keywords", "read_time_minutes", "key_takeaways"]
+        missing = [f for f in required_fields if not metadata_dict.get(f)]
+        if missing:
+            return ArticleResponse(
+                success=False,
+                article="",
+                metadata=None,
+                error=f"Missing required metadata fields: {', '.join(missing)}"
+            )
+
+        # Ensure required fields have defaults for optional values
         metadata_dict.setdefault("description", metadata_dict.get("seo_description", ""))
         metadata_dict.setdefault("category", "Investment Insights")
         metadata_dict.setdefault("target_audience", "institutional investors")
-        metadata_dict.setdefault("read_time_minutes", 7)
-        metadata_dict.setdefault("key_takeaways", [])
         metadata_dict.setdefault("related_topics", [])
         metadata_dict.setdefault("seo_title", metadata_dict.get("title", ""))
         metadata_dict.setdefault("publication_date", datetime.now().strftime("%Y-%m-%d"))
-        
+
         return ArticleResponse(
             success=True,
-            article=response.payload["article"],
+            article=response.payload.get("article", ""),
             metadata=MetadataGeneration(**metadata_dict),
             quality_metrics={
                 "quality_score": response.payload.get("quality_score", 0),
@@ -523,18 +548,6 @@ def create_article_with_multi_agent_system(request: ArticleRequest) -> ArticleRe
         return ArticleResponse(
             success=False,
             article="",
-            metadata=MetadataGeneration(
-                title="Generation Failed",
-                description="Article generation failed",
-                keywords=[],
-                category="Error",
-                target_audience="N/A",
-                read_time_minutes=0,
-                key_takeaways=[],
-                related_topics=[],
-                seo_title="Generation Failed",
-                seo_description="Article generation failed",
-                publication_date=datetime.now().strftime("%Y-%m-%d")
-            ),
+            metadata=None,
             error=response.payload.get("error", "Unknown error")
         )
