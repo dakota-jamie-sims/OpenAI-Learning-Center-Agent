@@ -68,6 +68,15 @@ class WebResearchAgent(BaseAgent):
         # Search for current information
         search_results = search_web(query)
         
+        # Check if search failed
+        if not search_results:
+            return {
+                "success": False,
+                "error": "Web search returned no results",
+                "search_query": query,
+                "timestamp": datetime.now().isoformat()
+            }
+        
         # Analyze and synthesize results
         analysis_prompt = f"""Analyze these search results for: {query}
 
@@ -89,8 +98,17 @@ Focus on 2024-2025 data and institutional investor perspectives."""
             verbosity="high"
         )
         
-        # Extract sources
+        # Extract sources from analysis and combine with search results
         sources = self._extract_sources(analysis)
+        
+        # Add search results as sources if we don't have enough
+        for result in search_results[:5]:  # Top 5 search results
+            if isinstance(result, dict) and result.get("url"):
+                sources.append({
+                    "url": result.get("url", ""),
+                    "title": result.get("title", ""),
+                    "date": datetime.now().strftime("%Y-%m-%d")
+                })
         
         return {
             "success": True,
