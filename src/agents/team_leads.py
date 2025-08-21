@@ -1869,16 +1869,21 @@ class PublishingTeamLead(BaseAgent):
         metadata = payload.get("metadata", {})
         
         self.update_status(AgentStatus.WORKING, "Preparing for publication")
-        
+
         # SEO optimization
         seo_result = self._optimize_for_seo(article, metadata)
-        
+
         # Generate metadata
         metadata_result = self._generate_comprehensive_metadata(article, metadata)
-        
+        if not metadata_result.get("success", False):
+            return {
+                "success": False,
+                "error": metadata_result.get("error", "Metadata generation failed")
+            }
+
         # Create social content
         social_result = self._create_social_media_content(article, metadata)
-        
+
         # Generate publication package
         publication_package = {
             "article": seo_result["optimized_content"],
@@ -1887,9 +1892,9 @@ class PublishingTeamLead(BaseAgent):
             "social": social_result["social_content"],
             "distribution": self._create_distribution_plan(metadata)
         }
-        
+
         self.update_status(AgentStatus.COMPLETED, "Publication preparation complete")
-        
+
         return {
             "success": True,
             "publication_package": publication_package,
@@ -2005,17 +2010,26 @@ Return as structured data."""
             reasoning_effort="low",
             verbosity="medium"
         )
-        
+
         # Parse and structure metadata
         metadata = self._parse_metadata_response(metadata_response)
         metadata.update(existing_metadata)  # Preserve existing data
-        
+
         # Add calculated fields
         metadata["word_count"] = len(content.split())
-        metadata["reading_time"] = self._calculate_reading_time(content)
+        metadata["read_time_minutes"] = self._calculate_reading_time(content)
         metadata["last_updated"] = datetime.now().isoformat()
-        
+
+        required_fields = ["keywords", "read_time_minutes", "key_takeaways"]
+        missing = [f for f in required_fields if not metadata.get(f)]
+        if missing:
+            return {
+                "success": False,
+                "error": f"Missing required metadata fields: {', '.join(missing)}"
+            }
+
         return {
+            "success": True,
             "metadata": metadata,
             "completeness_score": self._calculate_metadata_completeness(metadata)
         }
