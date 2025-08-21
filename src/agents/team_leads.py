@@ -67,10 +67,7 @@ class ResearchTeamLead(BaseAgent):
         payload = message.payload
 
         if task == "comprehensive_research":
-            # Handle async execution properly - avoid nested event loops
-            import nest_asyncio
-            nest_asyncio.apply()
-            result_model = asyncio.run(self._coordinate_comprehensive_research_async(payload))
+            result_model = await self._coordinate_comprehensive_research_async(payload)
             result = result_model.model_dump()
         elif task == "validate_article":
             result = self._coordinate_article_validation(payload)
@@ -116,14 +113,14 @@ class ResearchTeamLead(BaseAgent):
         )
         
         # Execute all searches simultaneously with timeout protection
-        web_task = asyncio.create_task(
-            asyncio.wait_for(self.web_researcher.receive_message(web_msg), timeout=15)
+        web_task = asyncio.wait_for(
+            asyncio.to_thread(self.web_researcher.receive_message, web_msg), timeout=15
         )
-        kb_task = asyncio.create_task(
-            asyncio.wait_for(self.kb_researcher.receive_message(kb_msg), timeout=10)
+        kb_task = asyncio.wait_for(
+            asyncio.to_thread(self.kb_researcher.receive_message, kb_msg), timeout=10
         )
-        dakota_task = asyncio.create_task(
-            asyncio.wait_for(self.kb_researcher.receive_message(dakota_msg), timeout=10)
+        dakota_task = asyncio.wait_for(
+            asyncio.to_thread(self.kb_researcher.receive_message, dakota_msg), timeout=10
         )
 
         # Wait for all to complete
