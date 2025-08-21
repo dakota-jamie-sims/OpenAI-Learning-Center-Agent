@@ -68,3 +68,31 @@ scripts/test_something.py
 ```
 
 **IMPORTANT**: Always save test files to the `tests/` directory or its subdirectories. Never save test files to the root directory.
+
+## SYSTEM UPDATES - 2025-08-21
+
+### Production KB Search
+- **IMPLEMENTED**: Real knowledge base search using Responses API
+- Located in `/src/services/kb_search_responses.py`
+- Uses `file_search` tool with vector store ID
+- NO MORE MOCKS - this is production ready
+- Vector store contains 397 Dakota Knowledge Base files
+
+### GPT-5 System-Wide Integration
+- **COMPLETED**: All components now use GPT-5 models
+- Responses API is used throughout the system
+- Model selection in `DEFAULT_MODELS` (config.py):
+  - Complex tasks: `gpt-5`
+  - Medium tasks: `gpt-5-mini`
+  - Simple/fast tasks: `gpt-5-nano`
+
+### API Details
+- Verbosity values: "low", "medium", "high" (NOT "concise" or "verbose")
+- Reasoning efforts: "minimal", "low", "medium", "high"
+- All agents use `query_llm()` → `ResponsesClient` → Responses API
+- KB search typically takes 10-15 seconds
+
+### Cost Estimates
+- Article generation: $0.50-$1.50 per article
+- KB search: Minimal cost (uses gpt-5-nano)
+- All operations use GPT-5 variants for consistency

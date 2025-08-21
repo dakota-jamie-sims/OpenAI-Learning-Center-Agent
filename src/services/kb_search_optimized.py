@@ -111,31 +111,47 @@ class OptimizedKBSearcher:
     def _perform_search(self, query: str, max_results: int) -> List[Dict[str, Any]]:
         """Perform the actual vector search"""
         try:
-            # Use the beta.vector_stores.file_searches API if available
-            # This is much faster than creating threads and assistants
+            # Use Responses API for KB search - the correct API for file search
+            from src.services.kb_search_responses import search_kb_responses
             
-            # For now, return mock results if the API isn't available
-            # In production, this would use the actual file search API
-            logger.info(f"Performing KB search for: {query[:50]}...")
+            logger.info(f"Performing REAL KB search using Responses API for: {query[:50]}...")
             
-            # Simulate search results
-            mock_results = [
-                {
-                    "file_name": "dakota_investment_guide.pdf",
-                    "content": "Portfolio diversification strategies for institutional investors...",
-                    "relevance_score": 0.95
-                },
-                {
-                    "file_name": "market_analysis_2024.pdf", 
-                    "content": "Current market trends and diversification approaches...",
-                    "relevance_score": 0.87
-                }
-            ]
+            # Get real results from vector store
+            result = search_kb_responses(query, max_results)
             
-            return mock_results[:max_results]
-            
+            if result["success"]:
+                # Convert results to expected format
+                search_results = []
+                
+                # Use citations if available
+                if result.get("citations"):
+                    for citation in result["citations"][:max_results]:
+                        search_results.append({
+                            "file_name": citation.get("filename", "Unknown file"),
+                            "content": citation.get("content", ""),
+                            "relevance_score": citation.get("score", 0.9),
+                            "file_id": citation.get("file_id", "")
+                        })
+                
+                # If no citations but have formatted results
+                if not search_results and result.get("results"):
+                    content = result["results"]
+                    if content and "No results" not in content:
+                        # Use the formatted content as a single result
+                        search_results.append({
+                            "file_name": "Dakota Knowledge Base",
+                            "content": content[:500],
+                            "relevance_score": 0.85
+                        })
+                
+                return search_results[:max_results]
+            else:
+                logger.warning(f"KB search failed: {result.get('error', 'Unknown error')}")
+                return []
+                
         except Exception as e:
             logger.error(f"Search error: {str(e)}")
+            # If search fails, return empty results
             return []
     
     def _format_results(self, raw_results: List[Dict[str, Any]]) -> str:
