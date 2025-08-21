@@ -123,48 +123,47 @@ class ResearchTeamLead(BaseAgent):
         web_task = run_agent_async(self.web_researcher, web_msg)
         kb_task = run_agent_async(self.kb_researcher, kb_msg)
         dakota_task = run_agent_async(self.kb_researcher, dakota_msg)
-        
+
         # Wait for all to complete with individual timeouts
+        web_response = kb_response = dakota_response = None
         try:
             web_response, kb_response, dakota_response = await asyncio.gather(
                 asyncio.wait_for(web_task, timeout=15),
                 asyncio.wait_for(kb_task, timeout=10),
                 asyncio.wait_for(dakota_task, timeout=10),
-                return_exceptions=True
+                return_exceptions=True,
             )
         except Exception as e:
             logger.error(f"Error in parallel research: {e}")
-            # Create fallback responses for any that failed
-            if isinstance(web_response, Exception):
-                web_response = AgentMessage(
-                    from_agent="web_researcher",
-                    to_agent="research_lead",
-                    message_type=MessageType.RESPONSE,
-                    task="response_search_web",
-                    payload={"success": False, "error": str(web_response)},
-                    context={},
-                    timestamp=datetime.now().isoformat()
-                )
-            if isinstance(kb_response, Exception):
-                kb_response = AgentMessage(
-                    from_agent="kb_researcher",
-                    to_agent="research_lead",
-                    message_type=MessageType.RESPONSE,
-                    task="response_search_kb",
-                    payload={"success": False, "error": "KB search timeout"},
-                    context={},
-                    timestamp=datetime.now().isoformat()
-                )
-            if isinstance(dakota_response, Exception):
-                dakota_response = AgentMessage(
-                    from_agent="kb_researcher",
-                    to_agent="research_lead",
-                    message_type=MessageType.RESPONSE,
-                    task="response_find_dakota_insights",
-                    payload={"success": False, "error": "Dakota search timeout"},
-                    context={},
-                    timestamp=datetime.now().isoformat()
-                )
+
+        def _error_response(agent: str, task: str, error: str) -> AgentMessage:
+            """Create a standardized error response message."""
+            return AgentMessage(
+                from_agent=agent,
+                to_agent="research_lead",
+                message_type=MessageType.RESPONSE,
+                task=task,
+                payload={"success": False, "error": error},
+                context={},
+                timestamp=datetime.now().isoformat(),
+            )
+
+        # Create fallback responses for any searches that failed or weren't executed
+        if web_response is None or isinstance(web_response, Exception):
+            err = str(web_response) if isinstance(web_response, Exception) else "Web search failed"
+            web_response = _error_response("web_researcher", "response_search_web", err)
+        if kb_response is None or isinstance(kb_response, Exception):
+            err = str(kb_response) if isinstance(kb_response, Exception) else "KB search failed"
+            kb_response = _error_response("kb_researcher", "response_search_kb", err)
+        if dakota_response is None or isinstance(dakota_response, Exception):
+            err = (
+                str(dakota_response)
+                if isinstance(dakota_response, Exception)
+                else "Dakota search failed"
+            )
+            dakota_response = _error_response(
+                "kb_researcher", "response_find_dakota_insights", err
+            )
         
         # Handle exceptions and check for failures
         for response, name in [(web_response, "web"), (kb_response, "kb"), (dakota_response, "dakota")]:

@@ -9,6 +9,14 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from src.pipeline.multi_agent_orchestrator import MultiAgentPipelineOrchestrator
 
 
+from datetime import datetime
+import pytest
+import asyncio
+
+from src.agents.team_leads import ResearchTeamLead
+from src.agents.multi_agent_base import AgentMessage, MessageType
+
+
 def test_multi_agent_system():
     """Test the multi-agent system with a sample article"""
     print("\n" + "="*70)
@@ -148,6 +156,90 @@ def test_agent_coordination():
     print(f"   Response: {fact_response.payload.get('success', False)}")
     
     print("\n✅ Agent coordination test complete!")
+
+
+@pytest.mark.parametrize(
+    "fail_web, fail_kb, fail_dakota",
+    [
+        (True, False, False),
+        (False, True, False),
+        (False, False, True),
+        (True, True, False),
+    ],
+)
+def test_comprehensive_research_handles_subsearch_failures(
+    monkeypatch, fail_web, fail_kb, fail_dakota
+):
+    """Ensure ResearchTeamLead handles sub-search failures gracefully."""
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    lead = ResearchTeamLead()
+
+    def web_receive(message):
+        if message.task == "find_sources":
+            return AgentMessage(
+                from_agent="web_researcher",
+                to_agent="research_lead",
+                message_type=MessageType.RESPONSE,
+                task="response_find_sources",
+                payload={"success": True, "sources": []},
+                context={},
+                timestamp=datetime.now().isoformat(),
+            )
+        if fail_web:
+            raise RuntimeError("web failure")
+        return AgentMessage(
+            from_agent="web_researcher",
+            to_agent="research_lead",
+            message_type=MessageType.RESPONSE,
+            task="response_search_web",
+            payload={"success": True, "sources": []},
+            context={},
+            timestamp=datetime.now().isoformat(),
+        )
+
+    def kb_receive(message):
+        if message.task == "search_kb":
+            if fail_kb:
+                raise RuntimeError("kb failure")
+            payload = {"success": True, "insights": []}
+        else:  # find_dakota_insights
+            if fail_dakota:
+                raise RuntimeError("dakota failure")
+            payload = {"success": True, "insights": []}
+        return AgentMessage(
+            from_agent="kb_researcher",
+            to_agent="research_lead",
+            message_type=MessageType.RESPONSE,
+            task=f"response_{message.task}",
+            payload=payload,
+            context={},
+            timestamp=datetime.now().isoformat(),
+        )
+
+    def validator_receive(message):
+        return AgentMessage(
+            from_agent="data_validator",
+            to_agent="research_lead",
+            message_type=MessageType.RESPONSE,
+            task=f"response_{message.task}",
+            payload={"success": True},
+            context={},
+            timestamp=datetime.now().isoformat(),
+        )
+
+    monkeypatch.setattr(lead.web_researcher, "receive_message", web_receive)
+    monkeypatch.setattr(lead.kb_researcher, "receive_message", kb_receive)
+    monkeypatch.setattr(lead.data_validator, "receive_message", validator_receive)
+    monkeypatch.setattr(lead, "query_llm", lambda *args, **kwargs: "synthesis")
+
+    result = asyncio.run(lead._coordinate_comprehensive_research_async({"topic": "test"}))
+    assert result["success"]
+    raw = result["raw_research"]
+
+    assert raw["web_research"]["success"] is (not fail_web)
+    assert raw["kb_insights"]["success"] is (not fail_kb)
+    assert raw["dakota_insights"]["success"] is (not fail_dakota)
 
 
 if __name__ == "__main__":
