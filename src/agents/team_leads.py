@@ -115,24 +115,18 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         
-        # Run all three searches in parallel using asyncio
-        async def run_agent_async(agent, message):
-            """Run agent in thread pool to avoid blocking"""
-            loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(None, agent.receive_message, message)
-        
-        # Execute all searches simultaneously with timeout protection
-        web_task = run_agent_async(self.web_researcher, web_msg)
-        kb_task = run_agent_async(self.kb_researcher, kb_msg)
-        dakota_task = run_agent_async(self.kb_researcher, dakota_msg)
+        # Run all three searches concurrently using threads
+        web_task = asyncio.to_thread(self.web_researcher.receive_message, web_msg)
+        kb_task = asyncio.to_thread(self.kb_researcher.receive_message, kb_msg)
+        dakota_task = asyncio.to_thread(self.kb_researcher.receive_message, dakota_msg)
 
-        # Wait for all to complete with individual timeouts
+        # Wait for all to complete
         web_response = kb_response = dakota_response = None
         try:
             web_response, kb_response, dakota_response = await asyncio.gather(
-                asyncio.wait_for(web_task, timeout=15),
-                asyncio.wait_for(kb_task, timeout=10),
-                asyncio.wait_for(dakota_task, timeout=10),
+                web_task,
+                kb_task,
+                dakota_task,
                 return_exceptions=True,
             )
         except Exception as e:
