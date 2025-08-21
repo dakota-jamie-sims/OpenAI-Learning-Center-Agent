@@ -75,6 +75,7 @@ WHAT THE SYSTEM DOES
 
 2. Writing Phase:
    - Creates comprehensive article structure
+   - Uses condensed research summary (synthesis + top sources) capped at 1500 characters
    - Adds proper citations (min 10 sources)
    - Applies Dakota institutional style
    - Targets specified word count
