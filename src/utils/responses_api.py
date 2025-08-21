@@ -25,9 +25,9 @@ REASONING_EFFORTS = {
 
 # Text verbosity levels
 TEXT_VERBOSITY = {
-    "high": {"verbosity": "high"},  # Detailed explanations
+    "high": {"verbosity": "high"},    # Detailed explanations
     "medium": {"verbosity": "medium"},  # Standard responses
-    "low": {"verbosity": "low"}  # Brief, to-the-point
+    "low": {"verbosity": "low"}     # Brief, to-the-point
 }
 
 
@@ -53,7 +53,7 @@ def create_response(
         prompt: The input prompt
         model: The GPT-5 model variant (gpt-5, gpt-5-mini, gpt-5-nano)
         reasoning_effort: Level of reasoning (high, medium, low, minimal)
-        text_verbosity: Output verbosity (verbose, medium, concise)
+        text_verbosity: Output verbosity (high, medium, low)
         max_thinking_tokens: Optional limit on thinking tokens
         tools: Optional list of tools (e.g., file_search)
         include: Optional list of response fields to include
@@ -198,20 +198,20 @@ def select_model_for_task(task_type: str) -> tuple[str, str, str]:
         "team_lead": ("gpt-5-mini", "medium", "medium"),
         
         # Research tasks
-        "research_complex": ("gpt-5", "high", "verbose"),
-        "research_simple": ("gpt-5-nano", "low", "concise"),
-        "kb_search": ("gpt-5-nano", "minimal", "concise"),
-        "web_search": ("gpt-5-nano", "low", "concise"),
-        
+        "research_complex": ("gpt-5", "high", "high"),
+        "research_simple": ("gpt-5-nano", "low", "low"),
+        "kb_search": ("gpt-5-nano", "minimal", "low"),
+        "web_search": ("gpt-5-nano", "low", "low"),
+
         # Writing tasks
-        "writing_main": ("gpt-5", "medium", "verbose"),
+        "writing_main": ("gpt-5", "medium", "high"),
         "writing_section": ("gpt-5-mini", "medium", "medium"),
         "editing": ("gpt-5-mini", "medium", "medium"),
-        
+
         # Analysis tasks
         "quality_check": ("gpt-5-mini", "medium", "medium"),
-        "fact_check": ("gpt-5-mini", "high", "concise"),
-        "metadata": ("gpt-5-nano", "low", "concise"),
+        "fact_check": ("gpt-5-mini", "high", "low"),
+        "metadata": ("gpt-5-nano", "low", "low"),
         
         # Default
         "default": ("gpt-5-mini", "medium", "medium")
