@@ -7,15 +7,18 @@ import re
 from datetime import datetime
 
 from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus
+from src.agents.production_agent_base import ProductionAgent
 from src.config import DEFAULT_MODELS, MIN_SOURCES
 from src.services.web_search import search_web
 from src.services.kb_search import KnowledgeBaseSearcher
 from src.utils.logging import get_logger
+from src.utils.rate_limiter import with_rate_limit
+from src.utils.circuit_breaker import with_circuit_breaker
 
 logger = get_logger(__name__)
 
 
-class WebResearchAgent(BaseAgent):
+class WebResearchAgent(ProductionAgent):
     """Agent specialized in web research and current data gathering"""
     
     def __init__(self):
@@ -66,6 +69,7 @@ class WebResearchAgent(BaseAgent):
         
         return self._create_response(message, result)
     
+    @with_rate_limit("web_searches")
     def _comprehensive_research(self, query: str) -> Dict[str, Any]:
         """Perform comprehensive research on a topic"""
         try:
@@ -295,7 +299,7 @@ List only the most important 3-5 data points with sources."""
         return sorted(sources, key=lambda x: x.get("credibility_score", 0), reverse=True)
 
 
-class KnowledgeBaseAgent(BaseAgent):
+class KnowledgeBaseAgent(ProductionAgent):
     """Agent specialized in Dakota knowledge base searches"""
     
     def __init__(self):
@@ -599,7 +603,7 @@ Focus on institutional investor relevance."""
         return sorted(articles, key=lambda x: x.get("relevance_score", 0), reverse=True)
 
 
-class DataValidationAgent(BaseAgent):
+class DataValidationAgent(ProductionAgent):
     """Agent specialized in data validation and fact-checking"""
     
     def __init__(self):
