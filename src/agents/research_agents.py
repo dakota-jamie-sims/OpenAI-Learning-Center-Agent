@@ -266,7 +266,15 @@ class KnowledgeBaseAgent(BaseAgent):
             "historical_data"
         ]
         self.model = DEFAULT_MODELS.get("kb_researcher", "gpt-5-mini")
-        self.kb_searcher = KnowledgeBaseSearcher()
+        # Try to use optimized searcher, fallback to original if not available
+        try:
+            from src.services.kb_search_optimized import get_kb_searcher
+            self.kb_searcher = get_kb_searcher()
+            self.use_optimized = True
+        except ImportError:
+            from src.services.kb_search import KnowledgeBaseSearcher
+            self.kb_searcher = KnowledgeBaseSearcher()
+            self.use_optimized = False
     
     def validate_task(self, task: str, payload: Dict[str, Any]) -> Tuple[bool, str]:
         """Validate if task is KB related"""
@@ -304,8 +312,11 @@ class KnowledgeBaseAgent(BaseAgent):
     def _search_knowledge_base(self, query: str) -> Dict[str, Any]:
         """Search Dakota knowledge base"""
         try:
-            # Perform KB search
-            results = self.kb_searcher.search(query)
+            # Perform KB search with timeout
+            if self.use_optimized:
+                results = self.kb_searcher.search(query, max_results=5, timeout=10)
+            else:
+                results = self.kb_searcher.search(query)
             
             # Analyze results
             analysis_prompt = f"""Analyze these Dakota knowledge base results for: {query}

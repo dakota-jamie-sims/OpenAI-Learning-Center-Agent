@@ -91,6 +91,9 @@ class OrchestratorAgent(BaseAgent):
         payload = message.payload
         
         if task == "generate_article":
+            # Use nest_asyncio to handle nested event loops
+            import nest_asyncio
+            nest_asyncio.apply()
             result = asyncio.run(self._orchestrate_article_generation(payload["request"]))
         elif task == "review_pipeline":
             result = self._review_current_pipeline()

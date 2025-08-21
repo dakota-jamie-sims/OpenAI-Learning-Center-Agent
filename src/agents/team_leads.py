@@ -66,6 +66,9 @@ class ResearchTeamLead(BaseAgent):
         payload = message.payload
         
         if task == "comprehensive_research":
+            # Handle async execution properly - avoid nested event loops
+            import nest_asyncio
+            nest_asyncio.apply()
             result = asyncio.run(self._coordinate_comprehensive_research_async(payload))
         elif task == "validate_article":
             result = self._coordinate_article_validation(payload)
@@ -80,6 +83,8 @@ class ResearchTeamLead(BaseAgent):
     
     def _coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Backward compatibility wrapper - calls async version"""
+        import nest_asyncio
+        nest_asyncio.apply()
         return asyncio.run(self._coordinate_comprehensive_research_async(payload))
     
     async def _coordinate_comprehensive_research_async(self, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -114,29 +119,66 @@ class ResearchTeamLead(BaseAgent):
             loop = asyncio.get_event_loop()
             return await loop.run_in_executor(None, agent.receive_message, message)
         
-        # Execute all searches simultaneously
+        # Execute all searches simultaneously with timeout protection
         web_task = run_agent_async(self.web_researcher, web_msg)
         kb_task = run_agent_async(self.kb_researcher, kb_msg)
         dakota_task = run_agent_async(self.kb_researcher, dakota_msg)
         
-        # Wait for all to complete
-        web_response, kb_response, dakota_response = await asyncio.gather(
-            web_task, kb_task, dakota_task
-        )
+        # Wait for all to complete with individual timeouts
+        try:
+            web_response, kb_response, dakota_response = await asyncio.gather(
+                asyncio.wait_for(web_task, timeout=15),
+                asyncio.wait_for(kb_task, timeout=10),
+                asyncio.wait_for(dakota_task, timeout=10),
+                return_exceptions=True
+            )
+        except Exception as e:
+            logger.error(f"Error in parallel research: {e}")
+            # Create fallback responses for any that failed
+            if isinstance(web_response, Exception):
+                web_response = AgentMessage(
+                    from_agent="web_researcher",
+                    to_agent="research_lead",
+                    message_type=MessageType.RESPONSE,
+                    task="response_search_web",
+                    payload={"success": False, "error": str(web_response)},
+                    context={},
+                    timestamp=datetime.now().isoformat()
+                )
+            if isinstance(kb_response, Exception):
+                kb_response = AgentMessage(
+                    from_agent="kb_researcher",
+                    to_agent="research_lead",
+                    message_type=MessageType.RESPONSE,
+                    task="response_search_kb",
+                    payload={"success": False, "error": "KB search timeout"},
+                    context={},
+                    timestamp=datetime.now().isoformat()
+                )
+            if isinstance(dakota_response, Exception):
+                dakota_response = AgentMessage(
+                    from_agent="kb_researcher",
+                    to_agent="research_lead",
+                    message_type=MessageType.RESPONSE,
+                    task="response_find_dakota_insights",
+                    payload={"success": False, "error": "Dakota search timeout"},
+                    context={},
+                    timestamp=datetime.now().isoformat()
+                )
         
-        # Check for failures
-        if not web_response.payload.get("success", True):
-            return web_response.payload
-        if not kb_response.payload.get("success", True):
-            return kb_response.payload
-        if not dakota_response.payload.get("success", True):
-            return dakota_response.payload
+        # Handle exceptions and check for failures
+        for response, name in [(web_response, "web"), (kb_response, "kb"), (dakota_response, "dakota")]:
+            if isinstance(response, Exception):
+                logger.warning(f"{name} search failed with exception: {response}")
+                continue
+            if hasattr(response, 'payload') and not response.payload.get("success", True):
+                logger.warning(f"{name} search failed: {response.payload.get('error', 'Unknown error')}")
         
-        # Phase 2: Validate findings
+        # Phase 2: Validate findings - safely extract payloads
         all_content = {
-            "web_research": web_response.payload,
-            "kb_insights": kb_response.payload,
-            "dakota_insights": dakota_response.payload
+            "web_research": web_response.payload if hasattr(web_response, 'payload') else {"success": False, "error": "Search failed"},
+            "kb_insights": kb_response.payload if hasattr(kb_response, 'payload') else {"success": False, "error": "KB search failed"},
+            "dakota_insights": dakota_response.payload if hasattr(dakota_response, 'payload') else {"success": False, "error": "Dakota search failed"}
         }
         
         validation_msg = self.delegate_task(

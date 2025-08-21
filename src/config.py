@@ -6,7 +6,8 @@ load_dotenv()
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID", "").strip() or None
 
 # Web search configuration
-WEB_SEARCH_API_KEY = os.getenv("WEB_SEARCH_API_KEY", "").strip()
+# Support both SERPER_API_KEY and WEB_SEARCH_API_KEY for compatibility
+WEB_SEARCH_API_KEY = os.getenv("SERPER_API_KEY", os.getenv("WEB_SEARCH_API_KEY", "")).strip()
 WEB_SEARCH_API_ENDPOINT = os.getenv(
     "WEB_SEARCH_API_ENDPOINT", "https://google.serper.dev/search"
 ).strip()
@@ -16,6 +17,8 @@ CACHE_SIZE = int(os.getenv("CACHE_SIZE", "128"))
 CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
 
 # Default models (best-for-cost mix; override via .env)
+# GPT-5 models are available through Responses API
+# For agents using standard chat API, we'll use gpt-4o
 DEFAULT_MODELS = {
     "default": os.getenv("DEFAULT_MODEL", "gpt-5"),
     "orchestrator": os.getenv("ORCHESTRATOR_MODEL", "gpt-5"),
