@@ -90,25 +90,37 @@ class WebResearchAgent(BaseAgent):
             }
         
         # Analyze and synthesize results
+        # Limit search results to prevent prompt overflow
+        limited_results = search_results[:5] if isinstance(search_results, list) else search_results
+        
+        # Extract only essential information from search results
+        simplified_results = []
+        for result in (limited_results if isinstance(limited_results, list) else []):
+            if isinstance(result, dict):
+                simplified_results.append({
+                    "title": result.get("title", "")[:100],
+                    "snippet": result.get("snippet", "")[:200],
+                    "url": result.get("url", "")
+                })
+        
         analysis_prompt = f"""Analyze these search results for: {query}
 
-Results:
-{json.dumps(search_results, indent=2)}
+Results (top {len(simplified_results)} items):
+{json.dumps(simplified_results, indent=2)}
 
-Provide:
-1. Key findings with dates and sources
-2. Relevant statistics and data points
-3. Market trends and insights
-4. Authoritative sources with URLs
-5. Areas needing further research
+Provide a concise summary with:
+1. 2-3 key findings
+2. Main trends
+3. Top sources
 
-Focus on 2024-2025 data and institutional investor perspectives."""
+Keep response under 500 words."""
 
         analysis = self.query_llm(
             analysis_prompt,
-            reasoning_effort="low",  # Reduced from high
-            verbosity="medium",  # Reduced from high
-            timeout=15  # Explicit timeout
+            reasoning_effort="minimal",  # Further reduced
+            verbosity="low",  # Further reduced
+            timeout=15,  # Explicit timeout
+            max_tokens=800  # Limit response size
         )
         
         # Extract sources from analysis and combine with search results
@@ -191,23 +203,26 @@ Provide verification status: VERIFIED, PARTIALLY_VERIFIED, or UNVERIFIED"""
         market_search = search_web(f"{query} market data statistics 2024 2025")
         
         # Extract numerical data
-        data_prompt = f"""Extract market data from these results for: {query}
+        # Limit and simplify market search results
+        limited_market = market_search[:3] if isinstance(market_search, list) else []
+        simplified_market = [
+            {"title": r.get("title", "")[:100], "snippet": r.get("snippet", "")[:150]}
+            for r in limited_market if isinstance(r, dict)
+        ]
+        
+        data_prompt = f"""Extract key market data from: {query}
 
-Results: {json.dumps(market_search)}
+Top results:
+{json.dumps(simplified_market, indent=2)}
 
-Extract:
-1. Specific numbers and percentages
-2. Growth rates and trends
-3. Market sizes and valuations
-4. Comparisons and benchmarks
-5. Time periods for each data point
-
-Format as structured data."""
+List only the most important 3-5 data points with sources."""
 
         market_data = self.query_llm(
             data_prompt,
-            reasoning_effort="medium",
-            verbosity="medium"
+            reasoning_effort="minimal",
+            verbosity="low",
+            timeout=10,
+            max_tokens=400
         )
         
         return {
@@ -353,25 +368,50 @@ class KnowledgeBaseAgent(BaseAgent):
             if isinstance(results, dict) and not results.get("success", True):
                 return {"success": False, "error": results.get("error", "KB search failed"), "query": query}
             
-            # Analyze results
-            analysis_prompt = f"""Analyze these Dakota knowledge base results for: {query}
+            # Analyze results - limit and simplify for LLM
+            # Handle both list and dict results
+            if isinstance(results, list):
+                limited_results = results[:3]
+                simplified_results = []
+                for r in limited_results:
+                    if isinstance(r, dict):
+                        simplified_results.append({
+                            "title": r.get("title", "")[:100],
+                            "summary": r.get("summary", r.get("snippet", ""))[:200],
+                            "source": r.get("source", "dakota_kb")
+                        })
+            elif isinstance(results, dict) and "results" in results:
+                # Handle wrapped results
+                limited_results = results["results"][:3] if isinstance(results["results"], list) else []
+                simplified_results = []
+                for r in limited_results:
+                    if isinstance(r, dict):
+                        simplified_results.append({
+                            "title": r.get("title", "")[:100],
+                            "summary": r.get("summary", r.get("snippet", ""))[:200],
+                            "source": r.get("source", "dakota_kb")
+                        })
+            else:
+                simplified_results = [{"summary": str(results)[:300]}]
+            
+            analysis_prompt = f"""Analyze Dakota knowledge base results for: {query}
 
-Results:
-{json.dumps(results, indent=2)}
+Top {len(simplified_results)} results:
+{json.dumps(simplified_results, indent=2)}
 
-Extract:
-1. Key Dakota-specific insights
-2. Investment philosophy points
-3. Historical performance data
-4. Relevant article references
-5. Expert perspectives from Dakota team
+Provide concise insights on:
+1. Key Dakota perspectives
+2. Investment approach
+3. Relevant recommendations
 
-Focus on institutional investor needs."""
+Keep under 300 words."""
 
             analysis = self.query_llm(
                 analysis_prompt,
-                reasoning_effort="medium",
-                verbosity="high"
+                reasoning_effort="minimal",
+                verbosity="low",
+                timeout=10,
+                max_tokens=500
             )
             
             return {
@@ -397,25 +437,34 @@ Focus on institutional investor needs."""
         if isinstance(results, dict) and not results.get("success", True):
             return {"success": False, "error": results.get("error", "KB search failed"), "query": query}
         
-        # Extract Dakota insights
-        insight_prompt = f"""Extract Dakota-specific insights for: {query}
+        # Extract Dakota insights - simplify results first
+        simplified_dakota = []
+        if isinstance(results, list):
+            for r in results[:3]:
+                if isinstance(r, dict):
+                    simplified_dakota.append({
+                        "content": (r.get("title", "") + " " + r.get("summary", r.get("snippet", "")))[:250]
+                    })
+        elif isinstance(results, dict) and "results" in results:
+            for r in results["results"][:3]:
+                if isinstance(r, dict):
+                    simplified_dakota.append({
+                        "content": (r.get("title", "") + " " + r.get("summary", r.get("snippet", "")))[:250]
+                    })
+        
+        insight_prompt = f"""Extract Dakota insights for: {query}
 
-From these results:
-{json.dumps(results, indent=2)}
+Key content:
+{json.dumps(simplified_dakota, indent=2)}
 
-Focus on:
-1. Dakota's unique perspective
-2. Differentiating factors
-3. Value propositions for institutions
-4. Case studies and examples
-5. Dakota team expertise
-
-Provide actionable insights."""
+Summarize Dakota's perspective in 2-3 key points."""
 
         insights = self.query_llm(
             insight_prompt,
-            reasoning_effort="medium",
-            verbosity="medium"
+            reasoning_effort="minimal",
+            verbosity="low",
+            timeout=10,
+            max_tokens=400
         )
         
         return {
@@ -605,23 +654,40 @@ class DataValidationAgent(BaseAgent):
     
     def _validate_all_facts(self, content: str) -> Dict[str, Any]:
         """Validate all facts in content"""
-        validation_prompt = f"""Fact-check this content:
+        # Parse content if it's JSON
+        if isinstance(content, str) and content.strip().startswith("{"):
+            try:
+                content_dict = json.loads(content)
+                # Extract key claims from structured content
+                key_content = []
+                for key, value in content_dict.items():
+                    if isinstance(value, dict) and "success" in value:
+                        # Extract summary or key findings
+                        if "research_summary" in value:
+                            key_content.append(value["research_summary"][:500])
+                        elif "kb_insights" in value:
+                            key_content.append(value["kb_insights"][:500])
+                        elif "dakota_insights" in value:
+                            key_content.append(value["dakota_insights"][:500])
+                content = "\n".join(key_content)[:1500]
+            except:
+                # If parsing fails, just truncate
+                content = content[:1500]
+        else:
+            content = str(content)[:1500]
+        
+        validation_prompt = f"""Quick fact-check of key claims:
 
-{content[:3000]}...
+{content}
 
-For each claim or statistic:
-1. Identify the specific claim
-2. Assess verifiability
-3. Check for supporting evidence
-4. Note any concerns
-5. Suggest corrections if needed
-
-Return structured validation results."""
+List any obvious errors or unsupported claims. Keep response brief."""
 
         validation = self.query_llm(
             validation_prompt,
-            reasoning_effort="high",
-            verbosity="high"
+            reasoning_effort="minimal",
+            verbosity="low",
+            timeout=10,
+            max_tokens=300
         )
         
         # Extract specific issues

@@ -154,8 +154,12 @@ class ResponsesClient:
         if temperature is not None and supports_temperature(model):
             request_data["temperature"] = temperature
             
-        if max_tokens:
-            request_data["max_tokens"] = max_tokens
+        # Handle max_tokens -> max_output_tokens conversion
+        if max_tokens is not None:
+            request_data["max_output_tokens"] = max_tokens
+        # Also check if max_output_tokens was passed directly
+        elif "max_output_tokens" in kwargs:
+            request_data["max_output_tokens"] = kwargs.pop("max_output_tokens")
             
         if tools:
             request_data["tools"] = tools

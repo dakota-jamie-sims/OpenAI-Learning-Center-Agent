@@ -250,13 +250,16 @@ class BaseAgent(ABC):
             LLMAPIError: If the underlying API call fails for any reason.
         """
         try:
+            # Remove max_tokens from kwargs if present since we handle it separately
+            filtered_kwargs = {k: v for k, v in kwargs.items() if k != "max_tokens"}
+            
             response = self.responses_client.create_response(
                 model=self.model,
                 input_text=prompt,  # ResponsesClient expects input_text
                 reasoning_effort=reasoning_effort,
                 verbosity=verbosity,
                 timeout=timeout,
-                **kwargs,
+                **filtered_kwargs,
             )
             # Extract text content from Responses API response
             # According to the docs, responses have a content array with text objects
