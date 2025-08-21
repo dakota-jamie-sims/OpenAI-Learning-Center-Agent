@@ -12,6 +12,7 @@ from src.agents.writing_agents import ContentWriterAgent, StyleEditorAgent, Cita
 from src.agents.quality_agents import FactCheckerAgent, ComplianceAgent, QualityAssuranceAgent
 from src.config import DEFAULT_MODELS
 from src.utils.logging import get_logger
+from src.models import ResearchResult
 
 logger = get_logger(__name__)
 
@@ -69,7 +70,8 @@ class ResearchTeamLead(BaseAgent):
             # Handle async execution properly - avoid nested event loops
             import nest_asyncio
             nest_asyncio.apply()
-            result = asyncio.run(self._coordinate_comprehensive_research_async(payload))
+            result_model = asyncio.run(self._coordinate_comprehensive_research_async(payload))
+            result = result_model.model_dump()
         elif task == "validate_article":
             result = self._coordinate_article_validation(payload)
         elif task == "find_sources":
@@ -78,16 +80,16 @@ class ResearchTeamLead(BaseAgent):
             result = self._coordinate_fact_checking(payload)
         else:
             result = self._synthesize_research(payload)
-        
+
         return self._create_response(message, result)
     
-    def _coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> ResearchResult:
         """Backward compatibility wrapper - calls async version"""
         import nest_asyncio
         nest_asyncio.apply()
         return asyncio.run(self._coordinate_comprehensive_research_async(payload))
-    
-    async def _coordinate_comprehensive_research_async(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    async def _coordinate_comprehensive_research_async(self, payload: Dict[str, Any]) -> ResearchResult:
         """Coordinate comprehensive research across all sub-agents in parallel"""
         topic = payload.get("topic", "")
         requirements = payload.get("requirements", {})
@@ -187,9 +189,22 @@ class ResearchTeamLead(BaseAgent):
             {"content": json.dumps(all_content)}
         )
         validation_response = self.data_validator.receive_message(validation_msg)
-        if not validation_response.payload.get("success", True):
-            return validation_response.payload
-        
+        validation_payload = (
+            validation_response.payload
+            if hasattr(validation_response, "payload")
+            else {"success": False, "error": "No validation response"}
+        )
+        if not validation_payload.get("success", True):
+            return ResearchResult(
+                success=False,
+                topic=topic,
+                synthesis={},
+                raw_research=all_content,
+                sources=[],
+                validation=validation_payload,
+                error=validation_payload.get("error", "Validation failed"),
+            )
+
         # Phase 3: Find additional sources if needed
         sources_collected = self._extract_all_sources(all_content)
         
@@ -208,23 +223,23 @@ class ResearchTeamLead(BaseAgent):
         synthesis = self._synthesize_findings(
             topic,
             all_content,
-            validation_response.payload,
+            validation_payload,
             sources_collected
         )
-        
+
         self.update_status(AgentStatus.COMPLETED, "Research complete")
-        
-        return {
-            "success": True,
-            "topic": topic,
-            "synthesis": synthesis,
-            "raw_research": all_content,
-            "validation": validation_response.payload,
-            "sources": sources_collected[:requirements.get("max_sources", 20)],
-            "research_quality_score": self._calculate_research_quality(
-                all_content, validation_response.payload
-            )
-        }
+
+        return ResearchResult(
+            success=True,
+            topic=topic,
+            synthesis=synthesis,
+            raw_research=all_content,
+            validation=validation_payload,
+            sources=sources_collected[:requirements.get("max_sources", 20)],
+            research_quality_score=self._calculate_research_quality(
+                all_content, validation_payload
+            ),
+        )
     
     def _coordinate_article_validation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Coordinate full article validation"""
