@@ -71,7 +71,7 @@ class MultiAgentPipelineOrchestrator:
                 result = {
                     "success": True,
                     "article": response.article,
-                    "metadata": response.metadata.dict() if hasattr(response.metadata, 'dict') else response.metadata,
+                    "metadata": response.metadata.model_dump() if hasattr(response.metadata, 'model_dump') else response.metadata,
                     "output_path": output_path,
                     "word_count": len(response.article.split()),
                     "quality_metrics": getattr(response, 'quality_metrics', {}),
@@ -141,7 +141,7 @@ class MultiAgentPipelineOrchestrator:
         
         # Save metadata separately
         metadata_path = output_path.replace('.md', '_metadata.json')
-        metadata_dict = response.metadata.dict() if hasattr(response.metadata, 'dict') else response.metadata
+        metadata_dict = response.metadata.model_dump() if hasattr(response.metadata, 'model_dump') else response.metadata
         
         # Add quality metrics if available
         if hasattr(response, 'quality_metrics'):

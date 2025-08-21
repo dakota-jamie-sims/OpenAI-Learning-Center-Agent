@@ -111,7 +111,7 @@ class OrchestratorAgent(BaseAgent):
         pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.current_pipeline = {
             "id": pipeline_id,
-            "request": request.dict() if hasattr(request, 'dict') else request,
+            "request": request.model_dump() if hasattr(request, 'model_dump') else request,
             "status": "in_progress",
             "phases": {},
             "start_time": datetime.now().isoformat()

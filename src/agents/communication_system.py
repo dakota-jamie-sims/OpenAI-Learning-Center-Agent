@@ -2,7 +2,7 @@
 Agent communication system for message passing and coordination
 """
 from typing import Dict, Any, List, Optional, Callable
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 from datetime import datetime
 import asyncio
 from queue import Queue, PriorityQueue
@@ -22,13 +22,28 @@ class MessagePriority(Enum):
     LOW = 3
 
 
-@dataclass(order=True)
-class PrioritizedMessage:
+class PrioritizedMessage(BaseModel):
     """Message with priority for queue processing"""
     priority: int
-    message: AgentMessage = field(compare=False)
-    retry_count: int = field(default=0, compare=False)
-    max_retries: int = field(default=3, compare=False)
+    message: AgentMessage
+    retry_count: int = Field(default=0)
+    max_retries: int = Field(default=3)
+    
+    class Config:
+        # Enable comparison based on priority
+        allow_mutation = True
+    
+    def __lt__(self, other):
+        """Compare messages by priority for queue ordering"""
+        if isinstance(other, PrioritizedMessage):
+            return self.priority < other.priority
+        return NotImplemented
+    
+    def __eq__(self, other):
+        """Check equality based on priority"""
+        if isinstance(other, PrioritizedMessage):
+            return self.priority == other.priority
+        return NotImplemented
 
 
 class MessageBroker:
