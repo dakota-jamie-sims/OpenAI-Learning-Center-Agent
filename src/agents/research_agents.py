@@ -10,6 +10,9 @@ from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus
 from src.config import DEFAULT_MODELS, MIN_SOURCES
 from src.services.web_search import search_web
 from src.services.kb_search import KnowledgeBaseSearcher
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class WebResearchAgent(BaseAgent):
@@ -65,8 +68,26 @@ class WebResearchAgent(BaseAgent):
     
     def _comprehensive_research(self, query: str) -> Dict[str, Any]:
         """Perform comprehensive research on a topic"""
-        # Search for current information
-        search_results = search_web(query)
+        try:
+            # Search for current information
+            search_results = search_web(query)
+            
+            # Check if search failed
+            if not search_results:
+                return {
+                    "success": False,
+                    "error": "Web search returned no results",
+                    "search_query": query,
+                    "timestamp": datetime.now().isoformat()
+                }
+        except Exception as e:
+            logger.error(f"Web search error: {e}")
+            return {
+                "success": False,
+                "error": f"Web search failed: {str(e)}",
+                "search_query": query,
+                "timestamp": datetime.now().isoformat()
+            }
         
         # Analyze and synthesize results
         analysis_prompt = f"""Analyze these search results for: {query}
@@ -89,8 +110,17 @@ Focus on 2024-2025 data and institutional investor perspectives."""
             verbosity="high"
         )
         
-        # Extract sources
+        # Extract sources from analysis and combine with search results
         sources = self._extract_sources(analysis)
+        
+        # Add search results as sources if we don't have enough
+        for result in search_results[:5]:  # Top 5 search results
+            if isinstance(result, dict) and result.get("url"):
+                sources.append({
+                    "url": result.get("url", ""),
+                    "title": result.get("title", ""),
+                    "date": datetime.now().strftime("%Y-%m-%d")
+                })
         
         return {
             "success": True,

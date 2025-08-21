@@ -130,41 +130,39 @@ class ResearchTeamLead(BaseAgent):
                 web_task,
                 kb_task,
                 dakota_task,
-                return_exceptions=True
+                return_exceptions=True,
             )
         except Exception as e:
             logger.error(f"Error in parallel research: {e}")
-            # Create fallback responses for any that failed
-            if isinstance(web_response, Exception):
-                web_response = AgentMessage(
-                    from_agent="web_researcher",
-                    to_agent="research_lead",
-                    message_type=MessageType.RESPONSE,
-                    task="response_search_web",
-                    payload={"success": False, "error": str(web_response)},
-                    context={},
-                    timestamp=datetime.now().isoformat()
-                )
-            if isinstance(kb_response, Exception):
-                kb_response = AgentMessage(
-                    from_agent="kb_researcher",
-                    to_agent="research_lead",
-                    message_type=MessageType.RESPONSE,
-                    task="response_search_kb",
-                    payload={"success": False, "error": "KB search timeout"},
-                    context={},
-                    timestamp=datetime.now().isoformat()
-                )
-            if isinstance(dakota_response, Exception):
-                dakota_response = AgentMessage(
-                    from_agent="kb_researcher",
-                    to_agent="research_lead",
-                    message_type=MessageType.RESPONSE,
-                    task="response_find_dakota_insights",
-                    payload={"success": False, "error": "Dakota search timeout"},
-                    context={},
-                    timestamp=datetime.now().isoformat()
-                )
+
+        def _error_response(agent: str, task: str, error: str) -> AgentMessage:
+            """Create a standardized error response message."""
+            return AgentMessage(
+                from_agent=agent,
+                to_agent="research_lead",
+                message_type=MessageType.RESPONSE,
+                task=task,
+                payload={"success": False, "error": error},
+                context={},
+                timestamp=datetime.now().isoformat(),
+            )
+
+        # Create fallback responses for any searches that failed or weren't executed
+        if web_response is None or isinstance(web_response, Exception):
+            err = str(web_response) if isinstance(web_response, Exception) else "Web search failed"
+            web_response = _error_response("web_researcher", "response_search_web", err)
+        if kb_response is None or isinstance(kb_response, Exception):
+            err = str(kb_response) if isinstance(kb_response, Exception) else "KB search failed"
+            kb_response = _error_response("kb_researcher", "response_search_kb", err)
+        if dakota_response is None or isinstance(dakota_response, Exception):
+            err = (
+                str(dakota_response)
+                if isinstance(dakota_response, Exception)
+                else "Dakota search failed"
+            )
+            dakota_response = _error_response(
+                "kb_researcher", "response_find_dakota_insights", err
+            )
         
         # Handle exceptions and check for failures
         for response, name in [(web_response, "web"), (kb_response, "kb"), (dakota_response, "dakota")]:
@@ -1868,16 +1866,21 @@ class PublishingTeamLead(BaseAgent):
         metadata = payload.get("metadata", {})
         
         self.update_status(AgentStatus.WORKING, "Preparing for publication")
-        
+
         # SEO optimization
         seo_result = self._optimize_for_seo(article, metadata)
-        
+
         # Generate metadata
         metadata_result = self._generate_comprehensive_metadata(article, metadata)
-        
+        if not metadata_result.get("success", False):
+            return {
+                "success": False,
+                "error": metadata_result.get("error", "Metadata generation failed")
+            }
+
         # Create social content
         social_result = self._create_social_media_content(article, metadata)
-        
+
         # Generate publication package
         publication_package = {
             "article": seo_result["optimized_content"],
@@ -1886,9 +1889,9 @@ class PublishingTeamLead(BaseAgent):
             "social": social_result["social_content"],
             "distribution": self._create_distribution_plan(metadata)
         }
-        
+
         self.update_status(AgentStatus.COMPLETED, "Publication preparation complete")
-        
+
         return {
             "success": True,
             "publication_package": publication_package,
@@ -2004,17 +2007,26 @@ Return as structured data."""
             reasoning_effort="low",
             verbosity="medium"
         )
-        
+
         # Parse and structure metadata
         metadata = self._parse_metadata_response(metadata_response)
         metadata.update(existing_metadata)  # Preserve existing data
-        
+
         # Add calculated fields
         metadata["word_count"] = len(content.split())
-        metadata["reading_time"] = self._calculate_reading_time(content)
+        metadata["read_time_minutes"] = self._calculate_reading_time(content)
         metadata["last_updated"] = datetime.now().isoformat()
-        
+
+        required_fields = ["keywords", "read_time_minutes", "key_takeaways"]
+        missing = [f for f in required_fields if not metadata.get(f)]
+        if missing:
+            return {
+                "success": False,
+                "error": f"Missing required metadata fields: {', '.join(missing)}"
+            }
+
         return {
+            "success": True,
             "metadata": metadata,
             "completeness_score": self._calculate_metadata_completeness(metadata)
         }
