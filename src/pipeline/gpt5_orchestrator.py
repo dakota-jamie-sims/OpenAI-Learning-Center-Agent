@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.pipeline.base_orchestrator import BaseOrchestrator
 from src.config import DEFAULT_MODELS
+from src.services.openai_responses_client import supports_temperature
 
 load_dotenv()
 

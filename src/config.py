@@ -5,6 +5,12 @@ load_dotenv()
 # Vector Store id for File Search (optional)
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID", "").strip() or None
 
+# Web search configuration
+WEB_SEARCH_API_KEY = os.getenv("WEB_SEARCH_API_KEY", "").strip()
+WEB_SEARCH_API_ENDPOINT = os.getenv(
+    "WEB_SEARCH_API_ENDPOINT", "https://google.serper.dev/search"
+).strip()
+
 # Default models (best-for-cost mix; override via .env)
 DEFAULT_MODELS = {
     "default": os.getenv("DEFAULT_MODEL", "gpt-5"),

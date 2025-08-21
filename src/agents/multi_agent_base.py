@@ -13,6 +13,12 @@ from src.services.openai_responses_client import ResponsesClient
 from src.config import DEFAULT_MODELS
 
 
+class LLMAPIError(Exception):
+    """Raised when the underlying LLM API call fails"""
+
+    pass
+
+
 class MessageType(Enum):
     """Types of messages between agents"""
     REQUEST = "request"
@@ -109,7 +115,10 @@ class BaseAgent(ABC):
             response = self.process_message(message)
             self.status = AgentStatus.IDLE
             return response
-            
+
+        except LLMAPIError as e:
+            self.status = AgentStatus.ERROR
+            return self._create_error_response(message, f"LLM API error: {str(e)}")
         except Exception as e:
             self.status = AgentStatus.ERROR
             return self._create_error_response(message, str(e))
@@ -211,29 +220,38 @@ class BaseAgent(ABC):
             parent_message_id=original_message.message_id
         )
     
-    def query_llm(self, prompt: str, reasoning_effort: str = "medium", 
-                  verbosity: str = "medium", **kwargs) -> str:
-        """Query the LLM with the agent's specialized model"""
+    def query_llm(
+        self,
+        prompt: str,
+        reasoning_effort: str = "medium",
+        verbosity: str = "medium",
+        **kwargs,
+    ) -> str:
+        """Query the LLM with the agent's specialized model
+
+        Raises:
+            LLMAPIError: If the underlying API call fails for any reason.
+        """
         try:
             response = self.responses_client.create_response(
                 model=self.model,
                 input_text=prompt,  # ResponsesClient expects input_text
                 reasoning_effort=reasoning_effort,
                 verbosity=verbosity,
-                **kwargs
+                **kwargs,
             )
             # Extract text content from response
-            if hasattr(response, 'output') and hasattr(response.output, 'message'):
-                if hasattr(response.output.message, 'content'):
+            if hasattr(response, "output") and hasattr(response.output, "message"):
+                if hasattr(response.output.message, "content"):
                     return response.output.message.content
             # Fallback for different response structures
-            if hasattr(response, 'choices') and response.choices:
+            if hasattr(response, "choices") and response.choices:
                 return response.choices[0].message.content
             # If we can't extract content, return the whole response as string
             return str(response)
         except Exception as e:
-            print(f"LLM query error in {self.agent_id}: {str(e)}")
-            return f"Error: {str(e)}"
+            # Raise a structured exception so callers can handle gracefully
+            raise LLMAPIError(str(e))
     
     def get_conversation_history(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent conversation history"""

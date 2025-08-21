@@ -12,7 +12,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.tools.vector_store_handler import VectorStoreHandler
-from src.services.openai_responses_client import ResponsesClient
+from src.services.openai_responses_client import ResponsesClient, supports_temperature
 from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
 
 load_dotenv()

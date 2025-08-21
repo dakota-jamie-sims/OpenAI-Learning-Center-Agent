@@ -93,6 +93,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         web_response = self.web_researcher.receive_message(web_msg)
+        if not web_response.payload.get("success", True):
+            return web_response.payload
         
         # Knowledge base search
         kb_msg = self.delegate_task(
@@ -101,6 +103,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         kb_response = self.kb_researcher.receive_message(kb_msg)
+        if not kb_response.payload.get("success", True):
+            return kb_response.payload
         
         # Get Dakota insights
         dakota_msg = self.delegate_task(
@@ -109,6 +113,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         dakota_response = self.kb_researcher.receive_message(dakota_msg)
+        if not dakota_response.payload.get("success", True):
+            return dakota_response.payload
         
         # Phase 2: Validate findings
         all_content = {
@@ -123,6 +129,8 @@ class ResearchTeamLead(BaseAgent):
             {"content": json.dumps(all_content)}
         )
         validation_response = self.data_validator.receive_message(validation_msg)
+        if not validation_response.payload.get("success", True):
+            return validation_response.payload
         
         # Phase 3: Find additional sources if needed
         sources_collected = self._extract_all_sources(all_content)
@@ -134,6 +142,8 @@ class ResearchTeamLead(BaseAgent):
                 {"query": topic}
             )
             source_response = self.web_researcher.receive_message(source_msg)
+            if not source_response.payload.get("success", True):
+                return source_response.payload
             sources_collected.extend(source_response.payload.get("sources", []))
         
         # Phase 4: Synthesize findings
@@ -172,6 +182,8 @@ class ResearchTeamLead(BaseAgent):
             {"content": content}
         )
         fact_validation = self.data_validator.receive_message(fact_msg)
+        if not fact_validation.payload.get("success", True):
+            return fact_validation.payload
         
         # Validate citations
         citation_msg = self.delegate_task(
@@ -180,6 +192,8 @@ class ResearchTeamLead(BaseAgent):
             {"content": content}
         )
         citation_validation = self.data_validator.receive_message(citation_msg)
+        if not citation_validation.payload.get("success", True):
+            return citation_validation.payload
         
         # Check consistency
         consistency_msg = self.delegate_task(
@@ -188,6 +202,8 @@ class ResearchTeamLead(BaseAgent):
             {"content": content}
         )
         consistency_check = self.data_validator.receive_message(consistency_msg)
+        if not consistency_check.payload.get("success", True):
+            return consistency_check.payload
         
         # Check data freshness
         freshness_msg = self.delegate_task(
@@ -196,6 +212,8 @@ class ResearchTeamLead(BaseAgent):
             {"content": content}
         )
         freshness_check = self.data_validator.receive_message(freshness_msg)
+        if not freshness_check.payload.get("success", True):
+            return freshness_check.payload
         
         # Compile validation report
         validation_report = {
@@ -232,6 +250,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": query}
         )
         web_response = self.web_researcher.receive_message(web_msg)
+        if not web_response.payload.get("success", True):
+            return web_response.payload
         sources.extend(web_response.payload.get("sources", []))
         
         # Dakota KB sources
@@ -241,6 +261,8 @@ class ResearchTeamLead(BaseAgent):
             {"query": query}
         )
         kb_response = self.kb_researcher.receive_message(kb_msg)
+        if not kb_response.payload.get("success", True):
+            return kb_response.payload
         
         # Convert KB articles to source format
         for article in kb_response.payload.get("similar_articles", []):
@@ -259,6 +281,8 @@ class ResearchTeamLead(BaseAgent):
             {"sources": sources}
         )
         validation_response = self.data_validator.receive_message(source_validation_msg)
+        if not validation_response.payload.get("success", True):
+            return validation_response.payload
         
         # Filter and rank validated sources
         validated_sources = self._filter_validated_sources(
@@ -291,6 +315,8 @@ class ResearchTeamLead(BaseAgent):
                     {"claim": claim}
                 )
                 verify_response = self.web_researcher.receive_message(verify_msg)
+                if not verify_response.payload.get("success", True):
+                    return verify_response.payload
                 verification_results.append({
                     "claim": claim,
                     "verification": verify_response.payload
@@ -303,6 +329,8 @@ class ResearchTeamLead(BaseAgent):
                 {"content": content}
             )
             fact_response = self.data_validator.receive_message(fact_msg)
+            if not fact_response.payload.get("success", True):
+                return fact_response.payload
             verification_results = fact_response.payload
         
         return {
@@ -677,6 +705,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         outline_response = self.content_writer.receive_message(outline_msg)
+        if not outline_response.payload.get("success", True):
+            return outline_response.payload
         
         # Phase 2: Write article
         write_msg = self.delegate_task(
@@ -691,6 +721,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         write_response = self.content_writer.receive_message(write_msg)
+        if not write_response.payload.get("success", True):
+            return write_response.payload
         
         if not write_response.payload.get("success"):
             return write_response.payload
@@ -708,6 +740,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         citation_response = self.citation_agent.receive_message(citation_msg)
+        if not citation_response.payload.get("success", True):
+            return citation_response.payload
         
         article_with_citations = citation_response.payload.get("cited_content", article)
         
@@ -726,6 +760,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         style_response = self.style_editor.receive_message(style_msg)
+        if not style_response.payload.get("success", True):
+            return style_response.payload
         
         final_article = style_response.payload.get("edited_content", article_with_citations)
         
@@ -739,6 +775,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         polish_response = self.style_editor.receive_message(polish_msg)
+        if not polish_response.payload.get("success", True):
+            return polish_response.payload
         
         polished_article = polish_response.payload.get("polished_content", final_article)
         
@@ -766,6 +804,8 @@ class WritingTeamLead(BaseAgent):
             {"content": content}
         )
         grammar_response = self.style_editor.receive_message(grammar_msg)
+        if not grammar_response.payload.get("success", True):
+            return grammar_response.payload
         
         content = grammar_response.payload.get("corrected_content", content)
         
@@ -779,6 +819,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         clarity_response = self.style_editor.receive_message(clarity_msg)
+        if not clarity_response.payload.get("success", True):
+            return clarity_response.payload
         
         content = clarity_response.payload.get("clarified_content", content)
         
@@ -793,6 +835,8 @@ class WritingTeamLead(BaseAgent):
             }
         )
         consistency_response = self.style_editor.receive_message(consistency_msg)
+        if not consistency_response.payload.get("success", True):
+            return consistency_response.payload
         
         content = consistency_response.payload.get("consistent_content", content)
         
@@ -803,6 +847,8 @@ class WritingTeamLead(BaseAgent):
             {"content": content}
         )
         citation_verify_response = self.citation_agent.receive_message(citation_verify_msg)
+        if not citation_verify_response.payload.get("success", True):
+            return citation_verify_response.payload
         
         # Phase 5: Final formatting
         if citation_verify_response.payload.get("needs_correction"):
@@ -812,6 +858,8 @@ class WritingTeamLead(BaseAgent):
                 {"content": content}
             )
             format_response = self.citation_agent.receive_message(format_msg)
+            if not format_response.payload.get("success", True):
+                return format_response.payload
             content = format_response.payload.get("formatted_content", content)
         
         edit_summary = {
@@ -879,6 +927,8 @@ Focus on institutional investor needs."""
                         }
                     )
                     expand_response = self.content_writer.receive_message(expand_msg)
+                    if not expand_response.payload.get("success", True):
+                        return expand_response.payload
                     improved_draft = expand_response.payload.get("expanded_content", improved_draft)
                 
                 elif "clarify" in improvement.lower() or "simplify" in improvement.lower():
@@ -891,6 +941,8 @@ Focus on institutional investor needs."""
                         }
                     )
                     clarity_response = self.style_editor.receive_message(clarity_msg)
+                    if not clarity_response.payload.get("success", True):
+                        return clarity_response.payload
                     improved_draft = clarity_response.payload.get("clarified_content", improved_draft)
             
             return {
@@ -932,6 +984,8 @@ Focus on institutional investor needs."""
             {"content": article}
         )
         citation_response = self.citation_agent.receive_message(citation_msg)
+        if not citation_response.payload.get("success", True):
+            return citation_response.payload
         final_checks["citations"] = {
             "total": citation_response.payload.get("total_citations", 0),
             "valid": citation_response.payload.get("valid_citations", 0),
@@ -948,6 +1002,8 @@ Focus on institutional investor needs."""
             }
         )
         polish_response = self.style_editor.receive_message(polish_msg)
+        if not polish_response.payload.get("success", True):
+            return polish_response.payload
         
         final_article = polish_response.payload.get("polished_content", article)
         
@@ -958,6 +1014,8 @@ Focus on institutional investor needs."""
             {"content": final_article}
         )
         bib_response = self.citation_agent.receive_message(bib_msg)
+        if not bib_response.payload.get("success", True):
+            return bib_response.payload
         
         # Generate introduction and conclusion if needed
         if not self._has_strong_introduction(final_article):
@@ -971,6 +1029,8 @@ Focus on institutional investor needs."""
                 }
             )
             intro_response = self.content_writer.receive_message(intro_msg)
+            if not intro_response.payload.get("success", True):
+                return intro_response.payload
             # Would integrate introduction here
         
         return {
@@ -1023,6 +1083,8 @@ Focus on institutional investor needs."""
             )
         
         response = self.sub_agents[improve_msg.to_agent].receive_message(improve_msg)
+        if not response.payload.get("success", True):
+            return response.payload
         
         return {
             "success": True,
@@ -1235,6 +1297,8 @@ class QualityTeamLead(BaseAgent):
             {"content": content}
         )
         fact_response = self.fact_checker.receive_message(fact_msg)
+        if not fact_response.payload.get("success", True):
+            return fact_response.payload
         
         # Phase 2: Compliance check
         compliance_msg = self.delegate_task(
@@ -1243,6 +1307,8 @@ class QualityTeamLead(BaseAgent):
             {"content": content}
         )
         compliance_response = self.compliance_agent.receive_message(compliance_msg)
+        if not compliance_response.payload.get("success", True):
+            return compliance_response.payload
         
         # Phase 3: Quality assurance
         qa_msg = self.delegate_task(
@@ -1254,6 +1320,8 @@ class QualityTeamLead(BaseAgent):
             }
         )
         qa_response = self.qa_agent.receive_message(qa_msg)
+        if not qa_response.payload.get("success", True):
+            return qa_response.payload
         
         # Compile results
         quality_report = {
@@ -1291,6 +1359,8 @@ class QualityTeamLead(BaseAgent):
             {"content": content}
         )
         compliance_response = self.compliance_agent.receive_message(compliance_msg)
+        if not compliance_response.payload.get("success", True):
+            return compliance_response.payload
         
         # Risk assessment
         risk_msg = self.delegate_task(
@@ -1299,6 +1369,8 @@ class QualityTeamLead(BaseAgent):
             {"content": content}
         )
         risk_response = self.compliance_agent.receive_message(risk_msg)
+        if not risk_response.payload.get("success", True):
+            return risk_response.payload
         
         # Disclaimer verification
         disclaimer_msg = self.delegate_task(
@@ -1307,6 +1379,8 @@ class QualityTeamLead(BaseAgent):
             {"content": content}
         )
         disclaimer_response = self.compliance_agent.receive_message(disclaimer_msg)
+        if not disclaimer_response.payload.get("success", True):
+            return disclaimer_response.payload
         
         return {
             "success": True,
@@ -1336,6 +1410,8 @@ class QualityTeamLead(BaseAgent):
             }
         )
         fact_response = self.fact_checker.receive_message(fact_msg)
+        if not fact_response.payload.get("success", True):
+            return fact_response.payload
         
         # Check statistics
         stat_msg = self.delegate_task(
@@ -1344,6 +1420,8 @@ class QualityTeamLead(BaseAgent):
             {"content": content}
         )
         stat_response = self.fact_checker.receive_message(stat_msg)
+        if not stat_response.payload.get("success", True):
+            return stat_response.payload
         
         # Cross-reference sources
         cross_ref_msg = self.delegate_task(
@@ -1355,6 +1433,8 @@ class QualityTeamLead(BaseAgent):
             }
         )
         cross_ref_response = self.fact_checker.receive_message(cross_ref_msg)
+        if not cross_ref_response.payload.get("success", True):
+            return cross_ref_response.payload
         
         # Compile fact check report
         fact_check_report = {
@@ -1390,6 +1470,8 @@ class QualityTeamLead(BaseAgent):
             }
         )
         approval_response = self.qa_agent.receive_message(approval_msg)
+        if not approval_response.payload.get("success", True):
+            return approval_response.payload
         
         # If not approved, get improvement suggestions
         if not approval_response.payload.get("approved", False):
@@ -1402,6 +1484,8 @@ class QualityTeamLead(BaseAgent):
                 }
             )
             suggestions_response = self.qa_agent.receive_message(suggestions_msg)
+            if not suggestions_response.payload.get("success", True):
+                return suggestions_response.payload
             
             return {
                 "success": True,

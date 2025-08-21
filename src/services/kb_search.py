@@ -3,20 +3,113 @@ Knowledge Base Search Service
 Provides search functionality for the Dakota knowledge base using vector store
 """
 import os
-from typing import List, Dict, Any, Optional
-from openai import OpenAI
+from typing import List, Dict, Any, Optional, Tuple
+from openai import (
+    OpenAI,
+    APIError,
+    APIConnectionError,
+    RateLimitError,
+    APITimeoutError,
+)
+from tenacity import (
+    Retrying,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 import json
 import time
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Exceptions that should trigger a retry
+RETRY_EXCEPTIONS = (
+    APIError,
+    APIConnectionError,
+    RateLimitError,
+    APITimeoutError,
+)
+
+
+class TransientOpenAIError(RuntimeError):
+    """Error raised when transient failures persist after retries."""
+
+
+class PermanentOpenAIError(RuntimeError):
+    """Error raised for non-retryable OpenAI failures."""
 
 class KnowledgeBaseSearcher:
     """Handles knowledge base searches using OpenAI's vector store"""
     
-    def __init__(self, client: Optional[OpenAI] = None):
-        self.client = client or OpenAI()
+    def __init__(self, client: Optional[OpenAI] = None, timeout: Optional[float] = None, max_retries: int = 3):
+        self.client = client or OpenAI(timeout=timeout)
         self.vector_store_id = os.getenv("VECTOR_STORE_ID") or os.getenv("OPENAI_VECTOR_STORE_ID")
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.assistant = None  # Will be created once and reused
         
         if not self.vector_store_id:
             raise ValueError("No vector store ID found in environment variables")
+        
+        # Create assistant once at initialization
+        self._initialize_assistant()
+    
+    def _initialize_assistant(self):
+        """Initialize the assistant with retry support"""
+        def create_assistant():
+            return self.client.beta.assistants.create(
+                name="KB Search Assistant",
+                model="gpt-4-turbo",
+                instructions="You are a knowledge base search assistant. Search for relevant information and provide accurate results with proper citations.",
+                tools=[{"type": "file_search"}],
+                tool_resources={
+                    "file_search": {
+                        "vector_store_ids": [self.vector_store_id]
+                    }
+                }
+            )
+        
+        assistant, _ = self._with_retry(create_assistant)
+        self.assistant = assistant
+    
+    def _with_retry(
+        self, func, timeout: Optional[float] = None, **kwargs
+    ) -> Tuple[Any, int]:
+        """Execute an API call with retries.
+
+        Returns the result and the number of retry attempts performed.
+        Raises :class:`TransientOpenAIError` for retryable failures and
+        :class:`PermanentOpenAIError` for non-retryable ones.
+        """
+        retryer = Retrying(
+            reraise=True,
+            stop=stop_after_attempt(self.max_retries),
+            wait=wait_exponential(min=1, max=10, multiplier=1),
+            retry=retry_if_exception_type(RETRY_EXCEPTIONS),
+            before_sleep=lambda rs: logger.warning(
+                "Retrying OpenAI API call (%s/%s) after error: %s",
+                rs.attempt_number,
+                self.max_retries,
+                rs.outcome.exception(),
+            ),
+        )
+
+        try:
+            result = retryer.call(func, timeout=timeout or self.timeout, **kwargs)
+            attempts = retryer.statistics.get("attempt_number", 1) - 1
+            return result, attempts
+        except RETRY_EXCEPTIONS as e:
+            attempts = retryer.statistics.get("attempt_number", 1)
+            logger.error(
+                "OpenAI transient error after %d attempts: %s", attempts, e
+            )
+            raise TransientOpenAIError(
+                f"Transient OpenAI error after {attempts} attempts: {e}"
+            ) from e
+        except Exception as e:  # Non-retryable
+            logger.error("OpenAI permanent error: %s", e)
+            raise PermanentOpenAIError(str(e)) from e
     
     def search(self, query: str, max_results: int = 5, include_metadata: bool = True) -> Dict[str, Any]:
         """
@@ -31,21 +124,8 @@ class KnowledgeBaseSearcher:
             Dictionary containing search results and metadata
         """
         try:
-            # Create a temporary assistant with file search capability
-            assistant = self.client.beta.assistants.create(
-                name="KB Search Assistant",
-                model="gpt-4-turbo",
-                instructions="You are a knowledge base search assistant. Search for relevant information and provide accurate results with proper citations.",
-                tools=[{"type": "file_search"}],
-                tool_resources={
-                    "file_search": {
-                        "vector_store_ids": [self.vector_store_id]
-                    }
-                }
-            )
-            
-            # Create thread and message
-            thread = self.client.beta.threads.create()
+            # Create thread with retry
+            thread, _ = self._with_retry(self.client.beta.threads.create)
             
             search_prompt = f"""Search the Dakota knowledge base for information about: {query}
 
@@ -57,29 +137,36 @@ Please provide:
 
 Focus on the most recent and relevant information."""
 
-            message = self.client.beta.threads.messages.create(
+            # Create message with retry
+            message, _ = self._with_retry(
+                self.client.beta.threads.messages.create,
                 thread_id=thread.id,
                 role="user",
                 content=search_prompt
             )
             
-            # Run the assistant
-            run = self.client.beta.threads.runs.create(
+            # Run the assistant with retry
+            run, _ = self._with_retry(
+                self.client.beta.threads.runs.create,
                 thread_id=thread.id,
-                assistant_id=assistant.id
+                assistant_id=self.assistant.id
             )
             
-            # Wait for completion
+            # Wait for completion with retry-wrapped status checks
             while run.status in ['queued', 'in_progress']:
                 time.sleep(0.5)
-                run = self.client.beta.threads.runs.retrieve(
+                run, _ = self._with_retry(
+                    self.client.beta.threads.runs.retrieve,
                     thread_id=thread.id,
                     run_id=run.id
                 )
             
             if run.status == 'completed':
-                # Get the response
-                messages = self.client.beta.threads.messages.list(thread_id=thread.id)
+                # Get the response with retry
+                messages, _ = self._with_retry(
+                    self.client.beta.threads.messages.list,
+                    thread_id=thread.id
+                )
                 response = messages.data[0].content[0].text.value
                 
                 # Extract citations if available
@@ -115,12 +202,26 @@ Focus on the most recent and relevant information."""
                     "status": run.status
                 }
             
-            # Cleanup
-            self.client.beta.assistants.delete(assistant_id=assistant.id)
-            
             return result
             
+        except TransientOpenAIError as e:
+            logger.error(f"Transient error during search: {e}")
+            return {
+                "success": False,
+                "query": query,
+                "error": str(e),
+                "status": "error"
+            }
+        except PermanentOpenAIError as e:
+            logger.error(f"Permanent error during search: {e}")
+            return {
+                "success": False,
+                "query": query,
+                "error": str(e),
+                "status": "error"
+            }
         except Exception as e:
+            logger.error(f"Unexpected error during search: {e}")
             return {
                 "success": False,
                 "query": query,
@@ -188,15 +289,33 @@ Focus on the most recent and relevant information."""
             articles.append(current_article)
         
         return articles[:3]  # Return top 3 articles
+    
+    def cleanup(self):
+        """Cleanup the assistant when done"""
+        if self.assistant:
+            try:
+                self.client.beta.assistants.delete(assistant_id=self.assistant.id)
+                logger.info(f"Deleted assistant {self.assistant.id}")
+            except Exception as e:
+                logger.warning(f"Failed to delete assistant: {e}")
+            self.assistant = None
+    
+    def __del__(self):
+        """Ensure assistant is cleaned up on deletion"""
+        self.cleanup()
 
 
 # Convenience function for backward compatibility
 def search_knowledge_base(query: str, max_results: int = 5) -> str:
     """Legacy function for knowledge base search"""
     searcher = KnowledgeBaseSearcher()
-    result = searcher.search(query, max_results)
-    
-    if result["success"]:
-        return result["results"]
-    else:
-        return f"Search failed: {result.get('error', 'Unknown error')}"
+    try:
+        result = searcher.search(query, max_results)
+        
+        if result["success"]:
+            return result["results"]
+        else:
+            return f"Search failed: {result.get('error', 'Unknown error')}"
+    finally:
+        # Ensure cleanup for one-off searches
+        searcher.cleanup()
