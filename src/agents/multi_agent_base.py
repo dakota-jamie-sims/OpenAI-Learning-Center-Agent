@@ -7,6 +7,7 @@ from datetime import datetime
 from enum import Enum
 import json
 import uuid
+import asyncio
 from pydantic import BaseModel, Field, field_validator
 
 from src.services.openai_responses_client import ResponsesClient
@@ -93,22 +94,44 @@ class BaseAgent(ABC):
         """Receive and process a message"""
         # Add to memory
         self.memory.append(message)
-        
+
         # Validate task
         is_valid, reason = self.validate_task(message.task, message.payload)
-        
+
         if not is_valid:
             return self._create_error_response(message, reason)
-        
+
         # Update status
         self.status = AgentStatus.WORKING
-        
+
+        # If process_message is async, handle accordingly
+        if asyncio.iscoroutinefunction(self.process_message):
+            async def _run_async():
+                try:
+                    response = await self.process_message(message)
+                    self.status = AgentStatus.IDLE
+                    return response
+                except LLMAPIError as e:
+                    self.status = AgentStatus.ERROR
+                    return self._create_error_response(message, f"LLM API error: {str(e)}")
+                except Exception as e:
+                    self.status = AgentStatus.ERROR
+                    return self._create_error_response(message, str(e))
+
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                # No running loop - execute synchronously
+                return asyncio.run(_run_async())
+            else:
+                # Running loop - return awaitable task
+                return loop.create_task(_run_async())
+
+        # Synchronous process_message handling
         try:
-            # Process the message
             response = self.process_message(message)
             self.status = AgentStatus.IDLE
             return response
-
         except LLMAPIError as e:
             self.status = AgentStatus.ERROR
             return self._create_error_response(message, f"LLM API error: {str(e)}")

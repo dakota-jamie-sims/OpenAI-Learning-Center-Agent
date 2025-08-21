@@ -60,16 +60,13 @@ class ResearchTeamLead(BaseAgent):
         
         return True, "Valid task"
     
-    def process_message(self, message: AgentMessage) -> AgentMessage:
+    async def process_message(self, message: AgentMessage) -> AgentMessage:
         """Process research coordination request"""
         task = message.task
         payload = message.payload
-        
+
         if task == "comprehensive_research":
-            # Handle async execution properly - avoid nested event loops
-            import nest_asyncio
-            nest_asyncio.apply()
-            result = asyncio.run(self._coordinate_comprehensive_research_async(payload))
+            result = await self._coordinate_comprehensive_research_async(payload)
         elif task == "validate_article":
             result = self._coordinate_article_validation(payload)
         elif task == "find_sources":
@@ -78,15 +75,9 @@ class ResearchTeamLead(BaseAgent):
             result = self._coordinate_fact_checking(payload)
         else:
             result = self._synthesize_research(payload)
-        
+
         return self._create_response(message, result)
-    
-    def _coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Backward compatibility wrapper - calls async version"""
-        import nest_asyncio
-        nest_asyncio.apply()
-        return asyncio.run(self._coordinate_comprehensive_research_async(payload))
-    
+
     async def _coordinate_comprehensive_research_async(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Coordinate comprehensive research across all sub-agents in parallel"""
         topic = payload.get("topic", "")
@@ -113,23 +104,24 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         
-        # Run all three searches in parallel using asyncio
-        async def run_agent_async(agent, message):
-            """Run agent in thread pool to avoid blocking"""
-            loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(None, agent.receive_message, message)
-        
         # Execute all searches simultaneously with timeout protection
-        web_task = run_agent_async(self.web_researcher, web_msg)
-        kb_task = run_agent_async(self.kb_researcher, kb_msg)
-        dakota_task = run_agent_async(self.kb_researcher, dakota_msg)
-        
-        # Wait for all to complete with individual timeouts
+        web_task = asyncio.create_task(
+            asyncio.wait_for(self.web_researcher.receive_message(web_msg), timeout=15)
+        )
+        kb_task = asyncio.create_task(
+            asyncio.wait_for(self.kb_researcher.receive_message(kb_msg), timeout=10)
+        )
+        dakota_task = asyncio.create_task(
+            asyncio.wait_for(self.kb_researcher.receive_message(dakota_msg), timeout=10)
+        )
+
+        # Wait for all to complete
+        web_response = kb_response = dakota_response = None
         try:
             web_response, kb_response, dakota_response = await asyncio.gather(
-                asyncio.wait_for(web_task, timeout=15),
-                asyncio.wait_for(kb_task, timeout=10),
-                asyncio.wait_for(dakota_task, timeout=10),
+                web_task,
+                kb_task,
+                dakota_task,
                 return_exceptions=True
             )
         except Exception as e:

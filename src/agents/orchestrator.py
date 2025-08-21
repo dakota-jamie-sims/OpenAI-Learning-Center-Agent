@@ -91,9 +91,6 @@ class OrchestratorAgent(BaseAgent):
         payload = message.payload
         
         if task == "generate_article":
-            # Use nest_asyncio to handle nested event loops
-            import nest_asyncio
-            nest_asyncio.apply()
             result = asyncio.run(self._orchestrate_article_generation(payload["request"]))
         elif task == "review_pipeline":
             result = self._review_current_pipeline()
@@ -211,8 +208,8 @@ class OrchestratorAgent(BaseAgent):
         await asyncio.sleep(0.5)  # Simulate processing time
         
         # Process response
-        response = self.research_lead.receive_message(research_msg)
-        
+        response = await self.research_lead.receive_message(research_msg)
+
         if response:
             logger.info(f"Research response received: {response.payload.get('success', False)}")
             if not response.payload.get('success', False):

@@ -27,12 +27,8 @@ def test_orchestrator_handles_api_failure(monkeypatch):
         mock_create_response,
     )
     monkeypatch.setattr(
-        "src.services.kb_search.KnowledgeBaseSearcher.__init__",
-        lambda self: None,
-    )
-    monkeypatch.setattr(
-        "src.services.kb_search.KnowledgeBaseSearcher.search",
-        lambda self, query: {"success": False, "results": []},
+        "src.services.kb_search_optimized.get_kb_searcher",
+        lambda: type("Dummy", (), {"search": lambda self, q, **k: {"success": False, "results": []}})(),
     )
 
     orchestrator = OrchestratorAgent()
