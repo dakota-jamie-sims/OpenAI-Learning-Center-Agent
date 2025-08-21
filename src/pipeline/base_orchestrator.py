@@ -13,8 +13,11 @@ from src.tools.vector_store_handler import VectorStoreHandler
 from src.services.openai_responses_client import ResponsesClient
 from src.services.kb_search import KnowledgeBaseSearcher
 from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
+from src.utils.logging import get_logger
 
 load_dotenv()
+
+logger = get_logger(__name__)
 
 
 class BaseOrchestrator:
@@ -31,10 +34,10 @@ class BaseOrchestrator:
         
         if self.vector_store_id:
             self.kb_searcher = KnowledgeBaseSearcher(self.client)
-            print(f"✅ Using existing vector store: {self.vector_store_id}")
+            logger.info("✅ Using existing vector store: %s", self.vector_store_id)
         else:
             self.kb_searcher = None
-            print("⚠️ No vector store configured. Knowledge base search will be limited.")
+            logger.warning("⚠️ No vector store configured. Knowledge base search will be limited.")
     
     def search_knowledge_base(self, query: str, max_results: int = 5) -> str:
         """Search the knowledge base"""

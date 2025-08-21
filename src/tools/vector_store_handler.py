@@ -9,10 +9,15 @@ import hashlib
 from openai import OpenAI
 import json
 
+from src.utils.logging import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class VectorStoreHandler:
     """Handles vector store operations for knowledge base search"""
-    
+
     def __init__(self, client: OpenAI):
         self.client = client
         self.vector_store_id = None
@@ -27,10 +32,10 @@ class VectorStoreHandler:
                 # Verify it still exists
                 store = self.client.vector_stores.retrieve(existing_id)
                 self.vector_store_id = existing_id
-                print(f"✅ Using existing vector store: {existing_id}")
+                logger.info("✅ Using existing vector store: %s", existing_id)
                 return existing_id
             except:
-                print(f"⚠️ Existing vector store {existing_id} not found, creating new one")
+                logger.warning("⚠️ Existing vector store %s not found, creating new one", existing_id)
         
         # Create new vector store
         vector_store = self.client.vector_stores.create(name=name)
@@ -39,7 +44,7 @@ class VectorStoreHandler:
         # Save to .env for future use
         self._save_vector_store_id(vector_store.id)
         
-        print(f"✅ Created new vector store: {vector_store.id}")
+        logger.info("✅ Created new vector store: %s", vector_store.id)
         return vector_store.id
     
     def upload_knowledge_base(self, kb_directory: str, max_files: int = 100) -> List[str]:
@@ -52,7 +57,7 @@ class VectorStoreHandler:
         files = list(kb_path.rglob("*.md")) + list(kb_path.rglob("*.txt"))
         files = files[:max_files]  # Limit number of files
         
-        print(f"📚 Uploading {len(files)} knowledge base files...")
+        logger.info("📚 Uploading %d knowledge base files...", len(files))
         
         uploaded_files = []
         for file_path in files:
@@ -67,7 +72,7 @@ class VectorStoreHandler:
                 uploaded_files.append(str(file_path))
                 
             except Exception as e:
-                print(f"❌ Failed to upload {file_path}: {e}")
+                logger.error("❌ Failed to upload %s: %s", file_path, e)
         
         # Add files to vector store
         if self.file_ids and self.vector_store_id:
@@ -75,7 +80,7 @@ class VectorStoreHandler:
                 vector_store_id=self.vector_store_id,
                 file_ids=self.file_ids
             )
-            print(f"✅ Added {len(self.file_ids)} files to vector store")
+            logger.info("✅ Added %d files to vector store", len(self.file_ids))
         
         return uploaded_files
     
@@ -151,7 +156,7 @@ class VectorStoreHandler:
                 return self._get_fallback_results(query, max_results)
                 
         except Exception as e:
-            print(f"Error searching knowledge base: {e}")
+            logger.error("Error searching knowledge base: %s", e)
             # Fallback to hardcoded results on error
             return self._get_fallback_results(query, max_results)
     
