@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 import json
 import uuid
-from dataclasses import dataclass, asdict
+from pydantic import BaseModel, Field, field_validator
 
 from src.services.openai_responses_client import ResponsesClient
 from src.config import DEFAULT_MODELS
@@ -38,8 +38,7 @@ class AgentStatus(Enum):
     COMPLETED = "completed"
 
 
-@dataclass
-class AgentMessage:
+class AgentMessage(BaseModel):
     """Standardized message format for agent communication"""
     from_agent: str
     to_agent: str
@@ -47,19 +46,13 @@ class AgentMessage:
     task: str
     payload: Dict[str, Any]
     context: Dict[str, Any]
-    timestamp: str
-    message_id: str = None
-    parent_message_id: str = None
-    
-    def __post_init__(self):
-        if not self.message_id:
-            self.message_id = str(uuid.uuid4())
-        if not self.timestamp:
-            self.timestamp = datetime.now().isoformat()
+    timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
+    message_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    parent_message_id: Optional[str] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary"""
-        data = asdict(self)
+        data = self.model_dump()
         data['message_type'] = self.message_type.value
         return data
     
@@ -67,7 +60,7 @@ class AgentMessage:
     def from_dict(cls, data: Dict[str, Any]) -> 'AgentMessage':
         """Create message from dictionary"""
         data['message_type'] = MessageType(data['message_type'])
-        return cls(**data)
+        return cls.model_validate(data)
 
 
 class BaseAgent(ABC):

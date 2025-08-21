@@ -11,6 +11,9 @@ from src.agents.team_leads import ResearchTeamLead, WritingTeamLead, QualityTeam
 from src.agents.communication_broker import create_communication_broker
 from src.config import DEFAULT_MODELS, RESEARCH_CONFIG
 from src.models import ArticleRequest, ArticleResponse, MetadataGeneration
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class OrchestratorAgent(BaseAgent):
@@ -88,6 +91,9 @@ class OrchestratorAgent(BaseAgent):
         payload = message.payload
         
         if task == "generate_article":
+            # Use nest_asyncio to handle nested event loops
+            import nest_asyncio
+            nest_asyncio.apply()
             result = asyncio.run(self._orchestrate_article_generation(payload["request"]))
         elif task == "review_pipeline":
             result = self._review_current_pipeline()
@@ -108,7 +114,7 @@ class OrchestratorAgent(BaseAgent):
         pipeline_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.current_pipeline = {
             "id": pipeline_id,
-            "request": request.dict() if hasattr(request, 'dict') else request,
+            "request": request.model_dump() if hasattr(request, 'model_dump') else request,
             "status": "in_progress",
             "phases": {},
             "start_time": datetime.now().isoformat()
@@ -208,12 +214,17 @@ class OrchestratorAgent(BaseAgent):
         response = self.research_lead.receive_message(research_msg)
         
         if response:
-            print(f"Research response received: {response.payload.get('success', False)}")
+            if not isinstance(response.payload, dict):
+                raise TypeError(
+                    "Research team response payload must be a dictionary, "
+                    f"got {type(response.payload).__name__}"
+                )
+            logger.info(f"Research response received: {response.payload.get('success', False)}")
             if not response.payload.get('success', False):
-                print(f"Research error: {response.payload.get('error', 'Unknown error')}")
+                logger.error(f"Research error: {response.payload.get('error', 'Unknown error')}")
             return response.payload
         else:
-            print("No response from research team")
+            logger.warning("No response from research team")
             return {"success": False, "error": "No response from research team"}
     
     async def _phase_writing(self, request: ArticleRequest, research_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -364,7 +375,7 @@ class OrchestratorAgent(BaseAgent):
         from_agent = escalation_data.get("details", {}).get("from_agent", "Unknown")
         
         # Log escalation
-        self.logger.warning(f"Escalation from {from_agent}: {issue}")
+        logger.warning(f"Escalation from {from_agent}: {issue}")
         
         # Determine action based on issue type
         if "timeout" in issue.lower():

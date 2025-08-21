@@ -8,6 +8,7 @@ from openai import OpenAI
 import asyncio
 from ..tools.vector_store_handler import VectorStoreHandler, KnowledgeBaseSearchTool
 from ..config_enhanced import VECTOR_STORE_ID
+from ..services.openai_responses_client import supports_temperature
 
 
 class EnhancedTopicGenerator:
@@ -79,10 +80,11 @@ Generate ONE specific topic that would add unique value to Dakota's knowledge ba
 Format: Just the topic title, no explanation."""
 
         try:
+            model = "gpt-4.1"  # Using your specified model
             response = self.client.chat.completions.create(
-                model="gpt-4.1",  # Using your specified model
+                model=model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.8,
+                temperature=0.8 if supports_temperature(model) else None,
                 max_tokens=50
             )
             
@@ -94,10 +96,11 @@ Format: Just the topic title, no explanation."""
             # If too similar, regenerate with explicit instruction to differentiate
             if "highly relevant" in similarity_check.lower():
                 prompt += "\n\nIMPORTANT: The topic should explore an angle NOT already covered in our knowledge base."
+                model = "gpt-4.1"
                 response = self.client.chat.completions.create(
-                    model="gpt-4.1",
+                    model=model,
                     messages=[{"role": "user", "content": prompt}],
-                    temperature=0.9,
+                    temperature=0.9 if supports_temperature(model) else None,
                     max_tokens=50
                 )
                 topic = response.choices[0].message.content.strip().strip('"')

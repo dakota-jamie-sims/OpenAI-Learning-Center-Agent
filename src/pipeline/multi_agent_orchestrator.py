@@ -9,7 +9,12 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 
 from src.agents.orchestrator import OrchestratorAgent, create_article_with_multi_agent_system
-from src.models import ArticleRequest, ArticleResponse, MetadataGeneration
+from src.models import ArticleRequest
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
+
+from src.models import ArticleResponse, MetadataGeneration
 from src.config import OUTPUT_DIR, ARTICLE_CONFIG
 from src.utils import ensure_output_dir, format_article_filename
 
@@ -49,10 +54,10 @@ class MultiAgentPipelineOrchestrator:
             custom_instructions=custom_instructions
         )
         
-        print(f"\n🤖 Multi-Agent System: Generating article on '{topic}'")
-        print(f"   Audience: {request.audience}")
-        print(f"   Tone: {request.tone}")
-        print(f"   Target length: ~{request.word_count} words")
+        logger.info(f"Multi-Agent System: Generating article on '{topic}'")
+        logger.info(f"   Audience: {request.audience}")
+        logger.info(f"   Tone: {request.tone}")
+        logger.info(f"   Target length: ~{request.word_count} words")
         
         try:
             # Generate article using multi-agent system
@@ -66,23 +71,23 @@ class MultiAgentPipelineOrchestrator:
                 result = {
                     "success": True,
                     "article": response.article,
-                    "metadata": response.metadata.dict() if hasattr(response.metadata, 'dict') else response.metadata,
+                    "metadata": response.metadata.model_dump() if hasattr(response.metadata, 'model_dump') else response.metadata,
                     "output_path": output_path,
                     "word_count": len(response.article.split()),
                     "quality_metrics": getattr(response, 'quality_metrics', {}),
                     "timestamp": datetime.now().isoformat()
                 }
                 
-                print(f"\n✅ Article generated successfully!")
-                print(f"   Output: {output_path}")
-                print(f"   Word count: {result['word_count']}")
+                logger.info(f"Article generated successfully!")
+                logger.info(f"   Output: {output_path}")
+                logger.info(f"   Word count: {result['word_count']}")
                 if 'quality_score' in result.get('quality_metrics', {}):
-                    print(f"   Quality score: {result['quality_metrics']['quality_score']}/100")
+                    logger.info(f"   Quality score: {result['quality_metrics']['quality_score']}/100")
                 
                 return result
             else:
                 error_msg = getattr(response, 'error', 'Unknown error in multi-agent system')
-                print(f"\n❌ Article generation failed: {error_msg}")
+                logger.error(f"Article generation failed: {error_msg}")
                 return {
                     "success": False,
                     "error": error_msg,
@@ -91,7 +96,7 @@ class MultiAgentPipelineOrchestrator:
                 }
                 
         except Exception as e:
-            print(f"\n❌ Error in multi-agent pipeline: {str(e)}")
+            logger.error(f"Error in multi-agent pipeline: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),
@@ -136,7 +141,7 @@ class MultiAgentPipelineOrchestrator:
         
         # Save metadata separately
         metadata_path = output_path.replace('.md', '_metadata.json')
-        metadata_dict = response.metadata.dict() if hasattr(response.metadata, 'dict') else response.metadata
+        metadata_dict = response.metadata.model_dump() if hasattr(response.metadata, 'model_dump') else response.metadata
         
         # Add quality metrics if available
         if hasattr(response, 'quality_metrics'):
@@ -195,9 +200,9 @@ def main():
     ]
     
     for topic in topics[:1]:  # Generate one article as example
-        print(f"\n{'='*60}")
-        print(f"Generating article with Multi-Agent System")
-        print(f"{'='*60}")
+        logger.info(f"{'='*60}")
+        logger.info(f"Generating article with Multi-Agent System")
+        logger.info(f"{'='*60}")
         
         result = orchestrator.generate_article(
             topic=topic,
@@ -205,17 +210,17 @@ def main():
         )
         
         if result["success"]:
-            print(f"\n📄 Article Preview:")
-            print(f"{'-'*60}")
-            print(result["article"][:500] + "...")
-            print(f"{'-'*60}")
+            logger.info(f"Article Preview:")
+            logger.info(f"{'-'*60}")
+            logger.info(result["article"][:500] + "...")
+            logger.info(f"{'-'*60}")
             
             # Show system status
             status = orchestrator.get_system_status()
-            print(f"\n🔍 System Status:")
-            print(f"   Orchestrator: {status.get('orchestrator_status', 'Unknown')}")
-            print(f"   Agents active: {len(status.get('agent_statuses', {}))}")
-            print(f"   Pipelines completed: {status.get('pipelines_completed', 0)}")
+            logger.info(f"System Status:")
+            logger.info(f"   Orchestrator: {status.get('orchestrator_status', 'Unknown')}")
+            logger.info(f"   Agents active: {len(status.get('agent_statuses', {}))}")
+            logger.info(f"   Pipelines completed: {status.get('pipelines_completed', 0)}")
 
 
 def generate_article_multi_agent(topic: str, word_count: int = 2000, **kwargs) -> Dict[str, Any]:
