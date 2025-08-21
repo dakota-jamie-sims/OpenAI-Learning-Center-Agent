@@ -124,10 +124,22 @@ class OrchestratorAgent(BaseAgent):
             # Phase 1: Research
             research_result = await self._phase_research(request)
             self.current_pipeline["phases"]["research"] = research_result
-            
+            if not isinstance(research_result, dict):
+                logger.error(
+                    "Research phase returned invalid result type: "
+                    f"{type(research_result).__name__}"
+                )
+                return self._pipeline_failed(
+                    "Research phase failed: invalid result format",
+                    {"result": research_result},
+                )
+
             if not research_result.get("success", False):
+                logger.error(
+                    f"Research phase unsuccessful: {research_result.get('error', 'Unknown error')}"
+                )
                 return self._pipeline_failed("Research phase failed", research_result)
-            
+
             # Phase 2: Writing
             writing_result = await self._phase_writing(request, research_result)
             self.current_pipeline["phases"]["writing"] = writing_result
