@@ -125,8 +125,7 @@ class CommunicationBroker:
         
         # Deliver message to target agent
         response = target_agent.receive_message(message)
-
-        if asyncio.iscoroutine(response) or isinstance(response, asyncio.Future):
+        if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task) or isinstance(response, asyncio.Future):
             response = await response
 
         if isinstance(response, AgentMessage):
@@ -142,7 +141,7 @@ class CommunicationBroker:
         
         if target_agent:
             response = target_agent.receive_message(message)
-            if asyncio.iscoroutine(response) or isinstance(response, asyncio.Future):
+            if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task) or isinstance(response, asyncio.Future):
                 response = await response
 
             if isinstance(response, AgentMessage):
@@ -172,7 +171,12 @@ class CommunicationBroker:
             if agent_id != message.from_agent:  # Don't send back to sender
                 agent = self.agents.get(agent_id)
                 if agent:
-                    agent.receive_message(message)
+                    response = agent.receive_message(message)
+                    if asyncio.iscoroutine(response) or isinstance(response, asyncio.Task) or isinstance(response, asyncio.Future):
+                        response = await response
+
+                    if isinstance(response, AgentMessage):
+                        self.send_message(response)
     
     async def _handle_delegation(self, message: AgentMessage) -> None:
         """Handle delegation messages"""

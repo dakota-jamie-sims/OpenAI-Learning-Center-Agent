@@ -10,6 +10,9 @@ from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus
 from src.config import DEFAULT_MODELS, MIN_SOURCES
 from src.services.web_search import search_web
 from src.services.kb_search import KnowledgeBaseSearcher
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class WebResearchAgent(BaseAgent):
@@ -65,14 +68,23 @@ class WebResearchAgent(BaseAgent):
     
     def _comprehensive_research(self, query: str) -> Dict[str, Any]:
         """Perform comprehensive research on a topic"""
-        # Search for current information
-        search_results = search_web(query)
-        
-        # Check if search failed
-        if not search_results:
+        try:
+            # Search for current information
+            search_results = search_web(query)
+            
+            # Check if search failed
+            if not search_results:
+                return {
+                    "success": False,
+                    "error": "Web search returned no results",
+                    "search_query": query,
+                    "timestamp": datetime.now().isoformat()
+                }
+        except Exception as e:
+            logger.error(f"Web search error: {e}")
             return {
                 "success": False,
-                "error": "Web search returned no results",
+                "error": f"Web search failed: {str(e)}",
                 "search_query": query,
                 "timestamp": datetime.now().isoformat()
             }
