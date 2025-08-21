@@ -8,9 +8,17 @@ SYSTEM STATUS (as of 2025-08-21)
 ✅ GPT-5 Integration Complete (gpt-5, gpt-5-mini, gpt-5-nano)
 ✅ Production KB Search Working (397 Dakota files)
 ✅ Serper Web Search Integrated
-✅ All PRs Merged (#33-37, #29 applied)
+✅ All PRs Merged (#33-37, #29, #38-39 applied)
 ✅ OpenAI Responses API Throughout
 ✅ Proper Error Handling for Missing Responses
+✅ Production-Ready Features Added:
+   - Circuit breaker pattern for fault tolerance
+   - Rate limiting (20 LLM/min, 30 searches/min)
+   - Caching with TTL for expensive operations
+   - Comprehensive metrics and health checks
+   - Retry logic with exponential backoff
+   - Fallback content generation
+   - Parallel research processing
 ✅ Estimated Cost: $0.50-$1.50 per article
 
 PREREQUISITES
@@ -27,13 +35,26 @@ TESTING THE SYSTEM
 ------------------
 cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
 
-# RECOMMENDED: Multi-Agent System (Production Ready)
+# RECOMMENDED: Production System with Enhanced Features
+./venv/bin/python scripts/generate_article_production.py --topic "private equity secondaries market 2025 trends" --metrics
+
+# Production system options:
+# Show help:
+./venv/bin/python scripts/generate_article_production.py --help
+
+# Check system health:
+./venv/bin/python scripts/generate_article_production.py --health-check
+
+# Generate article with metrics:
+./venv/bin/python scripts/generate_article_production.py --topic "your topic" --word-count 2000 --metrics
+
+# Original Multi-Agent System (still works but use production for reliability)
 ./venv/bin/python scripts/generate_multi_agent_article.py --topic "private equity secondaries market 2025 trends"
 
 # Alternative test topics:
-./venv/bin/python scripts/generate_multi_agent_article.py --topic "AI in portfolio management for institutional investors"
-./venv/bin/python scripts/generate_multi_agent_article.py --topic "ESG integration in alternative investments 2025"
-./venv/bin/python scripts/generate_multi_agent_article.py --topic "Family office investment strategies post-COVID"
+./venv/bin/python scripts/generate_article_production.py --topic "AI in portfolio management for institutional investors" --metrics
+./venv/bin/python scripts/generate_article_production.py --topic "ESG integration in alternative investments 2025" --metrics
+./venv/bin/python scripts/generate_article_production.py --topic "Family office investment strategies post-COVID" --metrics
 
 # Quick demo (uses default topic):
 ./venv/bin/python scripts/quick_article_demo.py
@@ -45,10 +66,12 @@ cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/
 WHAT THE SYSTEM DOES
 --------------------
 1. Research Phase (Parallel Execution):
-   - Web search via Serper API (15s timeout)
-   - Dakota KB search (10s timeout) 
-   - Dakota insights search (10s timeout)
+   - Web search via Serper API (configurable timeout)
+   - Dakota KB search (configurable timeout) 
+   - Dakota insights search (configurable timeout)
    - Handles missing/failed searches gracefully
+   - Circuit breaker prevents cascading failures
+   - Rate limiting ensures API compliance
 
 2. Writing Phase:
    - Creates comprehensive article structure
@@ -70,8 +93,9 @@ WHAT THE SYSTEM DOES
 
 OUTPUT
 ------
-Articles are saved to: output/YYYY-MM-DD_HH-MM-SS_article_topic_name.md
-Includes: Full article, metadata, quality scores, generation metrics
+Production articles saved to: output/articles/prod_<topic>_YYYYMMDD_HHMMSS.md
+Original system saves to: output/YYYY-MM-DD_HH-MM-SS_article_topic_name.md
+Includes: Full article, metadata, quality scores, generation metrics, phase timings
 
 MONITORING
 ----------
@@ -80,7 +104,10 @@ Watch the console for:
 - Research progress
 - Quality scores
 - Final generation time
-- Any errors (will be handled gracefully)
+- Phase-by-phase timing breakdown
+- Circuit breaker status
+- Cache hit rates (with --metrics flag)
+- Any errors (will be handled gracefully with fallbacks)
 
 TROUBLESHOOTING
 ---------------

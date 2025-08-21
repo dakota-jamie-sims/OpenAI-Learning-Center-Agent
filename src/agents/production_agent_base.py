@@ -173,16 +173,22 @@ class ProductionAgent(BaseAgent):
             # Remove max_tokens from kwargs if present
             filtered_kwargs = {k: v for k, v in kwargs.items() if k != "max_tokens"}
             
-            response = self.responses_client.create_response(
-                model=self.model,
-                input_text=prompt,
-                reasoning_effort=reasoning_effort,
-                verbosity=verbosity,
-                timeout=timeout,
-                max_tokens=max_tokens,
-                temperature=LLM_OPTIMIZATION.get("temperature", 0.3),
+            # Don't pass temperature for GPT-5 models
+            create_params = {
+                "model": self.model,
+                "input_text": prompt,
+                "reasoning_effort": reasoning_effort,
+                "verbosity": verbosity,
+                "timeout": timeout,
+                "max_tokens": max_tokens,
                 **filtered_kwargs,
-            )
+            }
+            
+            # Only add temperature for models that support it
+            if not self.model.startswith("gpt-5"):
+                create_params["temperature"] = LLM_OPTIMIZATION.get("temperature", 0.3)
+            
+            response = self.responses_client.create_response(**create_params)
             
             # Extract text content
             result = self._extract_response_text(response)
@@ -248,6 +254,7 @@ class ProductionAgent(BaseAgent):
         fallback_model = "gpt-5-nano"
         
         try:
+            # No temperature for GPT-5 models
             response = self.responses_client.create_response(
                 model=fallback_model,
                 input_text=prompt[:1000],  # Shorter prompt
