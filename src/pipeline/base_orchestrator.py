@@ -9,7 +9,6 @@ from openai import OpenAI
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
-from src.tools.vector_store_handler import VectorStoreHandler
 from src.services.openai_responses_client import ResponsesClient
 from src.services.kb_search import KnowledgeBaseSearcher
 from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
