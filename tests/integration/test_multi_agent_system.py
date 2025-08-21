@@ -4,9 +4,34 @@ Test script for the Multi-Agent System
 """
 import sys
 import os
+import asyncio
+from datetime import datetime
+from unittest.mock import patch
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.pipeline.multi_agent_orchestrator import MultiAgentPipelineOrchestrator
+from src.agents.team_leads import ResearchTeamLead
+from src.agents.research_agents import WebResearchAgent, KnowledgeBaseAgent, DataValidationAgent
+from src.agents.multi_agent_base import AgentMessage, MessageType
+from src.models import ResearchResult
+
+
+class _DummyOpenAI:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+def _stub_message(payload):
+    return AgentMessage(
+        from_agent="stub",
+        to_agent="research_lead",
+        message_type=MessageType.RESPONSE,
+        task="stub",
+        payload=payload,
+        context={},
+        timestamp=datetime.now().isoformat(),
+    )
 
 
 def test_multi_agent_system():
@@ -149,6 +174,24 @@ def test_agent_coordination():
     
     print("\n✅ Agent coordination test complete!")
 
+
+def test_research_lead_returns_typed_result():
+    """ResearchTeamLead should return a ResearchResult instance"""
+    with patch('src.services.openai_responses_client.OpenAI', _DummyOpenAI), \
+         patch('src.services.kb_search_optimized.OpenAI', _DummyOpenAI), \
+         patch('src.services.kb_search_responses.OpenAI', _DummyOpenAI):
+        lead = ResearchTeamLead()
+
+        with patch.object(WebResearchAgent, 'receive_message', lambda self, msg: _stub_message({'success': True, 'research_summary': 'web', 'sources': []})), \
+             patch.object(KnowledgeBaseAgent, 'receive_message', lambda self, msg: _stub_message({'success': True, 'kb_insights': 'kb'})), \
+             patch.object(DataValidationAgent, 'receive_message', lambda self, msg: _stub_message({'success': True, 'overall_credibility': 100})), \
+             patch('src.agents.team_leads.ResearchTeamLead._synthesize_findings', lambda self, topic, research, validation, sources: {'summary': 'synth'}), \
+             patch('src.agents.team_leads.ResearchTeamLead._calculate_research_quality', lambda self, research, validation: 1.0):
+            result = asyncio.run(lead._coordinate_comprehensive_research_async({'topic': 'AI', 'requirements': {}}))
+
+    assert isinstance(result, ResearchResult)
+    assert result.success is True
+    assert result.topic == 'AI'
 
 if __name__ == "__main__":
     import argparse

@@ -318,6 +318,10 @@ class KnowledgeBaseAgent(BaseAgent):
             else:
                 results = self.kb_searcher.search(query)
             
+            # Check for errors in results
+            if isinstance(results, dict) and not results.get("success", True):
+                return {"success": False, "error": results.get("error", "KB search failed"), "query": query}
+            
             # Analyze results
             analysis_prompt = f"""Analyze these Dakota knowledge base results for: {query}
 
@@ -359,6 +363,8 @@ Focus on institutional investor needs."""
         # Search for Dakota-specific content
         dakota_query = f"{query} Dakota perspective institutional investors"
         results = self.kb_searcher.search(dakota_query)
+        if isinstance(results, dict) and not results.get("success", True):
+            return {"success": False, "error": results.get("error", "KB search failed"), "query": query}
         
         # Extract Dakota insights
         insight_prompt = f"""Extract Dakota-specific insights for: {query}
@@ -601,6 +607,18 @@ Return structured validation results."""
     
     def _check_source_credibility(self, sources: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Check credibility of sources"""
+        # Return early if no sources are provided
+        if not sources:
+            return {
+                "success": False,
+                "error": "No sources provided",
+                "sources_checked": 0,
+                "average_credibility": 0,
+                "results": [],
+                "highly_credible": [],
+                "low_credibility": [],
+            }
+
         credibility_results = []
         
         for source in sources:
@@ -622,7 +640,11 @@ Return structured validation results."""
             credibility_results.append(result)
         
         # Overall assessment
-        avg_credibility = sum(r["credibility_score"] for r in credibility_results) / len(credibility_results)
+        avg_credibility = (
+            sum(r["credibility_score"] for r in credibility_results) / len(credibility_results)
+            if credibility_results
+            else 0
+        )
         
         return {
             "success": True,

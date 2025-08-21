@@ -211,6 +211,11 @@ class OrchestratorAgent(BaseAgent):
         response = await self.research_lead.receive_message(research_msg)
 
         if response:
+            if not isinstance(response.payload, dict):
+                raise TypeError(
+                    "Research team response payload must be a dictionary, "
+                    f"got {type(response.payload).__name__}"
+                )
             logger.info(f"Research response received: {response.payload.get('success', False)}")
             if not response.payload.get('success', False):
                 logger.error(f"Research error: {response.payload.get('error', 'Unknown error')}")

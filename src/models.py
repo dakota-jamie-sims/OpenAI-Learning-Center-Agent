@@ -85,23 +85,15 @@ class ArticleResponse(BaseModel):
 
 
 class ResearchResult(BaseModel):
-    """Result from research operations"""
-    topic: str = Field(..., min_length=1)
-    findings: List[Dict[str, Any]] = Field(default_factory=list)
-    sources: List[Dict[str, str]] = Field(default_factory=list)
-    key_insights: List[str] = Field(default_factory=list)
-    statistics: List[Dict[str, Any]] = Field(default_factory=list)
-    timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
-    
-    @validator('sources')
-    def validate_sources(cls, v):
-        # Ensure each source has required fields
-        for source in v:
-            if not isinstance(source, dict):
-                raise ValueError('Each source must be a dictionary')
-            if 'url' not in source and 'title' not in source:
-                raise ValueError('Each source must have at least url or title')
-        return v
+    """Typed result returned from research coordination"""
+    success: bool
+    topic: str
+    synthesis: Dict[str, Any] = Field(default_factory=dict)
+    raw_research: Dict[str, Any] = Field(default_factory=dict)
+    sources: List[Dict[str, Any]] = Field(default_factory=list)
+    validation: Optional[Dict[str, Any]] = None
+    research_quality_score: Optional[float] = None
+    error: Optional[str] = None
 
 
 class ValidationResult(BaseModel):
