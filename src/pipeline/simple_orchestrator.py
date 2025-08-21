@@ -14,8 +14,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.tools.vector_store_handler import VectorStoreHandler
 from src.services.openai_responses_client import ResponsesClient, supports_temperature
 from src.config import DEFAULT_MODELS, OUTPUT_BASE_DIR
+from src.utils.logging import get_logger
 
 load_dotenv()
+
+logger = get_logger(__name__)
 
 
 class SimpleOrchestrator:
@@ -32,9 +35,9 @@ class SimpleOrchestrator:
         self.vector_store_id = os.getenv("VECTOR_STORE_ID") or os.getenv("OPENAI_VECTOR_STORE_ID")
         
         if self.vector_store_id:
-            print(f"✅ Using existing vector store: {self.vector_store_id}")
+            logger.info(f"✅ Using existing vector store: {self.vector_store_id}")
         else:
-            print("⚠️ No vector store configured. Knowledge base search will be limited.")
+            logger.warning("⚠️ No vector store configured. Knowledge base search will be limited.")
     
     def search_knowledge_base(self, query: str, max_results: int = 5) -> str:
         """Search the knowledge base using a temporary Assistant"""
@@ -93,12 +96,12 @@ class SimpleOrchestrator:
                 return "Knowledge base search failed."
                 
         except Exception as e:
-            print(f"⚠️ Knowledge base search error: {e}")
+            logger.warning(f"⚠️ Knowledge base search error: {e}")
             return "Unable to search knowledge base at this time."
     
     def web_search(self, query: str) -> str:
         """Perform web search using responses API"""
-        print(f"  🌐 Web searching: {query}")
+        logger.info(f"  🌐 Web searching: {query}")
         
         try:
             search_prompt = f"""Search the web for current information about: {query}
@@ -121,12 +124,12 @@ Return a detailed summary with specific data points and source citations."""
             return self._extract_text(response)
             
         except Exception as e:
-            print(f"⚠️ Web search error: {e}")
+            logger.warning(f"⚠️ Web search error: {e}")
             return f"Web search unavailable: {str(e)}"
     
     def fact_check_article(self, article_content: str) -> Dict[str, Any]:
         """Fact check using responses API"""
-        print("🔍 Running fact check...")
+        logger.info("🔍 Running fact check...")
         
         fact_check_prompt = f"""Fact-check this article and return a JSON response:
 
@@ -166,20 +169,20 @@ Return JSON with:
                 result = {"fact_check_passed": True, "citation_count": 0}
             
             if result.get("fact_check_passed", True):
-                print(f"✅ Fact check passed! {result.get('citation_count', 0)} citations found.")
+                logger.info(f"✅ Fact check passed! {result.get('citation_count', 0)} citations found.")
             else:
-                print(f"⚠️ Fact check found issues: {', '.join(result.get('issues', []))}")
+                logger.warning(f"⚠️ Fact check found issues: {', '.join(result.get('issues', []))}")
                 
             return result
             
         except Exception as e:
-            print(f"⚠️ Fact check error: {e}")
+            logger.warning(f"⚠️ Fact check error: {e}")
             return {"fact_check_passed": True, "citation_count": 0, "error": str(e)}
     
     def generate_article(self, topic: str, word_count: int = 1500) -> Dict[str, Any]:
         """Generate a complete article using responses API"""
         
-        print(f"\n🚀 Generating article about: {topic}")
+        logger.info(f"\n🚀 Generating article about: {topic}")
         
         # Create output directory
         timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
@@ -191,7 +194,7 @@ Return JSON with:
         
         try:
             # Knowledge base search
-            print("\n📚 Searching Dakota knowledge base...")
+            logger.info("\n📚 Searching Dakota knowledge base...")
             search_queries = [
                 topic,
                 f"{topic} institutional investors",
@@ -200,16 +203,16 @@ Return JSON with:
             
             kb_insights = []
             for search_query in search_queries[:2]:
-                print(f"  🔍 Searching: {search_query}")
+                logger.info(f"  🔍 Searching: {search_query}")
                 result = self.search_knowledge_base(search_query)
                 if result and "No relevant content" not in result:
                     kb_insights.append(f"### Search: {search_query}\n{result}")
             
             kb_insights_text = "\n\n".join(kb_insights) if kb_insights else "No specific Dakota knowledge base content found."
-            print("✅ Knowledge base search complete")
+            logger.info("✅ Knowledge base search complete")
             
             # Web search
-            print("\n🌐 Searching web for current information...")
+            logger.info("\n🌐 Searching web for current information...")
             web_searches = [
                 f"{topic} 2024 2025 statistics data",
                 f"{topic} recent trends institutional investors"
@@ -222,10 +225,10 @@ Return JSON with:
                     web_results.append(f"### Web Search: {search_query}\n{result}")
             
             web_results_text = "\n\n".join(web_results) if web_results else "Limited web search results available."
-            print("✅ Web search complete")
+            logger.info("✅ Web search complete")
             
             # Generate article
-            print("📝 Writing article...")
+            logger.info("📝 Writing article...")
             article_prompt = f"""Write a comprehensive article for Dakota's Learning Center about: {topic}
 
 DAKOTA KNOWLEDGE BASE INSIGHTS:
@@ -260,31 +263,31 @@ Structure with clear sections, data-driven insights, and a compelling narrative.
             # Save article
             article_path = article_dir / "article.md"
             article_path.write_text(article_content)
-            print(f"✅ Article saved to: {article_path}")
+            logger.info(f"✅ Article saved to: {article_path}")
             
             # Generate summary
-            print("📋 Creating executive summary...")
+            logger.info("📋 Creating executive summary...")
             summary_content = self._generate_summary(article_content, date_str)
             summary_path = article_dir / "summary.md"
             summary_path.write_text(summary_content)
-            print("✅ Summary saved")
+            logger.info("✅ Summary saved")
             
             # Generate social content
-            print("📱 Creating social media content...")
+            logger.info("📱 Creating social media content...")
             social_content = self._generate_social(article_content, topic, date_str)
             social_path = article_dir / "social.md"
             social_path.write_text(social_content)
-            print("✅ Social content saved")
+            logger.info("✅ Social content saved")
             
             # Generate metadata
-            print("📊 Generating metadata...")
+            logger.info("📊 Generating metadata...")
             metadata_content = self._generate_metadata(article_content, topic, date_str, fact_check_result)
             metadata_path = article_dir / "metadata.md"
             metadata_path.write_text(metadata_content)
-            print("✅ Metadata saved")
+            logger.info("✅ Metadata saved")
             
-            print(f"\n✨ Article generation complete!")
-            print(f"📁 Output directory: {article_dir}")
+            logger.info(f"\n✨ Article generation complete!")
+            logger.info(f"📁 Output directory: {article_dir}")
             
             return {
                 "status": "success",
@@ -300,9 +303,9 @@ Structure with clear sections, data-driven insights, and a compelling narrative.
             }
             
         except Exception as e:
-            print(f"\n❌ Error generating article: {str(e)}")
+            logger.error(f"\n❌ Error generating article: {str(e)}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             
             return {
                 "status": "error",

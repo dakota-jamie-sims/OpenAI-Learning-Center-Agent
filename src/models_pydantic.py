@@ -61,7 +61,7 @@ class MetadataGeneration(BaseModel):
 class ArticleResponse(BaseModel):
     """Response model for generated articles"""
     success: bool
-    article: str  # Support both 'article' and 'article_content'
+    article: str = Field(alias="article")  # Support both 'article' and 'article_content'
     metadata: Optional[MetadataGeneration] = None
     word_count: Optional[int] = Field(default=None, ge=0)
     summary: Optional[str] = Field(default=None, max_length=1000)
@@ -75,6 +75,9 @@ class ArticleResponse(BaseModel):
     
     class Config:
         # Allow both 'article' and 'article_content' field names
+        fields = {
+            'article': {'alias': 'article_content'}
+        }
         populate_by_name = True
     
     @validator('article')
@@ -127,10 +130,10 @@ class AgentTask(BaseModel):
     task_type: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
     payload: Dict[str, Any] = Field(default_factory=dict)
-    priority: str = Field(default="medium", pattern="^(low|medium|high|critical)$")
+    priority: str = Field(default="medium", regex="^(low|medium|high|critical)$")
     deadline: Optional[str] = None
     assigned_to: Optional[str] = None
-    status: str = Field(default="pending", pattern="^(pending|in_progress|completed|failed)$")
+    status: str = Field(default="pending", regex="^(pending|in_progress|completed|failed)$")
     
     @validator('deadline')
     def validate_deadline(cls, v):
@@ -146,7 +149,7 @@ class AgentResponse(BaseModel):
     """Standard response from agents"""
     agent_id: str = Field(..., min_length=1)
     task_id: str = Field(..., min_length=1)
-    status: str = Field(..., pattern="^(success|failure|partial|timeout)$")
+    status: str = Field(..., regex="^(success|failure|partial|timeout)$")
     result: Any
     error: Optional[str] = None
     processing_time: Optional[float] = Field(default=None, ge=0)

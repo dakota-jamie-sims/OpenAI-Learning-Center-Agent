@@ -11,6 +11,9 @@ from src.agents.team_leads import ResearchTeamLead, WritingTeamLead, QualityTeam
 from src.agents.communication_broker import create_communication_broker
 from src.config import DEFAULT_MODELS, RESEARCH_CONFIG
 from src.models import ArticleRequest, ArticleResponse, MetadataGeneration
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class OrchestratorAgent(BaseAgent):
@@ -208,12 +211,12 @@ class OrchestratorAgent(BaseAgent):
         response = self.research_lead.receive_message(research_msg)
         
         if response:
-            print(f"Research response received: {response.payload.get('success', False)}")
+            logger.info(f"Research response received: {response.payload.get('success', False)}")
             if not response.payload.get('success', False):
-                print(f"Research error: {response.payload.get('error', 'Unknown error')}")
+                logger.error(f"Research error: {response.payload.get('error', 'Unknown error')}")
             return response.payload
         else:
-            print("No response from research team")
+            logger.warning("No response from research team")
             return {"success": False, "error": "No response from research team"}
     
     async def _phase_writing(self, request: ArticleRequest, research_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -364,7 +367,7 @@ class OrchestratorAgent(BaseAgent):
         from_agent = escalation_data.get("details", {}).get("from_agent", "Unknown")
         
         # Log escalation
-        self.logger.warning(f"Escalation from {from_agent}: {issue}")
+        logger.warning(f"Escalation from {from_agent}: {issue}")
         
         # Determine action based on issue type
         if "timeout" in issue.lower():

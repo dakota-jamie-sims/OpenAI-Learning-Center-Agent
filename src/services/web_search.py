@@ -12,7 +12,11 @@ from urllib.parse import urlparse
 
 import requests
 
-from src.config import WEB_SEARCH_API_KEY, WEB_SEARCH_API_ENDPOINT
+from src.config import WEB_SEARCH_API_KEY, WEB_SEARCH_API_ENDPOINT, CACHE_SIZE, CACHE_TTL
+from src.utils.cache import Cache
+
+# Global cache instance for web search results
+_search_cache = Cache(maxsize=CACHE_SIZE, ttl=CACHE_TTL)
 
 
 def _no_api_key_response(query: str) -> List[Dict[str, Any]]:
@@ -71,6 +75,14 @@ def search_web(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
     if not WEB_SEARCH_API_KEY:
         return _no_api_key_response(query)
 
+    # Create cache key from query and max_results
+    cache_key = (query, max_results)
+    
+    # Check cache first
+    cached_result = _search_cache.get(cache_key)
+    if cached_result is not None:
+        return cached_result
+
     headers = {"X-API-KEY": WEB_SEARCH_API_KEY, "Content-Type": "application/json"}
     payload = {"q": query, "num": max_results}
 
@@ -98,10 +110,12 @@ def search_web(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
             )
 
         if results:
+            # Cache successful results
+            _search_cache.set(cache_key, results)
             return results
 
         # No results returned from provider
-        return [
+        no_results = [
             {
                 "title": "No results found",
                 "snippet": f"No web search results for '{query}'.",
@@ -109,9 +123,17 @@ def search_web(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
                 "source": "serper",
             }
         ]
+        # Cache the no results response too
+        _search_cache.set(cache_key, no_results)
+        return no_results
 
     except requests.RequestException as exc:  # Covers HTTP and network errors
         return _error_response(exc)
+
+
+def clear_search_cache() -> None:
+    """Clear the web search cache."""
+    _search_cache.clear()
 
 
 def search_news(query: str, days_back: int = 30) -> List[Dict[str, Any]]:

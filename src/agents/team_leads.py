@@ -11,6 +11,9 @@ from src.agents.research_agents import WebResearchAgent, KnowledgeBaseAgent, Dat
 from src.agents.writing_agents import ContentWriterAgent, StyleEditorAgent, CitationAgent
 from src.agents.quality_agents import FactCheckerAgent, ComplianceAgent, QualityAssuranceAgent
 from src.config import DEFAULT_MODELS
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class ResearchTeamLead(BaseAgent):
@@ -63,7 +66,7 @@ class ResearchTeamLead(BaseAgent):
         payload = message.payload
         
         if task == "comprehensive_research":
-            result = self._coordinate_comprehensive_research(payload)
+            result = asyncio.run(self._coordinate_comprehensive_research_async(payload))
         elif task == "validate_article":
             result = self._coordinate_article_validation(payload)
         elif task == "find_sources":
@@ -76,43 +79,56 @@ class ResearchTeamLead(BaseAgent):
         return self._create_response(message, result)
     
     def _coordinate_comprehensive_research(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Coordinate comprehensive research across all sub-agents"""
+        """Backward compatibility wrapper - calls async version"""
+        return asyncio.run(self._coordinate_comprehensive_research_async(payload))
+    
+    async def _coordinate_comprehensive_research_async(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Coordinate comprehensive research across all sub-agents in parallel"""
         topic = payload.get("topic", "")
         requirements = payload.get("requirements", {})
         
-        print(f"ResearchTeamLead: Starting research for topic: {topic}")
+        logger.info(f"ResearchTeamLead: Starting parallel research for topic: {topic}")
         self.update_status(AgentStatus.WORKING, f"Researching: {topic}")
         
-        # Phase 1: Parallel research
-        research_tasks = []
-        
-        # Web research
+        # Phase 1: Parallel research - ALL THREE SEARCHES RUN SIMULTANEOUSLY!
+        # Create messages
         web_msg = self.delegate_task(
             "web_researcher",
             "research_topic",
             {"query": topic}
         )
-        web_response = self.web_researcher.receive_message(web_msg)
-        if not web_response.payload.get("success", True):
-            return web_response.payload
-        
-        # Knowledge base search
         kb_msg = self.delegate_task(
-            "kb_researcher",
+            "kb_researcher",  
             "search_kb",
             {"query": topic}
         )
-        kb_response = self.kb_researcher.receive_message(kb_msg)
-        if not kb_response.payload.get("success", True):
-            return kb_response.payload
-        
-        # Get Dakota insights
         dakota_msg = self.delegate_task(
             "kb_researcher",
             "find_dakota_insights",
             {"query": topic}
         )
-        dakota_response = self.kb_researcher.receive_message(dakota_msg)
+        
+        # Run all three searches in parallel using asyncio
+        async def run_agent_async(agent, message):
+            """Run agent in thread pool to avoid blocking"""
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(None, agent.receive_message, message)
+        
+        # Execute all searches simultaneously
+        web_task = run_agent_async(self.web_researcher, web_msg)
+        kb_task = run_agent_async(self.kb_researcher, kb_msg)
+        dakota_task = run_agent_async(self.kb_researcher, dakota_msg)
+        
+        # Wait for all to complete
+        web_response, kb_response, dakota_response = await asyncio.gather(
+            web_task, kb_task, dakota_task
+        )
+        
+        # Check for failures
+        if not web_response.payload.get("success", True):
+            return web_response.payload
+        if not kb_response.payload.get("success", True):
+            return kb_response.payload
         if not dakota_response.payload.get("success", True):
             return dakota_response.payload
         

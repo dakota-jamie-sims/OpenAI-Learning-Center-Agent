@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.pipeline.base_orchestrator import BaseOrchestrator
 from src.config import DEFAULT_MODELS
 from src.services.openai_responses_client import supports_temperature
+from src.utils.logging import get_logger
 
 load_dotenv()
 
@@ -22,23 +23,24 @@ class GPT5Orchestrator(BaseOrchestrator):
     
     def __init__(self):
         super().__init__()
+        self.logger = get_logger(__name__)
         
     def generate_article(self, topic: str, word_count: int = 1500) -> dict:
         """Generate article using GPT-5 with responses API"""
         
-        print(f"\n🚀 Starting article generation for: {topic}")
-        print(f"📊 Target word count: {word_count}")
+        self.logger.info(f"Starting article generation for: {topic}")
+        self.logger.info(f"Target word count: {word_count}")
         
         # Create output directory
         article_dir = self.create_output_directory(topic)
         
         try:
             # Search knowledge base first
-            print("\n📚 Searching knowledge base...")
+            self.logger.info("Searching knowledge base...")
             kb_insights = self.search_knowledge_base(topic, max_results=10)
             
             # Generate the main article content
-            print("\n📝 Generating article content...")
+            self.logger.info("Generating article content...")
             article_prompt = f"""Write a comprehensive article about: {topic}
 
 Knowledge Base Insights:
@@ -75,25 +77,25 @@ Format the article with proper markdown formatting including:
             # Save the article
             article_path = article_dir / "article.md"
             article_path.write_text(article_content)
-            print("✅ Article generated and saved")
+            self.logger.info("Article generated and saved")
             
             # Generate metadata
-            print("\n📊 Generating metadata...")
+            self.logger.info("Generating metadata...")
             metadata = self._generate_metadata(topic, article_content)
             
             # Generate SEO content
-            print("\n🔍 Generating SEO content...")
+            self.logger.info("Generating SEO content...")
             seo_content = self._generate_seo(topic, article_content)
             seo_path = article_dir / "seo-metadata.md"
             seo_path.write_text(seo_content)
-            print("✅ SEO content saved")
+            self.logger.info("SEO content saved")
             
             # Generate summary
-            print("\n📋 Generating executive summary...")
+            self.logger.info("Generating executive summary...")
             summary = self._generate_summary(article_content)
             summary_path = article_dir / "summary.md"
             summary_path.write_text(summary)
-            print("✅ Summary saved")
+            self.logger.info("Summary saved")
             
             return {
                 "status": "success",
@@ -108,7 +110,7 @@ Format the article with proper markdown formatting including:
             }
             
         except Exception as e:
-            print(f"\n❌ Error generating article: {e}")
+            self.logger.error(f"Error generating article: {e}")
             return {
                 "status": "error",
                 "error": str(e),

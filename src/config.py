@@ -11,6 +11,10 @@ WEB_SEARCH_API_ENDPOINT = os.getenv(
     "WEB_SEARCH_API_ENDPOINT", "https://google.serper.dev/search"
 ).strip()
 
+# Caching configuration
+CACHE_SIZE = int(os.getenv("CACHE_SIZE", "128"))
+CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
+
 # Default models (best-for-cost mix; override via .env)
 DEFAULT_MODELS = {
     "default": os.getenv("DEFAULT_MODEL", "gpt-5"),

@@ -86,7 +86,7 @@ class ResponsesClient:
         )
 
         try:
-            result = retryer.call(func, timeout=timeout, **kwargs)
+            result = retryer(func, timeout=timeout, **kwargs)
             attempts = retryer.statistics.get("attempt_number", 1) - 1
             return result, attempts
         except RETRY_EXCEPTIONS as e:
