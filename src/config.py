@@ -18,7 +18,7 @@ CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
 
 # Default models (best-for-cost mix; override via .env)
 # GPT-5 models are available through Responses API
-# For agents using standard chat API, we'll use gpt-4o
+# Models: gpt-5 (complex reasoning), gpt-5-mini (balanced), gpt-5-nano (high-throughput)
 DEFAULT_MODELS = {
     "default": os.getenv("DEFAULT_MODEL", "gpt-5"),
     "orchestrator": os.getenv("ORCHESTRATOR_MODEL", "gpt-5"),

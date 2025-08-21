@@ -74,7 +74,7 @@ class BaseAgent(ABC):
         self.status = AgentStatus.IDLE
         self.memory: List[AgentMessage] = []
         self.context: Dict[str, Any] = {}
-        self.responses_client = ResponsesClient()
+        self.responses_client = ResponsesClient(timeout=60)  # 60 second timeout for LLM calls
         self.model = DEFAULT_MODELS.get(agent_type.lower(), "gpt-5")
         self.message_queue: List[AgentMessage] = []
         self.capabilities: List[str] = []
@@ -241,6 +241,7 @@ class BaseAgent(ABC):
         prompt: str,
         reasoning_effort: str = "medium",
         verbosity: str = "medium",
+        timeout: float = 20,  # Default 20 second timeout
         **kwargs,
     ) -> str:
         """Query the LLM with the agent's specialized model
@@ -254,15 +255,25 @@ class BaseAgent(ABC):
                 input_text=prompt,  # ResponsesClient expects input_text
                 reasoning_effort=reasoning_effort,
                 verbosity=verbosity,
+                timeout=timeout,
                 **kwargs,
             )
-            # Extract text content from response
-            if hasattr(response, "output") and hasattr(response.output, "message"):
-                if hasattr(response.output.message, "content"):
-                    return response.output.message.content
-            # Fallback for different response structures
+            # Extract text content from Responses API response
+            # According to the docs, responses have a content array with text objects
+            if hasattr(response, 'content') and response.content:
+                if isinstance(response.content, list) and len(response.content) > 0:
+                    # Each content item has a 'text' field
+                    if hasattr(response.content[0], 'text'):
+                        return response.content[0].text
+            
+            # Fallback for output_text helper (SDK convenience method)
+            if hasattr(response, 'output_text'):
+                return response.output_text
+            
+            # Fallback for Chat Completions API format
             if hasattr(response, "choices") and response.choices:
                 return response.choices[0].message.content
+                
             # If we can't extract content, return the whole response as string
             return str(response)
         except Exception as e:

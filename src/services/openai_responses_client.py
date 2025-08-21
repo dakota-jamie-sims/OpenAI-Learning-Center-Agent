@@ -134,13 +134,17 @@ class ResponsesClient:
         request_data = {
             "model": model,
             "input": input_text,
-            "reasoning": {
-                "effort": reasoning_effort
-            },
             "text": {
                 "verbosity": verbosity
             }
         }
+        
+        # Add reasoning parameter for models that support it
+        # GPT-5 models and o-series models support reasoning.effort
+        if model.startswith("gpt-5") or (model.startswith("o") and "-" in model):
+            request_data["reasoning"] = {
+                "effort": reasoning_effort
+            }
         
         # Add previous response ID for conversation continuity
         if self.previous_response_id:
@@ -165,8 +169,9 @@ class ResponsesClient:
         timeout = timeout or self.timeout
 
         # Make the API call with retries
+        # Note: timeout needs to be passed to the retry wrapper
         response, attempts = self._with_retry(
-            self.client.responses.create, timeout=timeout, **request_data
+            self.client.responses.create, **request_data
         )
 
         # Surface retry attempts to caller

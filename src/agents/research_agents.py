@@ -106,8 +106,9 @@ Focus on 2024-2025 data and institutional investor perspectives."""
 
         analysis = self.query_llm(
             analysis_prompt,
-            reasoning_effort="high",
-            verbosity="high"
+            reasoning_effort="low",  # Reduced from high
+            verbosity="medium",  # Reduced from high
+            timeout=15  # Explicit timeout
         )
         
         # Extract sources from analysis and combine with search results

@@ -233,9 +233,14 @@ class OrchestratorAgent(BaseAgent):
                     "Research team response payload must be a dictionary, "
                     f"got {type(response.payload).__name__}"
                 )
-            logger.info(f"Research response received: {response.payload.get('success', False)}")
-            if not response.payload.get('success', False):
-                logger.error(f"Research error: {response.payload.get('error', 'Unknown error')}")
+            # Handle payload safely - it should be a dict but check first
+            if isinstance(response.payload, dict):
+                logger.info(f"Research response received: {response.payload.get('success', False)}")
+                if not response.payload.get('success', False):
+                    logger.error(f"Research error: {response.payload.get('error', 'Unknown error')}")
+            else:
+                logger.error(f"Research error: Invalid payload type {type(response.payload).__name__}, expected dict")
+                return {"success": False, "error": f"Invalid response format: {type(response.payload).__name__}"}
             return response.payload
         else:
             logger.warning("No response from research team")
