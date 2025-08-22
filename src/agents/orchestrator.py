@@ -7,7 +7,13 @@ import json
 import asyncio
 
 from src.agents.multi_agent_base import BaseAgent, AgentMessage, AgentStatus, MessageType
-from src.agents.team_leads import ResearchTeamLead, WritingTeamLead, QualityTeamLead, PublishingTeamLead
+from src.agents.team_leads import (
+    ResearchTeamLead,
+    WritingTeamLead,
+    QualityTeamLead,
+    PublishingTeamLead,
+    _summarize_research,
+)
 from src.agents.communication_broker import create_communication_broker
 from src.config import DEFAULT_MODELS, RESEARCH_CONFIG
 from src.models import ArticleRequest, ArticleResponse, MetadataGeneration
@@ -250,23 +256,24 @@ class OrchestratorAgent(BaseAgent):
         """Writing phase coordination"""
         self.update_status(AgentStatus.WORKING, "Coordinating writing phase")
         
-        # Prepare writing context
+        # Prepare condensed research context for writers
+        research_summary = _summarize_research(research_data)
         writing_context = {
             "topic": request.topic,
             "audience": request.audience,
             "tone": request.tone,
             "word_count": request.word_count,
-            "research_data": research_data,
+            "research": {"synthesis": research_summary["synthesis"]},
             "style_guide": "dakota_institutional",
             "key_points": research_data.get("key_findings", []),
-            "sources": research_data.get("all_sources", [])
+            "sources": research_summary["sources"],
         }
-        
+
         # Send to writing team lead
         writing_msg = self.send_message(
             to_agent=self.writing_lead.agent_id,
-            task="create_article",
-            payload=writing_context
+            task="write_article",
+            payload=writing_context,
         )
         
         self.broker.send_message(writing_msg)

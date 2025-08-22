@@ -17,6 +17,42 @@ from src.models import ResearchResult
 logger = get_logger(__name__)
 
 
+def _summarize_research(research_result: Dict[str, Any], max_chars: int = 1500) -> Dict[str, Any]:
+    """Create a compact summary of research for writing phase.
+
+    Extracts the synthesis text and the most relevant sources while ensuring
+    the returned context stays within character limits to avoid token issues.
+    """
+    if not isinstance(research_result, dict):
+        return {"synthesis": "", "sources": []}
+
+    synthesis = research_result.get("synthesis", "")
+    if isinstance(synthesis, dict):
+        synthesis_text = json.dumps(synthesis, ensure_ascii=False)
+    else:
+        synthesis_text = str(synthesis)
+    synthesis_text = synthesis_text.strip()
+    if len(synthesis_text) > max_chars:
+        synthesis_text = synthesis_text[:max_chars]
+
+    sources = research_result.get("sources", [])
+    if isinstance(sources, list):
+        try:
+            sources = sorted(
+                sources, key=lambda s: s.get("credibility_score", 0), reverse=True
+            )
+        except Exception:
+            pass
+        top_sources = [
+            {"title": s.get("title", ""), "url": s.get("url", ""), "date": s.get("date", "")}
+            for s in sources[:5]
+        ]
+    else:
+        top_sources = []
+
+    return {"synthesis": synthesis_text, "sources": top_sources}
+
+
 class ResearchTeamLead(BaseAgent):
     """Lead agent for research team coordination"""
     
