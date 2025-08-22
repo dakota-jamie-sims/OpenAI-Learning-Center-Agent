@@ -6,14 +6,16 @@ import sys
 import os
 import asyncio
 from datetime import datetime
+from typing import List
 from unittest.mock import patch
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.pipeline.multi_agent_orchestrator import MultiAgentPipelineOrchestrator
-from src.agents.team_leads import ResearchTeamLead
+from src.agents.team_leads import ResearchTeamLead, WritingTeamLead
 from src.agents.research_agents import WebResearchAgent, KnowledgeBaseAgent, DataValidationAgent
 from src.agents.multi_agent_base import AgentMessage, MessageType
+from src.agents.writing_agents import ContentWriterAgent
 from src.models import ResearchResult
 
 
@@ -173,6 +175,51 @@ def test_agent_coordination():
     print(f"   Response: {fact_response.payload.get('success', False)}")
     
     print("\n✅ Agent coordination test complete!")
+
+
+def test_section_generation_respects_timeouts():
+    """Ensure article sections are generated iteratively with bounded tokens"""
+    with patch('src.services.openai_responses_client.OpenAI', _DummyOpenAI):
+        lead = WritingTeamLead()
+        token_calls: List[int] = []
+
+        def _fake_query(self, prompt, reasoning_effort="medium", verbosity="high", max_tokens=None):
+            if "Create a detailed article outline" in prompt:
+                return (
+                    "# Outline\n\n"
+                    "## Introduction (50 words)\n- point\n\n"
+                    "## Body (50 words)\n- point\n\n"
+                    "## Conclusion (50 words)\n- point"
+                )
+            token_calls.append(max_tokens)
+            return "section text"
+
+        def _fake_citation(self, msg):
+            return _stub_message({"success": True, "cited_content": msg.payload.get("content", ""), "citations_added": 0})
+
+        def _fake_style(self, msg):
+            if msg.task == "edit_style":
+                payload = {"success": True, "edited_content": msg.payload.get("content", "")}
+            else:
+                payload = {"success": True, "polished_content": msg.payload.get("content", ""), "quality_assessment": {}}
+            return _stub_message(payload)
+
+        with patch.object(ContentWriterAgent, "query_llm", new=_fake_query), \
+             patch.object(type(lead.citation_agent), "receive_message", _fake_citation), \
+             patch.object(type(lead.style_editor), "receive_message", _fake_style):
+            result = lead._coordinate_article_writing({
+                "topic": "Testing Sections",
+                "word_count": 200,
+                "research": {"key_findings": ["a", "b"]},
+                "sources": [],
+                "requirements": {},
+            })
+
+        assert result["success"]
+        sections = lead.content_writer._parse_outline_sections(result["outline"])
+        assert len(token_calls) == len(sections)
+        for tokens, section in zip(token_calls, sections):
+            assert tokens == section.get("target_words", 0) * 4
 
 
 def test_research_lead_returns_typed_result():

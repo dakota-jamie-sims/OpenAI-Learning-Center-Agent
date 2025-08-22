@@ -84,43 +84,37 @@ class ContentWriterAgent(BaseAgent):
         
         # Create article structure
         outline = self._create_detailed_outline(topic, research, word_count)
-        
-        # Write article based on outline
-        article_prompt = f"""Write a comprehensive article about: {topic}
 
-Target word count: {word_count} words (±50 words tolerance)
+        # Summarize or truncate research for prompts
+        key_findings = research.get("key_findings") if isinstance(research, dict) else None
+        if not key_findings and isinstance(research, dict):
+            key_findings = research.get("summary")
+        research_summary = (
+            json.dumps(key_findings, indent=2)
+            if isinstance(key_findings, (dict, list))
+            else str(key_findings or research)
+        )[:2000]
 
-Research synthesis:
-{json.dumps(research, indent=2)}
+        # Generate each section iteratively
+        sections = self._parse_outline_sections(outline)
+        article_sections: List[str] = []
+        for section in sections:
+            section_context = f"{research_summary}\n\nKey points:\n- " + "\n- ".join(section.get("key_points", []))
+            section_payload = {
+                "section_title": section.get("title", ""),
+                "topic": topic,
+                "context": section_context,
+                "target_words": section.get("target_words", word_count // max(len(sections), 1)),
+                "sources": sources,
+            }
+            section_result = self._write_section(section_payload)
+            if not section_result.get("success", True):
+                return section_result
+            article_sections.append(section_result.get("section_content", ""))
 
-Available sources for citation:
-{json.dumps(sources[:15], indent=2)}
-
-Article outline:
-{outline}
-
-Requirements:
-- Professional tone for institutional investors
-- Data-driven with specific statistics
-- {len(sources)} inline citations minimum
-- Clear actionable insights
-- Dakota perspective where relevant
-- Current data (2024-2025 focus)
-
-Format citations as: [Source Name, Date](URL)
-
-Write the complete article following the outline."""
-
-        article = self.query_llm(
-            article_prompt,
-            reasoning_effort="high",
-            verbosity="high",
-            max_tokens=6000
-        )
-        
-        # Verify word count
+        article = "\n\n".join(article_sections)
         actual_word_count = len(article.split())
-        
+
         return {
             "success": True,
             "article": article,
@@ -160,7 +154,7 @@ Write a detailed, professional section that:
             section_prompt,
             reasoning_effort="medium",
             verbosity="high",
-            max_tokens=1500
+            max_tokens=target_words * 4
         )
         
         return {

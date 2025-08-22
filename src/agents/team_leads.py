@@ -784,23 +784,41 @@ class WritingTeamLead(BaseAgent):
         if not outline_response.payload.get("success", True):
             return outline_response.payload
         
-        # Phase 2: Write article
-        write_msg = self.delegate_task(
-            "content_writer",
-            "write_article",
-            {
-                "topic": topic,
-                "word_count": word_count,
-                "research": research,
-                "sources": sources,
-                "requirements": requirements
-            }
-        )
-        write_response = self.content_writer.receive_message(write_msg)
-        if not write_response.payload.get("success", True):
-            return write_response.payload
-        
-        article = write_response.payload.get("article", "")
+        outline = outline_response.payload.get("outline", "")
+        sections = outline_response.payload.get("sections") or \
+            self.content_writer._parse_outline_sections(outline)
+
+        # Summarize research for context
+        key_findings = research.get("key_findings") if isinstance(research, dict) else None
+        if not key_findings and isinstance(research, dict):
+            key_findings = research.get("summary")
+        research_summary = (
+            json.dumps(key_findings, indent=2)
+            if isinstance(key_findings, (dict, list))
+            else str(key_findings or research)
+        )[:2000]
+
+        # Phase 2: Write article section by section
+        article_sections: List[str] = []
+        for section in sections:
+            section_context = f"{research_summary}\n\nKey points:\n- " + "\n- ".join(section.get("key_points", []))
+            section_msg = self.delegate_task(
+                "content_writer",
+                "write_section",
+                {
+                    "topic": topic,
+                    "section_title": section.get("title", ""),
+                    "context": section_context,
+                    "target_words": section.get("target_words", word_count // max(len(sections), 1)),
+                    "sources": sources,
+                },
+            )
+            section_response = self.content_writer.receive_message(section_msg)
+            if not section_response.payload.get("success", True):
+                return section_response.payload
+            article_sections.append(section_response.payload.get("section_content", ""))
+
+        article = "\n\n".join(article_sections)
         
         # Phase 3: Add citations
         citation_msg = self.delegate_task(
