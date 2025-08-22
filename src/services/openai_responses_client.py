@@ -175,7 +175,7 @@ class ResponsesClient:
         # Make the API call with retries
         # Note: timeout needs to be passed to the retry wrapper
         response, attempts = self._with_retry(
-            self.client.responses.create, **request_data
+            self.client.responses.create, timeout=timeout, **request_data
         )
 
         # Surface retry attempts to caller
