@@ -200,15 +200,21 @@ class ResponsesClient:
         
         Returns just the text content
         """
-        response = self.create_response(
-            model=model,
-            input_text=prompt,
-            reasoning_effort="minimal",
-            verbosity="medium",
-            temperature=temperature,
-            max_tokens=max_tokens,
-            timeout=timeout,
-        )
+        # Create params without temperature for GPT-5
+        create_params = {
+            "model": model,
+            "input_text": prompt,
+            "reasoning_effort": "minimal",
+            "verbosity": "medium",
+            "max_tokens": max_tokens,
+            "timeout": timeout,
+        }
+        
+        # Only add temperature for non-GPT-5 models
+        if not model.startswith("gpt-5"):
+            create_params["temperature"] = temperature
+            
+        response = self.create_response(**create_params)
         
         # Extract text from response
         if hasattr(response, 'content') and response.content:

@@ -35,7 +35,10 @@ TESTING THE SYSTEM
 ------------------
 cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/learning-center-agent-open-ai"
 
-# RECOMMENDED: Production System with Enhanced Features
+# RECOMMENDED: Production System V2 (Uses actual multi-agent system with safeguards)
+./venv/bin/python scripts/generate_article_production_v2.py --topic "private equity secondaries market 2025 trends" --metrics
+
+# Original Production System (mock research - fast but limited)
 ./venv/bin/python scripts/generate_article_production.py --topic "private equity secondaries market 2025 trends" --metrics
 
 # Production system options:
@@ -43,18 +46,18 @@ cd "/Users/jamiesims/Library/CloudStorage/GoogleDrive-jsims@dakota.com/My Drive/
 ./venv/bin/python scripts/generate_article_production.py --help
 
 # Check system health:
-./venv/bin/python scripts/generate_article_production.py --health-check
+./venv/bin/python scripts/generate_article_production_v2.py --health-check
 
 # Generate article with metrics:
-./venv/bin/python scripts/generate_article_production.py --topic "your topic" --word-count 2000 --metrics
+./venv/bin/python scripts/generate_article_production_v2.py --topic "your topic" --word-count 2000 --metrics
 
 # Original Multi-Agent System (still works but use production for reliability)
 ./venv/bin/python scripts/generate_multi_agent_article.py --topic "private equity secondaries market 2025 trends"
 
 # Alternative test topics:
-./venv/bin/python scripts/generate_article_production.py --topic "AI in portfolio management for institutional investors" --metrics
-./venv/bin/python scripts/generate_article_production.py --topic "ESG integration in alternative investments 2025" --metrics
-./venv/bin/python scripts/generate_article_production.py --topic "Family office investment strategies post-COVID" --metrics
+./venv/bin/python scripts/generate_article_production_v2.py --topic "AI in portfolio management for institutional investors" --metrics
+./venv/bin/python scripts/generate_article_production_v2.py --topic "ESG integration in alternative investments 2025" --metrics
+./venv/bin/python scripts/generate_article_production_v2.py --topic "Family office investment strategies post-COVID" --metrics
 
 # Quick demo (uses default topic):
 ./venv/bin/python scripts/quick_article_demo.py

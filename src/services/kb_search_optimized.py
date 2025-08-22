@@ -76,9 +76,10 @@ class OptimizedKBSearcher:
             return {
                 "success": False,
                 "query": query,
-                "results": f"Search timed out after {timeout} seconds",
+                "results": [],  # Return empty list instead of string
                 "citations_count": 0,
-                "status": "timeout"
+                "status": "timeout",
+                "error": f"Search timed out after {timeout} seconds"
             }
             
         except Exception as e:
@@ -86,7 +87,7 @@ class OptimizedKBSearcher:
             return {
                 "success": False,
                 "query": query,
-                "results": f"Search error: {str(e)}",
+                "results": [],  # Return empty list instead of string
                 "citations_count": 0,
                 "status": "error"
             }
@@ -154,18 +155,22 @@ class OptimizedKBSearcher:
             # If search fails, return empty results
             return []
     
-    def _format_results(self, raw_results: List[Dict[str, Any]]) -> str:
-        """Format search results into readable text"""
+    def _format_results(self, raw_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Format search results into structured data"""
         if not raw_results:
-            return "No results found in knowledge base."
+            return []
         
         formatted = []
         for i, result in enumerate(raw_results, 1):
-            formatted.append(f"{i}. From {result.get('file_name', 'Unknown')}:")
-            formatted.append(f"   {result.get('content', 'No content')[:200]}...")
-            formatted.append("")
+            formatted.append({
+                "title": result.get('file_name', f'Dakota Document {i}'),
+                "content": result.get('content', 'No content available'),
+                "file_name": result.get('file_name', 'Unknown'),
+                "score": result.get('score', 0.8),  # Default relevance score
+                "type": "knowledge_base"
+            })
         
-        return "\n".join(formatted)
+        return formatted
     
     def search_with_fallback(self, query: str, max_results: int = 5) -> Dict[str, Any]:
         """Search with automatic fallback to web search if KB fails"""
@@ -174,7 +179,7 @@ class OptimizedKBSearcher:
         if not result["success"]:
             logger.info("KB search failed, suggesting web search fallback")
             result["fallback_suggested"] = "web_search"
-            result["results"] = "Knowledge base unavailable, use web search instead"
+            result["results"] = []  # Keep results as empty list
         
         return result
 
