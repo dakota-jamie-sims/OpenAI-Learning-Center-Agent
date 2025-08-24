@@ -1,0 +1,15 @@
+{
+  "topic": "Hedge Fund Strategies 2025",
+  "word_count": 1188,
+  "generation_time": 86.77191185951233,
+  "timestamp": "2025-08-22T16:26:19.694174",
+  "success": true,
+  "output_folder": "output/2025-08-22-hedge-fund-strategies-2025",
+  "phase_times": {
+    "phase1": 0.00020003318786621094,
+    "phase2_3": 28.913706064224243,
+    "phase4_5": 35.585935831069946,
+    "phase6": 6.6024909019470215,
+    "phase7": 15.662541151046753
+  }
+}

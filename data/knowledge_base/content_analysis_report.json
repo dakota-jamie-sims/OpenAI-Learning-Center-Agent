@@ -1,0 +1,91 @@
+{
+  "total_articles": 304,
+  "category_counts": {
+    "asset_class": {
+      "real_estate": 7,
+      "private_equity": 20,
+      "private_credit": 5,
+      "hedge_funds": 8,
+      "infrastructure": 1,
+      "venture_capital": 1,
+      "commodities": 1
+    },
+    "investor_type": {
+      "family_office": 37,
+      "pension": 45,
+      "ria": 81,
+      "insurance": 1
+    },
+    "content_type": {
+      "ranking": 97,
+      "database_guide": 19,
+      "conference_guide": 21,
+      "geographic_guide": 84,
+      "commitment_summary": 40,
+      "news_update": 41,
+      "how_to": 46,
+      "market_analysis": 12
+    },
+    "geography": {
+      "europe": 6,
+      "us_midwest": 5,
+      "us_northeast": 5,
+      "us_south": 7,
+      "global": 1,
+      "us_west": 5,
+      "middle_east": 1
+    },
+    "topic": {
+      "databases": 19,
+      "allocations": 42,
+      "dakota_products": 16,
+      "market_trends": 12
+    }
+  },
+  "top_combinations": [
+    {
+      "combination": "real_estate + pension",
+      "count": 3,
+      "examples": [
+        "The 25 Largest Public Pension Funds that Allocate to Private Real Estate",
+        "The Largest Public Pension Allocations to Private Real Estate by Consultant in 2021",
+        "The Top 10 Largest Public Pension Allocations to Private Real Estate of 2021"
+      ]
+    },
+    {
+      "combination": "private_equity + pension",
+      "count": 2,
+      "examples": [
+        "The Top 10 Largest Public Pension Allocations to Private Equity of 2021",
+        "The Largest Public Pension Allocations to Private Equity by Consultant in 2021"
+      ]
+    },
+    {
+      "combination": "private_credit + pension",
+      "count": 2,
+      "examples": [
+        "The 10 Largest Public Pension Allocations to Private Credit in 2021",
+        "The Largest Public Pension Allocations to Private Credit by Consultant in 2021"
+      ]
+    },
+    {
+      "combination": "hedge_funds + pension",
+      "count": 1,
+      "examples": [
+        "The 9 Largest Public Pension Allocations to Hedge Funds in 2021"
+      ]
+    },
+    {
+      "combination": "venture_capital + pension",
+      "count": 1,
+      "examples": [
+        "Top 10 Public Pensions Investing in Venture Capital Funds in 2023"
+      ]
+    }
+  ],
+  "insights": [
+    "Rankings/Top Lists make up 27% of content",
+    "Private Equity is the most covered asset class (20 articles)",
+    "US-focused content: 73%, International: 27%"
+  ]
+}

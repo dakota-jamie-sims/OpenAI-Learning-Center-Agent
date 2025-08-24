@@ -112,16 +112,15 @@ class ResearchTeamLead(BaseAgent):
             {"query": topic}
         )
         
-        # Execute all searches simultaneously with timeout protection
+        # Execute searches with reduced timeouts for better performance
         web_task = asyncio.wait_for(
-            asyncio.to_thread(self.web_researcher.receive_message, web_msg), timeout=15
+            asyncio.to_thread(self.web_researcher.receive_message, web_msg), timeout=10
         )
         kb_task = asyncio.wait_for(
-            asyncio.to_thread(self.kb_researcher.receive_message, kb_msg), timeout=10
+            asyncio.to_thread(self.kb_researcher.receive_message, kb_msg), timeout=5
         )
-        dakota_task = asyncio.wait_for(
-            asyncio.to_thread(self.kb_researcher.receive_message, dakota_msg), timeout=10
-        )
+        # Skip dakota search for performance - KB search already includes Dakota content
+        dakota_task = asyncio.create_task(asyncio.sleep(0))  # Dummy task
 
         # Wait for all to complete
         web_response = kb_response = dakota_response = None
@@ -154,15 +153,12 @@ class ResearchTeamLead(BaseAgent):
         if kb_response is None or isinstance(kb_response, Exception):
             err = str(kb_response) if isinstance(kb_response, Exception) else "KB search failed"
             kb_response = _error_response("kb_researcher", "response_search_kb", err)
-        if dakota_response is None or isinstance(dakota_response, Exception):
-            err = (
-                str(dakota_response)
-                if isinstance(dakota_response, Exception)
-                else "Dakota search failed"
-            )
-            dakota_response = _error_response(
-                "kb_researcher", "response_find_dakota_insights", err
-            )
+        # Dakota search is now handled by KB search
+        dakota_response = _error_response(
+            "kb_researcher", 
+            "response_find_dakota_insights", 
+            "Skipped - included in KB search"
+        )
         
         # Handle exceptions and check for failures
         for response, name in [(web_response, "web"), (kb_response, "kb"), (dakota_response, "dakota")]:
@@ -435,7 +431,7 @@ Create a comprehensive synthesis that:
 
 Focus on institutional investor needs."""
 
-        synthesis = self.query_llm(
+        synthesis_text = self.query_llm(
             synthesis_prompt,
             reasoning_effort="high",
             verbosity="high"
@@ -444,9 +440,13 @@ Focus on institutional investor needs."""
         return {
             "success": True,
             "topic": topic,
-            "synthesis": synthesis,
-            "key_findings": self._extract_key_findings(synthesis),
-            "recommendations": self._extract_recommendations(synthesis)
+            "synthesis": {
+                "summary": synthesis_text,
+                "key_findings": self._extract_key_findings(synthesis_text),
+                "recommendations": self._extract_recommendations(synthesis_text)
+            },
+            "key_findings": self._extract_key_findings(synthesis_text),
+            "recommendations": self._extract_recommendations(synthesis_text)
         }
     
     def _extract_all_sources(self, research_content: Dict[str, Any]) -> List[Dict[str, str]]:
@@ -486,7 +486,7 @@ Focus on institutional investor needs."""
         return unique_sources
     
     def _synthesize_findings(self, topic: str, research: Dict[str, Any], 
-                           validation: Dict[str, Any], sources: List[Dict]) -> str:
+                           validation: Dict[str, Any], sources: List[Dict]) -> Dict[str, Any]:
         """Synthesize all research findings"""
         synthesis_data = {
             "topic": topic,
@@ -514,11 +514,20 @@ Synthesize into:
 
 Ensure synthesis is coherent, data-driven, and actionable."""
 
-        return self.query_llm(
+        synthesis_text = self.query_llm(
             synthesis_prompt,
             reasoning_effort="high",
             verbosity="high"
         )
+        
+        # Return as a properly structured dictionary
+        return {
+            "summary": synthesis_text,
+            "insights": synthesis_data,
+            "topic": topic,
+            "source_count": len(sources),
+            "quality_score": validation.get("overall_credibility", 0)
+        }
     
     def _calculate_research_quality(self, research: Dict[str, Any], 
                                   validation: Dict[str, Any]) -> float:
@@ -770,21 +779,7 @@ class WritingTeamLead(BaseAgent):
         
         self.update_status(AgentStatus.WORKING, f"Writing article: {topic}")
         
-        # Phase 1: Create outline
-        outline_msg = self.delegate_task(
-            "content_writer",
-            "create_outline",
-            {
-                "topic": topic,
-                "research": research,
-                "target_sections": 7
-            }
-        )
-        outline_response = self.content_writer.receive_message(outline_msg)
-        if not outline_response.payload.get("success", True):
-            return outline_response.payload
-        
-        # Phase 2: Write article
+        # Write article directly without outline for performance
         write_msg = self.delegate_task(
             "content_writer",
             "write_article",

@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dakota-content-system
+  namespace: dakota
+  labels:
+    app: dakota-content-system
+    version: v2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dakota-content-system
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: dakota-content-system
+        version: v2
+    spec:
+      containers:
+      - name: dakota-content-system
+        image: dakota-content-system:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dakota-secrets
+              key: openai-api-key
+        - name: OPENAI_VECTOR_STORE_ID
+          valueFrom:
+            secretKeyRef:
+              name: dakota-secrets
+              key: vector-store-id
+        - name: SERPER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dakota-secrets
+              key: serper-api-key
+        - name: REDIS_URL
+          value: "redis://dakota-redis:6379"
+        - name: ENVIRONMENT
+          value: "production"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: output
+          mountPath: /app/output
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: output
+        persistentVolumeClaim:
+          claimName: dakota-output-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: dakota-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dakota-content-system
+  namespace: dakota
+  labels:
+    app: dakota-content-system
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+  selector:
+    app: dakota-content-system
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dakota-content-system-hpa
+  namespace: dakota
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dakota-content-system
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30

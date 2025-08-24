@@ -1,0 +1,15 @@
+{
+  "topic": "Fixed Income Strategies 2025",
+  "word_count": 1033,
+  "generation_time": 91.93156671524048,
+  "timestamp": "2025-08-22T16:17:04.604668",
+  "success": true,
+  "output_folder": "output/2025-08-22-fixed-income-strategies-2025",
+  "phase_times": {
+    "phase1": 0.00019502639770507812,
+    "phase2_3": 35.03027105331421,
+    "phase4_5": 30.90758514404297,
+    "phase6": 5.968730926513672,
+    "phase7": 20.016443967819214
+  }
+}

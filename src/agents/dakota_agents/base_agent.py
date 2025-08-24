@@ -47,11 +47,19 @@ class DakotaBaseAgent:
         """Query LLM with proper GPT-5 parameters"""
         try:
             # Prepare parameters for GPT-5
+            # Determine verbosity based on model
+            if self.model.startswith("gpt-5"):
+                # GPT-5 models support low/medium/high verbosity
+                verbosity = "low"
+            else:
+                # gpt-4o only supports "medium" verbosity
+                verbosity = "medium"
+            
             create_params = {
                 "model": self.model,
                 "input_text": prompt,
                 "reasoning_effort": reasoning_effort,
-                "verbosity": "low",
+                "verbosity": verbosity,
                 "max_tokens": max_tokens
             }
             
@@ -67,28 +75,26 @@ class DakotaBaseAgent:
             
             # Extract text from response based on Responses API structure
             # response.output is a list where:
-            # - output[0] is reasoning/meta (type: ResponseOutputReasoning) 
-            # - output[1] is the message (type: ResponseOutputMessage) with content (if present)
+            # - output[0] is reasoning (type: ResponseReasoningItem) 
+            # - output[1] is the message (type: ResponseOutputMessage)
             if hasattr(response, 'output') and response.output:
-                # Look for ResponseOutputMessage items
+                # Look through output items
                 for item in response.output:
-                    # Check if this is a message item
-                    if hasattr(item, 'type') and item.type == 'message':
-                        if hasattr(item, 'content') and item.content:
-                            # content is a list of ResponseOutputText items
-                            if isinstance(item.content, list) and len(item.content) > 0:
-                                for content_item in item.content:
-                                    if hasattr(content_item, 'text'):
-                                        # text is already a string
-                                        return content_item.text
-                    # Also check items without explicit type
-                    elif hasattr(item, 'content') and item.content:
-                        if isinstance(item.content, list):
+                    # Check if this is a ResponseOutputMessage (it won't have a 'type' attribute)
+                    if hasattr(item, 'content') and item.content:
+                        # content is a list of ResponseOutputText items
+                        if isinstance(item.content, list) and len(item.content) > 0:
                             for content_item in item.content:
-                                if hasattr(content_item, 'text') and isinstance(content_item.text, str):
+                                if hasattr(content_item, 'text'):
+                                    # text is already a string
                                     return content_item.text
+                        # Sometimes content might be a single item
                         elif hasattr(item.content, 'text'):
-                            return str(item.content.text)
+                            return item.content.text
+                            
+            # Fallback: check if there's an output_text attribute (some response formats)
+            if hasattr(response, 'output_text'):
+                return response.output_text
             
             # If we only got reasoning and no message, log and retry with different params
             self.logger.warning(f"No message in response. Output types: {[type(item).__name__ for item in response.output] if hasattr(response, 'output') else 'No output'}")
@@ -101,7 +107,7 @@ class DakotaBaseAgent:
                         "model": self.model,
                         "input_text": prompt,
                         "reasoning_effort": "minimal",
-                        "verbosity": "medium",  # Increase verbosity
+                        "verbosity": verbosity,  # Use same verbosity logic
                         "max_tokens": max_tokens
                     }
                     

@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dakota-metrics
+  namespace: dakota
+  labels:
+    app: dakota-content-system
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: metrics
+  selector:
+    app: dakota-content-system
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dakota-content-system
+  namespace: dakota
+  labels:
+    app: dakota-content-system
+spec:
+  selector:
+    matchLabels:
+      app: dakota-content-system
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: dakota-content-system-alerts
+  namespace: dakota
+  labels:
+    app: dakota-content-system
+spec:
+  groups:
+  - name: dakota.rules
+    interval: 30s
+    rules:
+    - alert: HighErrorRate
+      expr: |
+        (
+          sum(rate(orchestrator_phase_errors_total[5m])) by (phase)
+          /
+          sum(rate(orchestrator_phase_duration_seconds_count[5m])) by (phase)
+        ) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High error rate in phase {{ $labels.phase }}"
+        description: "Error rate is {{ $value | humanizePercentage }} for phase {{ $labels.phase }}"
+    
+    - alert: HighAPILatency
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(llm_duration_seconds_bucket[5m])) by (agent, le)
+        ) > 30
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High API latency for agent {{ $labels.agent }}"
+        description: "95th percentile latency is {{ $value }}s"
+    
+    - alert: ConnectionPoolExhausted
+      expr: |
+        openai_pool_available{pool_name="content"} == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Connection pool {{ $labels.pool_name }} exhausted"
+        description: "No available connections in pool {{ $labels.pool_name }}"
+    
+    - alert: CircuitBreakerOpen
+      expr: |
+        kb_search_total{status="circuit_open"} > 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "KB Search circuit breaker is open"
+        description: "Knowledge base search is failing and circuit breaker has opened"
+    
+    - alert: HighMemoryUsage
+      expr: |
+        container_memory_usage_bytes{pod=~"dakota-content-system.*"} 
+        / 
+        container_spec_memory_limit_bytes{pod=~"dakota-content-system.*"} > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage in pod {{ $labels.pod }}"
+        description: "Memory usage is {{ $value | humanizePercentage }}"

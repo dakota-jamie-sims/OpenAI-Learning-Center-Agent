@@ -85,13 +85,13 @@ class OrchestratorAgent(BaseAgent):
         
         return True, "Valid task"
     
-    def process_message(self, message: AgentMessage) -> AgentMessage:
+    async def process_message(self, message: AgentMessage) -> AgentMessage:
         """Process orchestrator request"""
         task = message.task
         payload = message.payload
         
         if task == "generate_article":
-            result = asyncio.run(self._orchestrate_article_generation(payload["request"]))
+            result = await self._orchestrate_article_generation(payload["request"])
         elif task == "review_pipeline":
             result = self._review_current_pipeline()
         elif task == "get_status":
@@ -118,8 +118,7 @@ class OrchestratorAgent(BaseAgent):
         }
         
         try:
-            # Start the communication broker
-            broker_task = asyncio.create_task(self.broker.start())
+            # Broker removed for performance
             
             # Phase 1: Research
             research_result = await self._phase_research(request)
@@ -218,14 +217,14 @@ class OrchestratorAgent(BaseAgent):
             }
         )
         
-        # Queue message
-        self.broker.send_message(research_msg)
+        # Process response directly without broker overhead
+        response_or_task = self.research_lead.receive_message(research_msg)
         
-        # Wait for response (in real implementation would be async)
-        await asyncio.sleep(0.5)  # Simulate processing time
-        
-        # Process response
-        response = await self.research_lead.receive_message(research_msg)
+        # Handle async response if needed
+        if asyncio.iscoroutine(response_or_task) or asyncio.isfuture(response_or_task):
+            response = await response_or_task
+        else:
+            response = response_or_task
 
         if response:
             if not isinstance(response.payload, dict):
@@ -265,14 +264,17 @@ class OrchestratorAgent(BaseAgent):
         # Send to writing team lead
         writing_msg = self.send_message(
             to_agent=self.writing_lead.agent_id,
-            task="create_article",
+            task="write_article",
             payload=writing_context
         )
         
-        self.broker.send_message(writing_msg)
-        await asyncio.sleep(0.5)
+        response_or_task = self.writing_lead.receive_message(writing_msg)
         
-        response = self.writing_lead.receive_message(writing_msg)
+        # Handle async response if needed
+        if asyncio.iscoroutine(response_or_task) or asyncio.isfuture(response_or_task):
+            response = await response_or_task
+        else:
+            response = response_or_task
         
         return response.payload if response else {"success": False, "error": "No response from writing team"}
     
@@ -294,10 +296,14 @@ class OrchestratorAgent(BaseAgent):
             }
         )
         
-        self.broker.send_message(quality_msg)
-        await asyncio.sleep(0.5)
+        response_or_task = self.quality_lead.receive_message(quality_msg)
         
-        response = self.quality_lead.receive_message(quality_msg)
+        # Handle async response if needed
+        if asyncio.iscoroutine(response_or_task) or asyncio.isfuture(response_or_task):
+            response = await response_or_task
+        else:
+            response = response_or_task
+        
         result = response.payload if response else {"success": False}
         
         # Determine if ready for publication
@@ -326,10 +332,13 @@ class OrchestratorAgent(BaseAgent):
             }
         )
         
-        self.broker.send_message(revision_msg)
-        await asyncio.sleep(0.5)
+        response_or_task = self.writing_lead.receive_message(revision_msg)
         
-        response = self.writing_lead.receive_message(revision_msg)
+        # Handle async response if needed
+        if asyncio.iscoroutine(response_or_task) or asyncio.isfuture(response_or_task):
+            response = await response_or_task
+        else:
+            response = response_or_task
         
         return response.payload if response else {"success": False, "error": "No response from writing team"}
     
@@ -354,10 +363,13 @@ class OrchestratorAgent(BaseAgent):
             }
         )
         
-        self.broker.send_message(publishing_msg)
-        await asyncio.sleep(0.5)
+        response_or_task = self.publishing_lead.receive_message(publishing_msg)
         
-        response = self.publishing_lead.receive_message(publishing_msg)
+        # Handle async response if needed
+        if asyncio.iscoroutine(response_or_task) or asyncio.isfuture(response_or_task):
+            response = await response_or_task
+        else:
+            response = response_or_task
 
         return response.payload if response else {"success": False, "error": "No response from publishing team"}
     
@@ -509,7 +521,9 @@ def create_article_with_multi_agent_system(request: ArticleRequest) -> ArticleRe
     )
     
     # Process request
-    response = orchestrator.process_message(message)
+    import nest_asyncio
+    nest_asyncio.apply()
+    response = asyncio.run(orchestrator.process_message(message))
     
     if response.payload.get("success", False):
         # Map fields that might have different names

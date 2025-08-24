@@ -156,10 +156,11 @@ class ResponsesClient:
             
         # Handle max_tokens -> max_output_tokens conversion
         if max_tokens is not None:
-            request_data["max_output_tokens"] = max_tokens
+            # Ensure minimum of 16 tokens as required by Responses API
+            request_data["max_output_tokens"] = max(max_tokens, 16)
         # Also check if max_output_tokens was passed directly
         elif "max_output_tokens" in kwargs:
-            request_data["max_output_tokens"] = kwargs.pop("max_output_tokens")
+            request_data["max_output_tokens"] = max(kwargs.pop("max_output_tokens"), 16)
             
         if tools:
             request_data["tools"] = tools
@@ -172,7 +173,7 @@ class ResponsesClient:
 
         timeout = timeout or self.timeout
 
-        # Make the API call with retries
+        # Make the API call with retries using Responses API
         # Note: timeout needs to be passed to the retry wrapper
         response, attempts = self._with_retry(
             self.client.responses.create, **request_data

@@ -2,9 +2,11 @@
 # Activate automatic context system
 
 # Load virtual environment if it exists
-if [ -f "venv/bin/activate" ]; then
-    source venv/bin/activate
-fi
+# Note: venv was moved to archive during cleanup
+# Uncomment and update path if you recreate a virtual environment
+# if [ -f "venv/bin/activate" ]; then
+#     source venv/bin/activate
+# fi
 
 # Load context aliases
 source .context_aliases

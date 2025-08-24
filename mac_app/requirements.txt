@@ -1,0 +1,12 @@
+# Requirements for Dakota Mac App
+pyinstaller>=6.0.0
+
+# Include all main project dependencies
+openai>=1.0.0
+httpx>=0.24.0
+pandas>=2.0.0
+numpy>=1.26.0
+python-dotenv>=1.0.0
+tenacity>=8.2.0
+asyncio
+tkinter

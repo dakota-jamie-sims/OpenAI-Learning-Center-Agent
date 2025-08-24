@@ -26,6 +26,7 @@ class DakotaSEOSpecialist(DakotaBaseAgent):
             article_file = task.get("article_file", "")
             output_file = task.get("output_file", "")
             sources = task.get("sources", [])
+            related_articles = task.get("related_articles", [])
             
             # Read article for analysis
             with open(article_file, 'r') as f:
@@ -44,7 +45,7 @@ class DakotaSEOSpecialist(DakotaBaseAgent):
             # Create metadata content
             metadata_content = self._create_metadata_content(
                 topic, title, seo_title, meta_description, keywords,
-                word_count, sources, key_points
+                word_count, sources, key_points, related_articles
             )
             
             # Save metadata
@@ -190,7 +191,7 @@ Provide keywords as a comma-separated list:"""
     def _create_metadata_content(self, topic: str, title: str, seo_title: str,
                                meta_description: str, keywords: List[str],
                                word_count: int, sources: List[Dict[str, Any]],
-                               key_points: List[str]) -> str:
+                               key_points: List[str], related_articles: List[Dict[str, Any]]) -> str:
         """Create complete metadata file content"""
         date_str = datetime.now().strftime("%Y-%m-%d")
         generation_time = "2"  # Default 2 minutes
@@ -229,22 +230,41 @@ Verification Status:
 - [ ] Fact-checker approved
 
 ## Related Learning Center Articles
-1. **Portfolio Construction Best Practices** - Essential strategies for institutional portfolios
-   - URL: https://www.dakota.com/resources/blog/portfolio-construction-best-practices
-   - Topic: Portfolio Management
-   - Relevance: Foundational concepts for implementing insights from this article
+"""
+        
+        # Add related articles from KB search
+        if related_articles:
+            for i, article in enumerate(related_articles[:3], 1):
+                article_title = article.get("title", "Learning Center Article")
+                article_url = article.get("url", "https://www.dakota.com/learning-center")
+                article_desc = article.get("description", article.get("relevance", "Related investment insights"))
+                
+                content += f"""{i}. **{article_title}**
+   - URL: {article_url}
+   - Topic: {article.get("topic", "Investment Education")}
+   - Relevance: {article_desc}
 
-2. **Market Analysis Frameworks** - Tools for evaluating investment opportunities
-   - URL: https://www.dakota.com/resources/blog/market-analysis-frameworks
-   - Topic: Investment Analysis
-   - Relevance: Complementary analytical approaches
+"""
+        else:
+            # Fallback to generic Dakota resources if no KB results
+            content += """1. **Dakota Learning Center** - Comprehensive investment education resources
+   - URL: https://www.dakota.com/learning-center
+   - Topic: Investment Education
+   - Relevance: Additional resources for institutional investors
 
-3. **Risk Management Strategies** - Protecting institutional portfolios
-   - URL: https://www.dakota.com/resources/blog/risk-management-strategies
-   - Topic: Risk Management
-   - Relevance: Critical considerations for implementation
+2. **Dakota Insights** - Market analysis and trends
+   - URL: https://www.dakota.com/insights
+   - Topic: Market Analysis
+   - Relevance: Current market perspectives and analysis
 
-## Distribution Plan
+3. **Dakota Resources** - Tools and guides for investors
+   - URL: https://www.dakota.com/resources
+   - Topic: Investment Resources
+   - Relevance: Practical tools and implementation guides
+
+"""
+        
+        content += """## Distribution Plan
 - **Target Channels:** Website, LinkedIn, Email
 - **Publish Date:** {date_str}
 - **Tags:** {topic.lower().replace(' ', '-')}, institutional-investing, dakota-insights
@@ -257,8 +277,8 @@ Verification Status:
 ## Sources and Citations
 """
         
-        # Add sources
-        for i, source in enumerate(sources[:10], 1):
+        # Add all available sources (scaled by word count in web researcher)
+        for i, source in enumerate(sources, 1):
             source_title = source.get("title", "Unknown Source")
             source_url = source.get("url", "#")
             source_date = source.get("date", date_str)

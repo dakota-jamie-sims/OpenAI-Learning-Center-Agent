@@ -264,12 +264,19 @@ class DakotaOrchestrator(DakotaBaseAgent):
                 })
             )
             
+            # Extract related articles from KB research
+            related_articles = []
+            kb_result = self.phase_results.get("phase2", {}).get("kb_result", {})
+            if kb_result.get("success") and kb_result.get("data", {}).get("related_articles"):
+                related_articles = kb_result["data"]["related_articles"]
+            
             seo_task = asyncio.create_task(
                 seo_specialist.execute({
                     "topic": request.topic,
                     "article_file": f"{setup_data['output_dir']}/{setup_data['prefix']}-article.md",
                     "output_file": f"{setup_data['output_dir']}/{setup_data['prefix']}-metadata.md",
-                    "sources": self.phase_results.get("phase2", {}).get("sources", [])
+                    "sources": self.phase_results.get("phase2", {}).get("sources", []),
+                    "related_articles": related_articles
                 })
             )
             
@@ -369,7 +376,7 @@ class DakotaOrchestrator(DakotaBaseAgent):
             
             # Count sources
             source_count = content.count("**URL:**") or content.count("- URL:")
-            has_min_sources = source_count >= 1  # Changed from 10 to 1 for now
+            has_min_sources = source_count >= 5  # Require at least 5 sources
             
             return all([has_fact_checker, has_sources, has_min_sources])
             

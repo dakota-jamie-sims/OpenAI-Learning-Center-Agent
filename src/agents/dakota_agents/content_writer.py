@@ -29,7 +29,19 @@ class DakotaContentWriter(DakotaBaseAgent):
             output_file = task.get("output_file", "")
             
             # Extract synthesis components
-            outline = synthesis.get("outline", "")
+            outline_raw = synthesis.get("outline", "")
+            # Handle outline as either string or list of dicts
+            if isinstance(outline_raw, list):
+                # Convert list of dicts to string format
+                outline_parts = []
+                for section in outline_raw:
+                    outline_parts.append(f"## {section['section']}")
+                    for point in section.get('points', []):
+                        outline_parts.append(f"- {point}")
+                outline = "\n".join(outline_parts)
+            else:
+                outline = outline_raw
+            
             key_themes = synthesis.get("key_themes", [])
             citation_sources = synthesis.get("citation_sources", [])
             
@@ -39,8 +51,8 @@ class DakotaContentWriter(DakotaBaseAgent):
                 outline, key_themes, citation_sources
             )
             
-            # Generate article
-            article_content = await self.query_llm(writing_prompt, max_tokens=3000)
+            # Generate article with more tokens to ensure completion
+            article_content = await self.query_llm(writing_prompt, max_tokens=6000)
             
             # Add frontmatter
             frontmatter = self._create_frontmatter(topic, word_count)
@@ -110,12 +122,21 @@ CRITICAL REQUIREMENTS:
 2. Include "## Key Insights at a Glance" section with 4 bullet points containing specific data
 3. Write comprehensive main sections as outlined
 4. Include at least 10 inline citations using format: (Source Name, Date)
-5. End with "## Key Takeaways" (3-5 actionable points)
-6. End with "## Conclusion" section
+5. MUST include "## Key Takeaways" section near the end with 3-5 actionable points
+6. MUST end with "## Conclusion" section (final section before sources)
 7. Use specific numbers, percentages, and data points throughout
 8. Maintain {tone} tone while being informative
 9. Focus on value for {audience}
 10. NO "Introduction" or "Executive Summary" sections
+
+VERIFICATION REQUIREMENT - 100% ACCURACY:
+- ONLY make claims that are DIRECTLY stated in the provided sources
+- Every statistic, percentage, or specific claim MUST come from the sources
+- Do NOT extrapolate, infer, or create any data points
+- If you cannot find specific data in sources, use general language instead
+- Better to be general and accurate than specific and unverifiable
+
+IMPORTANT: The article MUST have both "## Key Takeaways" and "## Conclusion" sections or it will be rejected.
 
 Write the complete article now (excluding frontmatter):"""
 
